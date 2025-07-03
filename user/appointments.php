@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                     'date' => $row['appointment_date'], // This should be YYYY-MM-DD format
                     'time' => date('g:i A', strtotime($row['start_time'])),
                     'type' => $row['type_name'] ?: 'Appointment',
+                    'course_type' => strtoupper($row['course_type'] ?? 'PDC'), // Add course type
                     'status' => $row['status'],
                     'color' => $row['color'] ?: '#4CAF50'
                 ];
@@ -53,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     
     if ($_POST['action'] == 'schedule_appointment') {
         $appointment_type_id = $_POST['appointment_type_id'];
+        $course_type = $_POST['course_type']; // Add course type
         $appointment_date = $_POST['appointment_date'];
         $start_time = $_POST['start_time'];
         $preferred_instructor = !empty($_POST['preferred_instructor']) ? $_POST['preferred_instructor'] : null;
@@ -74,21 +76,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         
         $end_time = date('H:i:s', strtotime($start_time . " + $duration minutes"));
         
-        // Insert appointment
-        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, appointment_date, start_time, end_time, status, student_notes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)";
+        // FIXED: Create variables for string literals
+        $status = 'pending';
+        
+        // Insert appointment with course_type
+        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "iiiissss", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $appointment_date, $start_time, $end_time, $notes);
+            // FIXED: Pass variables instead of string literals
+            mysqli_stmt_bind_param($stmt, "iiiissssss", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes);
             
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode(['success' => true, 'message' => 'Appointment scheduled successfully!']);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Error scheduling appointment.']);
+                echo json_encode(['success' => false, 'message' => 'Error scheduling appointment: ' . mysqli_error($conn)]);
             }
             mysqli_stmt_close($stmt);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Database error.']);
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
         }
         exit;
     }
@@ -96,6 +102,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     echo json_encode(['success' => false, 'message' => 'Invalid action.']);
     exit;
 }
+
+// ...existing code...
 
 // Initialize variables for HTML output
 $page_title = "Appointments";
@@ -137,7 +145,7 @@ if ($result) {
     }
 }
 
-// Get upcoming appointments
+// Get upcoming appointments - UPDATED SQL
 $upcoming_appointments = [];
 $sql = "SELECT a.*, at.name as type_name, u.full_name as instructor_name, v.make, v.model, v.license_plate
         FROM appointments a 
@@ -159,7 +167,7 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
     mysqli_stmt_close($stmt);
 }
 
-// Get appointment history
+// Get appointment history - UPDATED SQL
 $appointment_history = [];
 $sql_history = "SELECT a.*, at.name as type_name, u.full_name as instructor_name, v.make, v.model, v.license_plate
                 FROM appointments a 
@@ -266,7 +274,14 @@ ob_start();
                         <?php foreach ($today_appointments as $appointment): ?>
                             <div class="appointment-card today">
                                 <div class="appointment-info">
-                                    <div class="appointment-type"><?php echo htmlspecialchars($appointment['type_name']); ?></div>
+                                    <div class="appointment-type">
+                                        <?php echo htmlspecialchars($appointment['type_name']); ?>
+                                        <?php if (!empty($appointment['course_type'])): ?>
+                                            <span class="course-badge <?php echo $appointment['course_type']; ?>">
+                                                <?php echo strtoupper($appointment['course_type']); ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <div class="appointment-time">
                                         <i class="far fa-clock"></i>
                                         <?php echo date('g:i A', strtotime($appointment['start_time'])) . ' - ' . date('g:i A', strtotime($appointment['end_time'])); ?>
@@ -309,7 +324,14 @@ ob_start();
                         <?php foreach ($future_appointments as $appointment): ?>
                             <div class="appointment-card">
                                 <div class="appointment-info">
-                                    <div class="appointment-type"><?php echo htmlspecialchars($appointment['type_name']); ?></div>
+                                    <div class="appointment-type">
+                                        <?php echo htmlspecialchars($appointment['type_name']); ?>
+                                        <?php if (!empty($appointment['course_type'])): ?>
+                                            <span class="course-badge <?php echo $appointment['course_type']; ?>">
+                                                <?php echo strtoupper($appointment['course_type']); ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <div class="appointment-time">
                                         <i class="far fa-clock"></i>
                                         <?php echo date('M j, Y', strtotime($appointment['appointment_date'])) . ' at ' . date('g:i A', strtotime($appointment['start_time'])); ?>
@@ -350,6 +372,7 @@ ob_start();
                         <th>Date</th>
                         <th>Student</th>
                         <th>Type</th>
+                        <th>Course</th>
                         <th>Instructor</th>
                         <th>Status</th>
                     </tr>
@@ -360,6 +383,15 @@ ob_start();
                             <td><?php echo date('M j, Y', strtotime($appointment['appointment_date'])); ?></td>
                             <td><?php echo htmlspecialchars($_SESSION['full_name']); ?></td>
                             <td><?php echo htmlspecialchars($appointment['type_name']); ?></td>
+                            <td>
+                                <?php if (!empty($appointment['course_type'])): ?>
+                                    <span class="course-badge <?php echo $appointment['course_type']; ?>">
+                                        <?php echo strtoupper($appointment['course_type']); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="course-badge pdc">PDC</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?php echo htmlspecialchars($appointment['instructor_name'] ?? 'Not Assigned'); ?></td>
                             <td>
                                 <span class="status-badge <?php echo $appointment['status']; ?>">
@@ -391,6 +423,17 @@ ob_start();
                             <?php echo htmlspecialchars($type['name']); ?> - $<?php echo number_format($type['price'], 2); ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <!-- ADD COURSE TYPE SELECTION -->
+            <div class="form-group">
+                <label for="course_type">Course Type</label>
+                <select id="course_type" name="course_type" required>
+                    <option value="">Select Course Type</option>
+                    <option value="tpc">TPC - Theoretical Driving Course</option>
+                    <option value="pdc">PDC - Practical Driving Course</option>
+                    <option value="both">Both TPC & PDC</option>
                 </select>
             </div>
             
@@ -460,9 +503,38 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Add additional styles
+// Add additional styles - ADD COURSE BADGE STYLES
 $extra_styles = <<<EOT
 <style>
+/* Course Type Badges */
+.course-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+.course-badge.tpc {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9c27b0;
+    border: 1px solid rgba(156, 39, 176, 0.3);
+}
+
+.course-badge.pdc {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.course-badge.both {
+    background: rgba(63, 81, 181, 0.2);
+    color: #3f51b5;
+    border: 1px solid rgba(63, 81, 181, 0.3);
+}
+
 .appointment-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -934,7 +1006,7 @@ $extra_styles = <<<EOT
 </style>
 EOT;
 
-// Add additional scripts
+// Add additional scripts - UPDATE CALENDAR TO SHOW COURSE TYPE
 $extra_scripts = <<<EOT
 <script>
 let currentDate = new Date();
@@ -1050,7 +1122,9 @@ function loadCalendar() {
                 dayElement.innerHTML = 
                     '<div class="day-number">' + date.getDate() + '</div>' +
                     dayAppointments.map(apt => 
-                        '<div class="appointment-indicator" style="background-color: ' + (apt.color || '#4CAF50') + '" title="' + apt.time + ' - ' + apt.type + '">' + apt.time + ' ' + apt.type + '</div>'
+                        '<div class="appointment-indicator" style="background-color: ' + (apt.color || '#4CAF50') + '" title="' + apt.time + ' - ' + apt.type + ' (' + apt.course_type + ')">' + 
+                        apt.time + ' ' + apt.type + ' (' + apt.course_type + ')' +
+                        '</div>'
                     ).join('');
                 
                 calendarDays.appendChild(dayElement);

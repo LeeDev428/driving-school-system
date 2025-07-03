@@ -22,6 +22,41 @@ $page_title = "Instructors";
 $header_title = "Instructor Management";
 $notification_count = 3;
 
+// Function to generate random password
+function generatePassword($length = 8) {
+    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    $password = '';
+    for ($i = 0; $i < $length; $i++) {
+        $password .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $password;
+}
+
+// Function to send email (basic implementation - you can enhance this)
+function sendWelcomeEmail($email, $full_name, $password) {
+    $subject = "Welcome to Success Driving School - Instructor Account";
+    $message = "
+    Dear $full_name,
+    
+    Welcome to Success Driving School! Your instructor account has been created.
+    
+    Login Details:
+    Email: $email
+    Password: $password
+    
+    Please login and change your password after your first login.
+    
+    Best regards,
+    Success Driving School Admin
+    ";
+    
+    $headers = "From: admin@successdrivingschool.com\r\n";
+    $headers .= "Reply-To: admin@successdrivingschool.com\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+    
+    return mail($email, $subject, $message, $headers);
+}
+
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     // Clean any output buffer and set JSON header
@@ -38,21 +73,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         case 'add_instructor':
             $full_name = $_POST['full_name'];
             $email = $_POST['email'];
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
             $contact_number = $_POST['contact_number'];
             $license_number = $_POST['license_number'];
             $specializations = $_POST['specializations'];
             $years_experience = $_POST['years_experience'];
             $hourly_rate = $_POST['hourly_rate'];
             
+            // Generate random password
+            $generated_password = generatePassword(10);
+            $hashed_password = password_hash($generated_password, PASSWORD_DEFAULT);
+            
             // Start transaction
             mysqli_begin_transaction($conn);
             
             try {
+                // Check if email already exists
+                $check_email = "SELECT id FROM users WHERE email = ?";
+                $stmt = mysqli_prepare($conn, $check_email);
+                mysqli_stmt_bind_param($stmt, "s", $email);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    throw new Exception("Email already exists in the system");
+                }
+                mysqli_stmt_close($stmt);
+                
+                // Check if license number already exists
+                $check_license = "SELECT id FROM instructors WHERE license_number = ?";
+                $stmt = mysqli_prepare($conn, $check_license);
+                mysqli_stmt_bind_param($stmt, "s", $license_number);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    throw new Exception("License number already exists");
+                }
+                mysqli_stmt_close($stmt);
+                
                 // Insert user
                 $user_sql = "INSERT INTO users (full_name, email, password, user_type, contact_number) VALUES (?, ?, ?, 'instructor', ?)";
                 $stmt = mysqli_prepare($conn, $user_sql);
-                mysqli_stmt_bind_param($stmt, "ssss", $full_name, $email, $password, $contact_number);
+                mysqli_stmt_bind_param($stmt, "ssss", $full_name, $email, $hashed_password, $contact_number);
                 
                 if (!mysqli_stmt_execute($stmt)) {
                     throw new Exception("Error creating user account");
@@ -73,7 +135,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 mysqli_stmt_close($stmt);
                 mysqli_commit($conn);
                 
-                echo json_encode(['success' => true, 'message' => 'Instructor added successfully!']);
+                // Try to send welcome email
+                $email_sent = sendWelcomeEmail($email, $full_name, $generated_password);
+                
+                $message = 'Instructor added successfully!';
+                if ($email_sent) {
+                    $message .= ' Welcome email sent to instructor.';
+                } else {
+                    $message .= ' Note: Welcome email could not be sent. Password: ' . $generated_password;
+                }
+                
+                echo json_encode(['success' => true, 'message' => $message]);
                 
             } catch (Exception $e) {
                 mysqli_rollback($conn);
@@ -96,6 +168,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             mysqli_begin_transaction($conn);
             
             try {
+                // Check if email exists for other users
+                $check_email = "SELECT id FROM users WHERE email = ? AND id != ?";
+                $stmt = mysqli_prepare($conn, $check_email);
+                mysqli_stmt_bind_param($stmt, "si", $email, $user_id);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    throw new Exception("Email already exists for another user");
+                }
+                mysqli_stmt_close($stmt);
+                
+                // Check if license exists for other instructors
+                $check_license = "SELECT id FROM instructors WHERE license_number = ? AND id != ?";
+                $stmt = mysqli_prepare($conn, $check_license);
+                mysqli_stmt_bind_param($stmt, "si", $license_number, $instructor_id);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    throw new Exception("License number already exists for another instructor");
+                }
+                mysqli_stmt_close($stmt);
+                
                 // Update user
                 $user_sql = "UPDATE users SET full_name = ?, email = ?, contact_number = ? WHERE id = ?";
                 $stmt = mysqli_prepare($conn, $user_sql);
@@ -146,13 +242,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 }
 
 // Get all instructors
-$instructors_sql = "SELECT i.*, u.full_name, u.email, u.contact_number, 
+$instructors_sql = "SELECT i.*, u.full_name, u.email, u.contact_number, u.created_at as user_created,
                            COUNT(a.id) as total_appointments,
                            COUNT(CASE WHEN a.status = 'completed' THEN 1 END) as completed_appointments
                     FROM instructors i 
                     JOIN users u ON i.user_id = u.id 
                     LEFT JOIN appointments a ON i.id = a.instructor_id
-                    GROUP BY i.id
+                    GROUP BY i.id, u.id
                     ORDER BY u.full_name";
 
 $instructors = [];
@@ -252,9 +348,9 @@ ob_start();
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">
-                            <i class="fas fa-dollar-sign"></i> Rate:
+                            <i class="fas fa-peso-sign"></i> Rate:
                         </span>
-                        <span>$<?php echo number_format($instructor['hourly_rate'], 2); ?>/hour</span>
+                        <span>₱<?php echo number_format($instructor['hourly_rate'], 2); ?>/hour</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">
@@ -315,42 +411,38 @@ ob_start();
                     <input type="text" id="full_name" name="full_name" required>
                 </div>
                 <div class="form-group">
-                    <label for="email">Email *</label>
+                    <label for="email">Email Address *</label>
                     <input type="email" id="email" name="email" required>
+                    <small style="color: #8b8d93; font-size: 12px;">Login credentials will be sent to this email</small>
                 </div>
             </div>
             
-            <div class="form-row" id="password-row">
-                <div class="form-group">
-                    <label for="password">Password *</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label for="contact_number">Contact Number</label>
                     <input type="tel" id="contact_number" name="contact_number">
                 </div>
+                <div class="form-group">
+                    <label for="license_number">Driver's License Number *</label>
+                    <input type="text" id="license_number" name="license_number" required>
+                </div>
             </div>
             
             <div class="form-row">
-                <div class="form-group">
-                    <label for="license_number">License Number *</label>
-                    <input type="text" id="license_number" name="license_number" required>
-                </div>
                 <div class="form-group">
                     <label for="years_experience">Years of Experience *</label>
                     <input type="number" id="years_experience" name="years_experience" min="0" required>
                 </div>
-            </div>
-            
-            <div class="form-row">
                 <div class="form-group">
-                    <label for="hourly_rate">Hourly Rate ($) *</label>
+                    <label for="hourly_rate">Hourly Rate (₱) *</label>
                     <input type="number" id="hourly_rate" name="hourly_rate" step="0.01" min="0" required>
                 </div>
-                <div class="form-group">
-                    <label for="specializations">Specializations</label>
-                    <input type="text" id="specializations" name="specializations" placeholder="e.g., Highway Driving, Parking">
-                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="specializations">Specializations</label>
+                <input type="text" id="specializations" name="specializations" placeholder="e.g., Highway Driving, Parking, Manual Transmission">
+                <small style="color: #8b8d93; font-size: 12px;">Optional: Areas of expertise or special skills</small>
             </div>
             
             <div class="form-group" id="active-checkbox" style="display: none;">
@@ -372,7 +464,7 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Add additional styles
+// Add additional styles (same as before)
 $extra_styles = <<<EOT
 <style>
 .instructors-container {
@@ -730,6 +822,11 @@ $extra_styles = <<<EOT
     border-color: #ffcc00;
 }
 
+.form-group small {
+    display: block;
+    margin-top: 5px;
+}
+
 .checkbox-label {
     display: flex;
     align-items: center;
@@ -817,7 +914,7 @@ $extra_styles = <<<EOT
 </style>
 EOT;
 
-// Add additional scripts
+// Add JavaScript (updated to remove password field)
 $extra_scripts = <<<EOT
 <script>
 let isEditing = false;
@@ -828,9 +925,7 @@ function openAddModal() {
     document.getElementById('instructor-form').reset();
     document.getElementById('instructor_id').value = '';
     document.getElementById('user_id').value = '';
-    document.getElementById('password-row').style.display = 'grid';
     document.getElementById('active-checkbox').style.display = 'none';
-    document.getElementById('password').required = true;
     isEditing = false;
     
     document.getElementById('instructor-modal').style.display = 'block';
@@ -853,9 +948,7 @@ function editInstructor(instructor) {
     document.getElementById('hourly_rate').value = instructor.hourly_rate;
     document.getElementById('is_active').checked = instructor.is_active == 1;
     
-    document.getElementById('password-row').style.display = 'none';
     document.getElementById('active-checkbox').style.display = 'block';
-    document.getElementById('password').required = false;
     isEditing = true;
     
     document.getElementById('instructor-modal').style.display = 'block';
@@ -908,6 +1001,12 @@ document.getElementById('instructor-form').addEventListener('submit', function(e
     const action = isEditing ? 'update_instructor' : 'add_instructor';
     formData.append('action', action);
     
+    // Show loading state
+    const submitBtn = document.getElementById('submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Processing...';
+    submitBtn.disabled = true;
+    
     fetch('', {
         method: 'POST',
         body: formData
@@ -925,6 +1024,10 @@ document.getElementById('instructor-form').addEventListener('submit', function(e
     .catch(error => {
         console.error('Error:', error);
         alert('An error occurred. Please try again.');
+    })
+    .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     });
 });
 

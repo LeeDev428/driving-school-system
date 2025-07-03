@@ -1,12 +1,10 @@
 <?php
+
 // Set timezone to Philippines (UTC+8)
 date_default_timezone_set('Asia/Manila');
 
 // Turn off error reporting for AJAX requests to prevent HTML output
 error_reporting(0);
-ini_set('display_errors', 0);
-
-// Start output buffering immediately
 ob_start();
 
 session_start();
@@ -63,9 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     $events[] = [
                         'id' => $row['id'],
-                        'date' => $row['appointment_date'], // This should be YYYY-MM-DD format
+                        'date' => $row['appointment_date'],
                         'time' => date('g:i A', strtotime($row['start_time'])),
                         'type' => $row['type_name'],
+                        'course_type' => strtoupper($row['course_type']),
                         'student' => $row['student_name'],
                         'instructor' => $row['instructor_name'],
                         'status' => $row['status'],
@@ -90,14 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 mysqli_stmt_bind_param($stmt, "si", $new_status, $appointment_id);
                 
                 if (mysqli_stmt_execute($stmt)) {
-                    // Log the change
-                    $log_sql = "INSERT INTO appointment_logs (appointment_id, action, new_status, changed_by) VALUES (?, 'status_change', ?, ?)";
-                    if ($log_stmt = mysqli_prepare($conn, $log_sql)) {
-                        mysqli_stmt_bind_param($log_stmt, "isi", $appointment_id, $new_status, $admin_id);
-                        mysqli_stmt_execute($log_stmt);
-                        mysqli_stmt_close($log_stmt);
-                    }
-                    
                     echo json_encode(['success' => true, 'message' => 'Status updated successfully!']);
                 } else {
                     echo json_encode(['success' => false, 'message' => 'Error updating status.']);
@@ -299,6 +290,10 @@ ob_start();
                                     <strong>Student:</strong> <?php echo htmlspecialchars($appointment['student_name']); ?>
                                 </div>
                                 <div class="detail-item">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <strong>Course Type:</strong> <?php echo strtoupper(htmlspecialchars($appointment['course_type'])); ?>
+                                </div>
+                                <div class="detail-item">
                                     <i class="far fa-calendar"></i>
                                     <strong>Date:</strong> <?php echo date('M j, Y', strtotime($appointment['appointment_date'])); ?>
                                 </div>
@@ -371,6 +366,10 @@ ob_start();
                                             <span><i class="fas fa-user"></i> Student:</span>
                                             <span><?php echo htmlspecialchars($appointment['student_name']); ?></span>
                                         </div>
+                                        <div class="detail-row">
+                                            <span><i class="fas fa-graduation-cap"></i> Course:</span>
+                                            <span><?php echo strtoupper(htmlspecialchars($appointment['course_type'])); ?></span>
+                                        </div>
                                         <?php if ($appointment['instructor_name']): ?>
                                             <div class="detail-row">
                                                 <span><i class="fas fa-chalkboard-teacher"></i> Instructor:</span>
@@ -426,6 +425,7 @@ ob_start();
                         <th>Date</th>
                         <th>Student</th>
                         <th>Type</th>
+                        <th>Course</th>
                         <th>Instructor</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -437,6 +437,11 @@ ob_start();
                             <td><?php echo date('M j, Y', strtotime($appointment['appointment_date'])); ?></td>
                             <td><?php echo htmlspecialchars($appointment['student_name']); ?></td>
                             <td><?php echo htmlspecialchars($appointment['type_name']); ?></td>
+                            <td>
+                                <span class="course-badge <?php echo $appointment['course_type']; ?>">
+                                    <?php echo strtoupper($appointment['course_type']); ?>
+                                </span>
+                            </td>
                             <td><?php echo htmlspecialchars($appointment['instructor_name'] ?? 'Not Assigned'); ?></td>
                             <td>
                                 <span class="status-badge <?php echo $appointment['status']; ?>">
@@ -556,6 +561,30 @@ $extra_styles = <<<EOT
 
 .tab-content.active {
     display: block;
+}
+
+/* Course Type Badges */
+.course-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.course-badge.tpc {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9c27b0;
+}
+
+.course-badge.pdc {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.course-badge.both {
+    background: rgba(63, 81, 181, 0.2);
+    color: #3f51b5;
 }
 
 /* Calendar Styles */
@@ -1260,7 +1289,7 @@ function loadCalendar() {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=get_calendar_events&year=\${year}&month=\${month + 1}`
+        body: 'action=get_calendar_events&year=' + year + '&month=' + (month + 1)
     })
     .then(response => response.json())
     .then(appointments => {
@@ -1296,12 +1325,11 @@ function loadCalendar() {
                 String(date.getDate()).padStart(2, '0');
             const dayAppointments = appointmentsByDate[dateString] || [];
             
-            dayElement.innerHTML = `
-                <div class="day-number">\${date.getDate()}</div>
-                \${dayAppointments.map(apt => 
-                    `<div class="appointment-indicator" style="background-color: \${apt.color || '#4CAF50'}" title="\${apt.time} - \${apt.student} - \${apt.type}">\${apt.time} \${apt.student}</div>`
-                ).join('')}
-            `;
+            dayElement.innerHTML = 
+                '<div class="day-number">' + date.getDate() + '</div>' +
+                dayAppointments.map(apt => 
+                    '<div class="appointment-indicator" style="background-color: ' + (apt.color || '#4CAF50') + '" title="' + apt.time + ' - ' + apt.student + ' - ' + apt.type + ' (' + apt.course_type + ')">' + apt.time + ' ' + apt.student + '</div>'
+                ).join('');
             
             calendarDays.appendChild(dayElement);
         }
@@ -1310,13 +1338,13 @@ function loadCalendar() {
 
 // Status update function
 function updateStatus(appointmentId, status) {
-    if (confirm(`Are you sure you want to update this appointment status to "\${status}"?`)) {
+    if (confirm('Are you sure you want to update this appointment status to "' + status + '"?')) {
         fetch('', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `action=update_appointment_status&appointment_id=\${appointmentId}&status=\${status}`
+            body: 'action=update_appointment_status&appointment_id=' + appointmentId + '&status=' + status
         })
         .then(response => response.json())
         .then(data => {
