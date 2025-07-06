@@ -50,14 +50,6 @@ if ($user_type == 'admin') {
         <i class="far fa-calendar-alt"></i>
         <span>Appointments</span>
     </a>
-    <a href="../user/vehicle-tracking.php" <?php if($current_page == "vehicle-tracking.php") echo 'class="active"'; ?>>
-        <i class="fas fa-car"></i>
-        <span>Vehicle Tracking</span>
-    </a>
-    <a href="../user/practice-driving.php" <?php if($current_page == "practice-driving.php") echo 'class="active"'; ?>>
-        <i class="fas fa-gamepad"></i>
-        <span>Practice Driving</span>
-    </a>
     <?php
 }
 ?>

@@ -301,10 +301,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
         
         <div class="bottom-menu">
-            <a href="../settings.php" <?php if($current_page == "settings.php") echo 'class="active"'; ?>>
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </a>
             <a href="../logout.php">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
