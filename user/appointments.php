@@ -61,6 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $preferred_vehicle = !empty($_POST['preferred_vehicle']) ? $_POST['preferred_vehicle'] : null;
         $notes = $_POST['notes'] ?? '';
         
+        // Get payment fields
+        $payment_amount = !empty($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0.00;
+        $payment_method = !empty($_POST['payment_method']) ? $_POST['payment_method'] : null;
+        $is_paid = isset($_POST['is_paid']) && $_POST['is_paid'] == '1' ? 1 : 0;
+        
         // Get duration from appointment type
         $duration = 60; // default
         $duration_sql = "SELECT duration_minutes FROM appointment_types WHERE id = ?";
@@ -79,13 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         // FIXED: Create variables for string literals
         $status = 'pending';
         
-        // Insert appointment with course_type
-        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Insert appointment with course_type and payment fields
+        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, is_paid) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            // FIXED: Pass variables instead of string literals
-            mysqli_stmt_bind_param($stmt, "iiiissssss", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes);
+            // FIXED: Pass variables instead of string literals, including payment fields
+            mysqli_stmt_bind_param($stmt, "iiiissssssdsi", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $is_paid);
             
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode(['success' => true, 'message' => 'Appointment scheduled successfully!']);
@@ -490,6 +495,31 @@ ob_start();
             <div class="form-group">
                 <label for="notes">Notes (Optional)</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="Any special requests or notes..."></textarea>
+            </div>
+            
+            <!-- Payment Information -->
+            <div class="form-group">
+                <label for="payment_amount">Payment Amount</label>
+                <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" placeholder="0.00">
+            </div>
+            
+            <div class="form-group">
+                <label for="payment_method">Payment Method</label>
+                <select id="payment_method" name="payment_method">
+                    <option value="">Select payment method</option>
+                    <option value="cash">Cash</option>
+                    <option value="card">Credit/Debit Card</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="online">Online Payment</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="is_paid" name="is_paid" value="1">
+                    <span class="checkmark"></span>
+                    Mark as Paid
+                </label>
             </div>
             
             <div class="form-actions">
@@ -938,6 +968,21 @@ $extra_styles = <<<EOT
 .form-group textarea:focus {
     outline: none;
     border-color: #ffcc00;
+}
+
+/* Checkbox styling */
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto !important;
+    margin-right: 10px;
+    transform: scale(1.2);
 }
 
 .form-actions {
