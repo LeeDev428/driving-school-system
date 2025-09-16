@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `appointments` (
   `payment_status` enum('unpaid','paid','refunded') DEFAULT 'unpaid',
   `payment_amount` decimal(10,2) DEFAULT '0.00',
   `payment_method` enum('cash','card','bank_transfer','online') DEFAULT NULL,
+  `payment_reference` varchar(100) DEFAULT NULL,
   `is_paid` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

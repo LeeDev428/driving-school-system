@@ -64,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         // Get payment fields
         $payment_amount = !empty($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0.00;
         $payment_method = !empty($_POST['payment_method']) ? $_POST['payment_method'] : null;
+        $payment_reference = !empty($_POST['payment_reference']) ? trim($_POST['payment_reference']) : null;
         $is_paid = isset($_POST['is_paid']) && $_POST['is_paid'] == '1' ? 1 : 0;
         
         // Get duration from appointment type
@@ -84,13 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         // FIXED: Create variables for string literals
         $status = 'pending';
         
-        // Insert appointment with course_type and payment fields
-        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, is_paid) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Insert appointment with course_type and payment fields including reference
+        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, payment_reference, is_paid) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
-            // FIXED: Pass variables instead of string literals, including payment fields
-            mysqli_stmt_bind_param($stmt, "iiiissssssdsi", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $is_paid);
+            // FIXED: Pass variables instead of string literals, including payment fields and reference
+            mysqli_stmt_bind_param($stmt, "iiiissssssdssi", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $payment_reference, $is_paid);
             
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode(['success' => true, 'message' => 'Appointment scheduled successfully!']);
@@ -505,7 +506,7 @@ ob_start();
             
             <div class="form-group">
                 <label for="payment_method">Payment Method</label>
-                <select id="payment_method" name="payment_method">
+                <select id="payment_method" name="payment_method" onchange="togglePaymentReference()">
                     <option value="">Select payment method</option>
                     <option value="cash">Cash</option>
                     <option value="card">Credit/Debit Card</option>
@@ -514,13 +515,13 @@ ob_start();
                 </select>
             </div>
             
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="is_paid" name="is_paid" value="1">
-                    <span class="checkmark"></span>
-                    Mark as Paid
-                </label>
+            <div class="form-group" id="payment_reference_group" style="display: none;">
+                <label for="payment_reference">Payment Reference Number</label>
+                <input type="text" id="payment_reference" name="payment_reference" placeholder="Enter transaction/reference number">
+                <small class="form-help">Required for card, bank transfer, and online payments to verify the transaction.</small>
             </div>
+            
+          
             
             <div class="form-actions">
                 <button type="button" onclick="closeScheduleModal()" class="cancel-btn">Cancel</button>
@@ -985,6 +986,13 @@ $extra_styles = <<<EOT
     transform: scale(1.2);
 }
 
+.form-help {
+    color: #8b8d93;
+    font-size: 11px;
+    margin-top: 5px;
+    display: block;
+}
+
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1242,6 +1250,25 @@ function closeScheduleModal() {
     document.getElementById('schedule-modal').style.display = 'none';
     document.body.style.overflow = 'auto';
     document.getElementById('schedule-form').reset();
+    // Hide payment reference field when modal is closed
+    document.getElementById('payment_reference_group').style.display = 'none';
+}
+
+// Toggle payment reference field based on payment method
+function togglePaymentReference() {
+    const paymentMethod = document.getElementById('payment_method').value;
+    const referenceGroup = document.getElementById('payment_reference_group');
+    const referenceInput = document.getElementById('payment_reference');
+    
+    // Show reference field for card, bank_transfer, and online payments
+    if (paymentMethod === 'card' || paymentMethod === 'bank_transfer' || paymentMethod === 'online') {
+        referenceGroup.style.display = 'block';
+        referenceInput.required = true;
+    } else {
+        referenceGroup.style.display = 'none';
+        referenceInput.required = false;
+        referenceInput.value = ''; // Clear the field when hidden
+    }
 }
 
 // Form submission

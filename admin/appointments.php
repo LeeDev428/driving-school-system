@@ -323,6 +323,9 @@ ob_start();
                                         <?php if ($appointment['payment_method']): ?>
                                             (<?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?>)
                                         <?php endif; ?>
+                                        <?php if ($appointment['payment_reference']): ?>
+                                            <br><small>Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></small>
+                                        <?php endif; ?>
                                         - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
                                             <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
                                         </span>
@@ -413,6 +416,9 @@ ob_start();
                                                     <?php if ($appointment['payment_method']): ?>
                                                         (<?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?>)
                                                     <?php endif; ?>
+                                                    <?php if ($appointment['payment_reference']): ?>
+                                                        <br><small>Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></small>
+                                                    <?php endif; ?>
                                                     - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
                                                         <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
                                                     </span>
@@ -462,6 +468,7 @@ ob_start();
                         <th>Type</th>
                         <th>Course</th>
                         <th>Instructor</th>
+                        <th>Payment</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -478,6 +485,24 @@ ob_start();
                                 </span>
                             </td>
                             <td><?php echo htmlspecialchars($appointment['instructor_name'] ?? 'Not Assigned'); ?></td>
+                            <td class="payment-cell">
+                                <?php if ($appointment['payment_amount'] > 0): ?>
+                                    <div class="payment-info-compact">
+                                        <span class="amount">$<?php echo number_format($appointment['payment_amount'], 2); ?></span>
+                                        <?php if ($appointment['payment_method']): ?>
+                                            <span class="method"><?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?></span>
+                                        <?php endif; ?>
+                                        <?php if ($appointment['payment_reference']): ?>
+                                            <span class="reference">Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></span>
+                                        <?php endif; ?>
+                                        <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
+                                            <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                        </span>
+                                    </div>
+                                <?php else: ?>
+                                    <span class="payment-status unpaid">No payment</span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="status-badge <?php echo $appointment['status']; ?>">
                                     <?php echo ucfirst($appointment['status']); ?>
@@ -1020,6 +1045,63 @@ $extra_styles = <<<EOT
 .status-badge.no_show {
     background: rgba(158, 158, 158, 0.2);
     color: #9e9e9e;
+}
+
+/* Payment Status Styles */
+.payment-status {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.payment-status.paid {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.payment-status.unpaid {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.payment-info {
+    border-left: 3px solid #ffcc00;
+    padding-left: 10px;
+    margin-top: 5px;
+}
+
+.payment-info-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+}
+
+.payment-info-compact .amount {
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+.payment-info-compact .method {
+    color: #8b8d93;
+    font-size: 10px;
+}
+
+.payment-info-compact .reference {
+    color: #ffcc00;
+    font-size: 9px;
+    font-weight: normal;
+}
+
+.payment-cell {
+    min-width: 120px;
+}
+
+.payment-row .payment-status {
+    margin-left: 8px;
 }
 
 /* History Table */
