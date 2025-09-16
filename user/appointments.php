@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $payment_amount = !empty($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0.00;
         $payment_method = !empty($_POST['payment_method']) ? $_POST['payment_method'] : null;
         $payment_reference = !empty($_POST['payment_reference']) ? trim($_POST['payment_reference']) : null;
-        $is_paid = isset($_POST['is_paid']) && $_POST['is_paid'] == '1' ? 1 : 0;
+        $payment_status = isset($_POST['is_paid']) && $_POST['is_paid'] == '1' ? 'paid' : 'unpaid';
         
         // Get duration from appointment type
         $duration = 60; // default
@@ -86,12 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         $status = 'pending';
         
         // Insert appointment with course_type and payment fields including reference
-        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, payment_reference, is_paid) 
+        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, payment_reference, payment_status) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
             // FIXED: Pass variables instead of string literals, including payment fields and reference
-            mysqli_stmt_bind_param($stmt, "iiiissssssdssi", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $payment_reference, $is_paid);
+            mysqli_stmt_bind_param($stmt, "iiiissssssdsss", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
             
             if (mysqli_stmt_execute($stmt)) {
                 echo json_encode(['success' => true, 'message' => 'Appointment scheduled successfully!']);

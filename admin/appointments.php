@@ -326,8 +326,8 @@ ob_start();
                                         <?php if ($appointment['payment_reference']): ?>
                                             <br><small>Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></small>
                                         <?php endif; ?>
-                                        - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
-                                            <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                        - <span class="payment-status <?php echo ($appointment['payment_status'] == 'paid') ? 'paid' : 'unpaid'; ?>">
+                                            <?php echo strtoupper($appointment['payment_status']); ?>
                                         </span>
                                     <?php else: ?>
                                         <span class="payment-status unpaid">No payment recorded</span>
@@ -419,8 +419,8 @@ ob_start();
                                                     <?php if ($appointment['payment_reference']): ?>
                                                         <br><small>Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></small>
                                                     <?php endif; ?>
-                                                    - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
-                                                        <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                                    - <span class="payment-status <?php echo ($appointment['payment_status'] == 'paid') ? 'paid' : 'unpaid'; ?>">
+                                                        <?php echo strtoupper($appointment['payment_status']); ?>
                                                     </span>
                                                 <?php else: ?>
                                                     <span class="payment-status unpaid">No payment</span>
@@ -495,8 +495,8 @@ ob_start();
                                         <?php if ($appointment['payment_reference']): ?>
                                             <span class="reference">Ref: <?php echo htmlspecialchars($appointment['payment_reference']); ?></span>
                                         <?php endif; ?>
-                                        <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
-                                            <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                        <span class="payment-status <?php echo ($appointment['payment_status'] == 'paid') ? 'paid' : 'unpaid'; ?>">
+                                            <?php echo strtoupper($appointment['payment_status']); ?>
                                         </span>
                                     </div>
                                 <?php else: ?>
