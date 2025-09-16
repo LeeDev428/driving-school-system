@@ -313,6 +313,23 @@ ob_start();
                                         <strong>Notes:</strong> <?php echo htmlspecialchars($appointment['student_notes']); ?>
                                     </div>
                                 <?php endif; ?>
+                                
+                                <!-- Payment Information -->
+                                <div class="detail-item payment-info">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <strong>Payment:</strong> 
+                                    <?php if ($appointment['payment_amount'] > 0): ?>
+                                        $<?php echo number_format($appointment['payment_amount'], 2); ?>
+                                        <?php if ($appointment['payment_method']): ?>
+                                            (<?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?>)
+                                        <?php endif; ?>
+                                        - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
+                                            <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="payment-status unpaid">No payment recorded</span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                         <div class="appointment-actions">
@@ -385,6 +402,24 @@ ob_start();
                                         <div class="detail-row">
                                             <span><i class="far fa-clock"></i> Duration:</span>
                                             <span><?php echo date('g:i A', strtotime($appointment['start_time'])) . ' - ' . date('g:i A', strtotime($appointment['end_time'])); ?></span>
+                                        </div>
+                                        
+                                        <!-- Payment Information -->
+                                        <div class="detail-row payment-row">
+                                            <span><i class="fas fa-money-bill-wave"></i> Payment:</span>
+                                            <span>
+                                                <?php if ($appointment['payment_amount'] > 0): ?>
+                                                    $<?php echo number_format($appointment['payment_amount'], 2); ?>
+                                                    <?php if ($appointment['payment_method']): ?>
+                                                        (<?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?>)
+                                                    <?php endif; ?>
+                                                    - <span class="payment-status <?php echo $appointment['is_paid'] ? 'paid' : 'unpaid'; ?>">
+                                                        <?php echo $appointment['is_paid'] ? 'PAID' : 'UNPAID'; ?>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="payment-status unpaid">No payment</span>
+                                                <?php endif; ?>
+                                            </span>
                                         </div>
                                     </div>
                                     <?php if ($appointment['status'] === 'confirmed'): ?>
