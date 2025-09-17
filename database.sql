@@ -40,7 +40,6 @@ CREATE TABLE IF NOT EXISTS `appointments` (
   `payment_amount` decimal(10,2) DEFAULT '0.00',
   `payment_method` enum('cash','card','bank_transfer','online') DEFAULT NULL,
   `payment_reference` varchar(100) DEFAULT NULL,
-  `is_paid` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `student_id` (`student_id`),
   KEY `instructor_id` (`instructor_id`),
