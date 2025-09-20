@@ -36,7 +36,7 @@ if ($user_type == 'admin') {
     </a>
     <?php
 } else {
-    // User/Student menu
+    // User/Student menu 
     ?>
     <a href="../user/dashboard.php" <?php if($current_page == "dashboard.php") echo 'class="active"'; ?>>
         <i class="fas fa-home"></i>
@@ -49,6 +49,11 @@ if ($user_type == 'admin') {
     <a href="../user/appointments.php" <?php if($current_page == "appointments.php") echo 'class="active"'; ?>>
         <i class="far fa-calendar-alt"></i>
         <span>Appointments</span>
+    </a>
+
+    <a href="../user/simulation.php" <?php if($current_page == "simulation.php") echo 'class="active"'; ?>>
+        <i class="fas fa-car"></i>
+        <span>Simulation</span>
     </a>
     <?php
 }
