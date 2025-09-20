@@ -1,0 +1,557 @@
+/* Driving Simulation CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    background: linear-gradient(135deg, #87CEEB 0%, #90EE90 100%);
+    height: 100vh;
+}
+
+#gameContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+/* UI Overlay */
+.ui-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.header-panel {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+}
+
+.header-panel h1 {
+    font-size: 24px;
+    color: #2c3e50;
+    text-align: center;
+}
+
+/* Score Panel */
+.score-panel {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 15px;
+    min-width: 250px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+}
+
+.score-panel h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.score-item:last-child {
+    border-bottom: none;
+}
+
+/* Scenario Panel */
+.scenario-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    max-width: 600px;
+    background: rgba(255, 248, 205, 0.95);
+    border: 2px solid #ffeaa7;
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+    display: none;
+}
+
+.scenario-panel.active {
+    display: block;
+}
+
+.scenario-title {
+    font-weight: bold;
+    color: #856404;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.scenario-question {
+    color: #856404;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+.scenario-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.option-btn {
+    padding: 15px 20px;
+    border: 2px solid #ffeaa7;
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.option-btn:hover {
+    background: #ffeaa7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.option-btn.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.option-btn.wrong {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+.option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Control Panel */
+.control-panel {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+    min-width: 200px;
+}
+
+.control-panel h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.control-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 14px;
+}
+
+.horn-btn {
+    background: linear-gradient(135deg, #ffd700, #ffed4a);
+    color: #333;
+}
+
+.brake-btn {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.accelerate-btn {
+    background: linear-gradient(135deg, #27ae60, #229954);
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+}
+
+.main-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.start-btn, .reset-btn {
+    padding: 15px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+}
+
+.start-btn:hover, .reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.start-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Game Status */
+.game-status {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: auto;
+}
+
+/* Results Screen */
+.results-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.results-content {
+    background: linear-gradient(135deg, #87CEEB 0%, #87CEEB 30%, #90EE90 30%, #90EE90 100%);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.results-title {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.results-title.passed {
+    color: #27ae60;
+}
+
+.results-title.failed {
+    color: #e74c3c;
+}
+
+.results-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.stat-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #2ecc71;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.stat-number {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.try-again-btn {
+    background: #2ecc71;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.try-again-btn:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    color: white;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    border-top: 6px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-text {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.loading-progress {
+    margin-top: 10px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* History Panel */
+.history-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 500;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.history-panel.show {
+    transform: translateY(0);
+}
+
+.history-panel h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.history-items {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+}
+
+.history-item {
+    min-width: 120px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-score {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.history-date {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.status-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.status-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.failed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .score-panel {
+        right: 10px;
+        top: 80px;
+        min-width: 200px;
+        padding: 15px;
+    }
+    
+    .control-panel {
+        right: 10px;
+        bottom: 10px;
+        min-width: 180px;
+        padding: 15px;
+    }
+    
+    .scenario-panel {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        padding: 15px;
+    }
+    
+    .header-panel {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        top: 10px;
+        padding: 10px 20px;
+    }
+    
+    .header-panel h1 {
+        font-size: 20px;
+    }
+    
+    .results-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .stat-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .stat-number {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .control-buttons {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .control-btn {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+    
+    .scenario-panel {
+        padding: 12px;
+    }
+    
+    .option-btn {
+        padding: 12px 15px;
+        font-size: 13px;
+    }
+}
+
+/* Performance optimizations */
+.ui-overlay * {
+    will-change: transform;
+}
+
+.control-btn:hover,
+.option-btn:hover,
+.start-btn:hover,
+.reset-btn:hover,
+.try-again-btn:hover {
+    will-change: transform, box-shadow;
+}
