@@ -43,7 +43,7 @@ const SimulationMain = {
     },
     
     /**
-     * Setup the main game canvas
+     * Setup the main game canvas with forced fullscreen
      */
     setupCanvas() {
         this.canvas = document.getElementById('gameCanvas');
@@ -53,14 +53,33 @@ const SimulationMain = {
         
         this.ctx = this.canvas.getContext('2d');
         
-        // Set canvas size
-        this.canvas.width = window.SimulationConfig.canvasWidth;
-        this.canvas.height = window.SimulationConfig.canvasHeight;
+        // Use actual viewport dimensions
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
         
-        // Handle window resize
+        // Set canvas resolution to match viewport
+        this.canvas.width = viewportWidth;
+        this.canvas.height = viewportHeight;
+        
+        // Force CSS to cover entire viewport without gaps
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.width = '100vw';
+        this.canvas.style.height = '100vh';
+        this.canvas.style.zIndex = '999';
+        this.canvas.style.objectFit = 'cover';
+        
+        // Update config for true fullscreen world
+        window.SimulationConfig.canvasWidth = viewportWidth;
+        window.SimulationConfig.canvasHeight = viewportHeight;
+        window.SimulationConfig.worldWidth = Math.max(viewportWidth * 1.5, 3200);
+        window.SimulationConfig.worldHeight = Math.max(viewportHeight * 1.2, 1600);
+        
+        // Handle window resize to maintain fullscreen
         window.addEventListener('resize', () => this.handleResize());
         
-        console.log(`📱 Canvas setup: ${this.canvas.width}x${this.canvas.height}`);
+        console.log(`📱 Canvas setup (TRUE FULLSCREEN): ${this.canvas.width}x${this.canvas.height} (World: ${window.SimulationConfig.worldWidth}x${window.SimulationConfig.worldHeight})`);
     },
     
     /**
@@ -205,7 +224,7 @@ const SimulationMain = {
         this.lastTime = currentTime;
         
         try {
-            // Update all modules
+            // Update all modules with proper error handling
             this.updateModules();
             
             // Render everything
@@ -216,9 +235,20 @@ const SimulationMain = {
             
         } catch (error) {
             console.error('Error in game loop:', error);
-            this.stopSimulation();
-            this.showError('Game loop error. Please refresh the page.');
-            return;
+            console.error('Error stack:', error.stack);
+            
+            // Don't stop simulation immediately, try to continue
+            console.warn('⚠️ Attempting to continue simulation despite error...');
+            
+            // Only stop if we get multiple consecutive errors
+            if (!this.errorCount) this.errorCount = 0;
+            this.errorCount++;
+            
+            if (this.errorCount > 5) {
+                this.stopSimulation();
+                this.showError('Multiple game loop errors detected. Please refresh the page.');
+                return;
+            }
         }
         
         // Continue the loop
@@ -226,24 +256,40 @@ const SimulationMain = {
     },
     
     /**
-     * Update all modules
+     * Update all modules with individual error handling
      */
     updateModules() {
-        // Update in logical order
-        if (this.modules.CarModule) {
-            this.modules.CarModule.update(this.deltaTime);
+        // Update in logical order with individual try-catch blocks
+        try {
+            if (this.modules.CarModule) {
+                this.modules.CarModule.update(this.deltaTime);
+            }
+        } catch (error) {
+            console.error('Error updating CarModule:', error);
         }
         
-        if (this.modules.WorldModule) {
-            this.modules.WorldModule.update(this.deltaTime);
+        try {
+            if (this.modules.WorldModule) {
+                this.modules.WorldModule.update(this.deltaTime);
+            }
+        } catch (error) {
+            console.error('Error updating WorldModule:', error);
         }
         
-        if (this.modules.GameEngine) {
-            this.modules.GameEngine.update(this.deltaTime);
+        try {
+            if (this.modules.GameEngine) {
+                this.modules.GameEngine.update(this.deltaTime);
+            }
+        } catch (error) {
+            console.error('Error updating GameEngine:', error);
         }
         
-        if (this.modules.ScenariosModule) {
-            this.modules.ScenariosModule.update(this.deltaTime);
+        try {
+            if (this.modules.ScenariosModule) {
+                this.modules.ScenariosModule.update(this.deltaTime);
+            }
+        } catch (error) {
+            console.error('Error updating ScenariosModule:', error);
         }
     },
     
@@ -256,22 +302,36 @@ const SimulationMain = {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Get camera from game engine
-        const camera = this.modules.GameEngine ? this.modules.GameEngine.getCamera() : { x: 0, y: 0 };
+        const camera = this.modules.GameEngine ? this.modules.GameEngine.getCamera() : { x: 0, y: 0, zoom: 1.5 };
+        
+        // Apply zoom transformation
+        this.ctx.save();
+        this.ctx.scale(camera.zoom || 1.5, camera.zoom || 1.5);
+        
+        // Adjust camera position for zoom
+        const adjustedCamera = {
+            x: camera.x / (camera.zoom || 1.5),
+            y: camera.y / (camera.zoom || 1.5),
+            zoom: camera.zoom || 1.5
+        };
         
         // Render in proper order (back to front)
         if (this.modules.WorldModule) {
-            this.modules.WorldModule.render(this.ctx, camera);
+            this.modules.WorldModule.render(this.ctx, adjustedCamera);
         }
         
         if (this.modules.CarModule) {
-            this.modules.CarModule.render(this.ctx, camera);
+            this.modules.CarModule.render(this.ctx, adjustedCamera);
         }
         
         if (this.modules.UIModule) {
-            this.modules.UIModule.renderGame(this.ctx, camera);
+            this.modules.UIModule.renderGame(this.ctx, adjustedCamera);
         }
         
-        // Debug info
+        // Restore context transformation
+        this.ctx.restore();
+        
+        // Debug info (rendered without zoom)
         if (window.SimulationConfig.debug) {
             this.renderDebugInfo();
         }
@@ -320,6 +380,12 @@ const SimulationMain = {
     handleQuestionAnswered(scenario, answer, correct) {
         console.log(`📝 Question answered: ${correct ? 'Correct' : 'Incorrect'}`);
         
+        // Validate scenario parameter to prevent null reading errors
+        if (!scenario || !scenario.id) {
+            console.error('❌ Invalid scenario passed to handleQuestionAnswered:', scenario);
+            return;
+        }
+        
         // Update score
         if (correct) {
             this.currentScore += 20; // 20 points per correct answer
@@ -340,14 +406,18 @@ const SimulationMain = {
             this.startSimulation();
         }, 2000);
         
-        // Save progress to database
+        // Save progress to database with error handling
         if (this.modules.GameStats) {
-            this.modules.GameStats.saveProgress({
-                scenarioId: scenario.id,
-                answer: answer,
-                correct: correct,
-                score: this.currentScore
-            });
+            try {
+                this.modules.GameStats.saveProgress({
+                    scenarioId: scenario.id,
+                    answer: answer,
+                    correct: correct,
+                    score: this.currentScore
+                });
+            } catch (error) {
+                console.error('❌ Error saving progress:', error);
+            }
         }
     },
     
