@@ -1,396 +1,352 @@
-// Scenarios Module
-// Handles all driving scenarios, selection, and management
+/**
+ * Scenarios Module - 5 Realistic Traffic Scenarios with Questions
+ * Handles scenario-based questions that match real driving situations
+ */
 
-// Road element types for scenario triggers
-const roadElementTypes = {
-    STOP_SIGN: 'STOP_SIGN',
-    TRAFFIC_LIGHT: 'TRAFFIC_LIGHT',
-    PEDESTRIAN_CROSSING: 'PEDESTRIAN_CROSSING',
-    SCHOOL_ZONE: 'SCHOOL_ZONE',
-    INTERSECTION: 'INTERSECTION'
-};
-
-// 20 SUPER EASY DRIVING SCENARIOS - Beginner Friendly Questions
-const allDrivingScenarios = [
-    // PEDESTRIAN CROSSING SCENARIOS (4 scenarios)
-    {
-        title: "See a Person Crossing",
-        question: "A person wants to cross the street. What do you do?",
-        triggerElement: roadElementTypes.PEDESTRIAN_CROSSING,
-        options: [
-            "Stop and let them cross",
-            "Honk your horn",
-            "Drive faster",
-            "Turn around"
-        ],
-        correctAnswer: 0,
-        explanation: "Always stop for people crossing the street. Be kind!",
-        difficulty: "easy"
-    },
-    {
-        title: "Kids Playing Near Road",
-        question: "You see children playing near the road. What should you do?",
-        triggerElement: roadElementTypes.PEDESTRIAN_CROSSING,
-        options: [
-            "Slow down and watch carefully",
-            "Speed up to get past them",
-            "Honk loudly",
-            "Keep driving normally"
-        ],
-        correctAnswer: 0,
-        explanation: "Kids might run into the street. Always slow down and be careful!",
-        difficulty: "easy"
-    },
-    {
-        title: "Helping People Cross",
-        question: "An old person is crossing slowly. What do you do?",
-        triggerElement: roadElementTypes.PEDESTRIAN_CROSSING,
-        options: [
-            "Wait patiently for them",
-            "Honk to make them hurry",
-            "Drive around them",
-            "Flash your lights"
-        ],
-        correctAnswer: 0,
-        explanation: "Be patient! Some people need more time to cross safely.",
-        difficulty: "easy"
-    },
-    {
-        title: "Rainy Day Safety",
-        question: "It's raining and someone is crossing. What should you do?",
-        triggerElement: roadElementTypes.PEDESTRIAN_CROSSING,
-        options: [
-            "Stop so you don't splash them",
-            "Drive through the puddle",
-            "Go really fast",
-            "Honk at them"
-        ],
-        correctAnswer: 0,
-        explanation: "Don't splash people with water! Stop and be nice.",
-        difficulty: "easy"
-    },
-
-    // SCHOOL ZONE SCENARIOS (4 scenarios)
-    {
-        title: "Near a School",
-        question: "You're driving near a school. What's the most important thing?",
-        triggerElement: roadElementTypes.SCHOOL_ZONE,
-        options: [
-            "Drive very slowly",
-            "Drive at normal speed",
-            "Honk to warn kids",
-            "Drive faster to get past"
-        ],
-        correctAnswer: 0,
-        explanation: "Always drive slowly near schools. Kids are everywhere!",
-        difficulty: "easy"
-    },
-    {
-        title: "School Bus Safety",
-        question: "A school bus stops with flashing red lights. What do you do?",
-        triggerElement: roadElementTypes.SCHOOL_ZONE,
-        options: [
-            "Stop and wait until lights turn off",
-            "Drive around the bus slowly",
-            "Honk and keep going",
-            "Speed up to pass quickly"
-        ],
-        correctAnswer: 0,
-        explanation: "Red flashing lights mean STOP! Kids might be getting off the bus.",
-        difficulty: "easy"
-    },
-    {
-        title: "Children Everywhere",
-        question: "You see lots of kids walking to school. What should you do?",
-        triggerElement: roadElementTypes.SCHOOL_ZONE,
-        options: [
-            "Drive extra slowly and carefully",
-            "Honk to get their attention",
-            "Drive at normal speed",
-            "Flash your headlights"
-        ],
-        correctAnswer: 0,
-        explanation: "Kids don't always look before crossing. Be super careful!",
-        difficulty: "easy"
-    },
-    {
-        title: "School Time Rules",
-        question: "When should you drive slowly in school zones?",
-        triggerElement: roadElementTypes.SCHOOL_ZONE,
-        options: [
-            "When kids are going to or leaving school",
-            "Only during the night",
-            "Only on weekends",
-            "Never - speed limits don't change"
-        ],
-        correctAnswer: 0,
-        explanation: "School zones are extra safe during school times. Kids first!",
-        difficulty: "easy"
-    },
-
-    // TRAFFIC LIGHT SCENARIOS (4 scenarios)
-    {
-        title: "Yellow Light Means...",
-        question: "The traffic light turns yellow. What does this mean?",
-        triggerElement: roadElementTypes.TRAFFIC_LIGHT,
-        options: [
-            "Get ready to stop",
-            "Go faster",
-            "Keep going at same speed",
-            "Turn on your radio"
-        ],
-        correctAnswer: 0,
-        explanation: "Yellow means 'get ready to stop'. Red is coming next!",
-        difficulty: "easy"
-    },
-    {
-        title: "Red Light Rule",
-        question: "What should you do at a red light?",
-        triggerElement: roadElementTypes.TRAFFIC_LIGHT,
-        options: [
-            "Stop completely",
-            "Slow down a little",
-            "Keep driving",
-            "Honk your horn"
-        ],
-        correctAnswer: 0,
-        explanation: "Red means STOP! Always stop completely at red lights.",
-        difficulty: "easy"
-    },
-    {
-        title: "Green Light Go",
-        question: "The light is green. What can you do?",
-        triggerElement: roadElementTypes.TRAFFIC_LIGHT,
-        options: [
-            "Go, but look both ways first",
-            "Stop anyway",
-            "Honk and go fast",
-            "Wait for yellow"
-        ],
-        correctAnswer: 0,
-        explanation: "Green means go, but always check that it's safe first!",
-        difficulty: "easy"
-    },
-    {
-        title: "Broken Traffic Light",
-        question: "The traffic light is broken and not working. What do you do?",
-        triggerElement: roadElementTypes.TRAFFIC_LIGHT,
-        options: [
-            "Treat it like a stop sign",
-            "Drive through quickly",
-            "Honk loudly",
-            "Turn around and go back"
-        ],
-        correctAnswer: 0,
-        explanation: "When lights are broken, treat them like stop signs. Stop and look!",
-        difficulty: "easy"
-    },
-
-    // STOP SIGN AND INTERSECTION SCENARIOS (4 scenarios)
-    {
-        title: "Stop Sign Means",
-        question: "You see a stop sign. What must you do?",
-        triggerElement: roadElementTypes.STOP_SIGN,
-        options: [
-            "Come to a complete stop",
-            "Slow down a lot",
-            "Just look both ways",
-            "Honk your horn"
-        ],
-        correctAnswer: 0,
-        explanation: "Stop signs mean you must stop completely. Count to 3!",
-        difficulty: "easy"
-    },
-    {
-        title: "Who Goes First?",
-        question: "At a 4-way stop, you and another car arrive at the same time. They're on your right. Who goes first?",
-        triggerElement: roadElementTypes.STOP_SIGN,
-        options: [
-            "The car on your right goes first",
-            "You go first",
-            "Both go at the same time",
-            "Whoever honks first"
-        ],
-        correctAnswer: 0,
-        explanation: "Right has the right-of-way! Let the car on your right go first.",
-        difficulty: "easy"
-    },
-    {
-        title: "Emergency Vehicles",
-        question: "You hear sirens behind you. What should you do?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Pull over safely and stop",
-            "Speed up to get out of the way",
-            "Keep driving normally",
-            "Stop right where you are"
-        ],
-        correctAnswer: 0,
-        explanation: "Emergency vehicles save lives! Pull over safely and let them pass.",
-        difficulty: "easy"
-    },
-    {
-        title: "Being Patient",
-        question: "Traffic is moving slowly. What's the best thing to do?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Be patient and wait your turn",
-            "Honk at everyone",
-            "Change lanes constantly",
-            "Drive on the shoulder"
-        ],
-        correctAnswer: 0,
-        explanation: "Good drivers are patient drivers. Everyone gets where they're going!",
-        difficulty: "easy"
-    },
-
-    // GENERAL SAFETY SCENARIOS (4 scenarios)
-    {
-        title: "Safe Following Distance",
-        question: "How close should you follow the car in front of you?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Leave plenty of space",
-            "Stay very close",
-            "It doesn't matter",
-            "Just don't hit them"
-        ],
-        correctAnswer: 0,
-        explanation: "Leave space! You need room to stop if something happens.",
-        difficulty: "easy"
-    },
-    {
-        title: "Turn Signals",
-        question: "When should you use your turn signals?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Every time you turn or change lanes",
-            "Only when other cars are around",
-            "Only on busy streets",
-            "Never - they're not important"
-        ],
-        correctAnswer: 0,
-        explanation: "Always use turn signals! They tell other people where you're going.",
-        difficulty: "easy"
-    },
-    {
-        title: "Seat Belt Safety",
-        question: "When should you wear your seat belt?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Every time you drive",
-            "Only on long trips",
-            "Only when it's required",
-            "Only if you're going fast"
-        ],
-        correctAnswer: 0,
-        explanation: "Seat belts save lives! Always buckle up before you start driving.",
-        difficulty: "easy"
-    },
-    {
-        title: "Being a Good Driver",
-        question: "What makes someone a good driver?",
-        triggerElement: roadElementTypes.INTERSECTION,
-        options: [
-            "Being careful and following the rules",
-            "Driving really fast",
-            "Honking at everyone",
-            "Never stopping for anyone"
-        ],
-        correctAnswer: 0,
-        explanation: "Good drivers are safe, careful, and kind to others on the road!",
-        difficulty: "easy"
-    }
-];
-
-// Scenario Management System
-const ScenarioManager = {
-    selectedScenarios: [],
-    currentScenario: null,
-    scenarioIndex: 0,
-    maxScenarios: 5,
-
-    // Initialize scenario system
+const ScenariosModule = {
+    // All 5 driving scenarios
+    scenarios: [],
+    
+    // Tracking completed scenarios
+    completedScenarios: new Set(),
+    
+    /**
+     * Initialize scenarios
+     */
     init() {
-        this.selectRandomScenarios();
-        this.scenarioIndex = 0;
-        this.currentScenario = null;
+        console.log('🎯 Loading 5 traffic scenarios...');
+        this.createTrafficScenarios();
+        console.log('✅ All driving scenarios loaded');
     },
-
-    // Select 5 random scenarios from the available pool
-    selectRandomScenarios() {
-        console.log('🎯 Selecting 5 random scenarios from', allDrivingScenarios.length, 'available scenarios');
+    
+    /**
+     * Create the 5 specific traffic scenarios
+     */
+    createTrafficScenarios() {
+        this.scenarios = [
+            // Scenario 1: Red Traffic Light (Classic situation)
+            {
+                id: 1,
+                title: "Red Traffic Light Ahead",
+                type: "RED_LIGHT",
+                position: { x: 280, y: 360 },
+                triggerRadius: 80,
+                question: "You are approaching an intersection and the traffic light turns RED. What should you do?",
+                options: [
+                    "A) Come to a complete stop before the intersection and wait for green",
+                    "B) Slow down and proceed carefully if no other cars are visible",
+                    "C) Speed up to get through the intersection before the light changes",
+                    "D) Honk your horn to alert other drivers and continue through"
+                ],
+                correctAnswer: 0, // Option A
+                explanation: "When a traffic light is red, you must come to a complete stop behind the stop line and wait until the light turns green. Running a red light is illegal and extremely dangerous.",
+                points: 20,
+                context: "Traffic lights are one of the most important traffic control devices. Always obey traffic signals.",
+                active: true
+            },
+            
+            // Scenario 2: Stop Sign (Fundamental rule)
+            {
+                id: 2,
+                title: "Stop Sign at Intersection",
+                type: "STOP_SIGN",
+                position: { x: 500, y: 360 },
+                triggerRadius: 60,
+                question: "You approach a STOP sign at an intersection. What is the correct procedure?",
+                options: [
+                    "A) Come to a complete stop, check for traffic in all directions, then proceed when safe",
+                    "B) Slow down to a rolling stop and continue if no cars are immediately visible",
+                    "C) Stop only if you see other vehicles or pedestrians approaching",
+                    "D) Honk your horn to signal your presence and proceed with caution"
+                ],
+                correctAnswer: 0, // Option A
+                explanation: "At a stop sign, you must come to a complete stop regardless of traffic conditions. Look left, right, and left again before proceeding when it's safe.",
+                points: 20,
+                context: "Stop signs require a complete stop every time, even if the intersection appears clear.",
+                active: true
+            },
+            
+            // Scenario 3: Pedestrian Crossing (Safety priority)
+            {
+                id: 3,
+                title: "Pedestrian at Crosswalk",
+                type: "PEDESTRIAN",
+                position: { x: 700, y: 360 },
+                triggerRadius: 70,
+                question: "A pedestrian is waiting to cross at the crosswalk. What should you do?",
+                options: [
+                    "A) Stop and allow the pedestrian to cross safely, even if they're just waiting",
+                    "B) Continue driving since the pedestrian hasn't started crossing yet",
+                    "C) Honk your horn to let the pedestrian know you're approaching",
+                    "D) Speed up to pass the crosswalk before the pedestrian starts crossing"
+                ],
+                correctAnswer: 0, // Option A
+                explanation: "Pedestrians have the right-of-way at crosswalks. You should stop and allow them to cross safely, showing courtesy and ensuring their safety.",
+                points: 20,
+                context: "Pedestrian safety is always the top priority. Always yield to pedestrians at crosswalks.",
+                active: true
+            },
+            
+            // Scenario 4: School Zone (Special speed limits)
+            {
+                id: 4,
+                title: "School Zone During School Hours",
+                type: "SCHOOL_ZONE", 
+                position: { x: 1000, y: 250 },
+                triggerRadius: 90,
+                question: "You are entering a school zone during school hours. What should you do?",
+                options: [
+                    "A) Reduce speed to the posted school zone limit and watch carefully for children",
+                    "B) Maintain your normal driving speed if no children are immediately visible",
+                    "C) Honk your horn to alert children of your presence",
+                    "D) Drive faster to get through the zone quickly and reduce risk"
+                ],
+                correctAnswer: 0, // Option A
+                explanation: "School zones have reduced speed limits during school hours. Always slow down and be extra vigilant for children who may unexpectedly enter the roadway.",
+                points: 20,
+                context: "Children can be unpredictable. School zones require extra caution and reduced speed.",
+                active: true
+            },
+            
+            // Scenario 5: Busy Intersection (Yielding right-of-way)
+            {
+                id: 5,
+                title: "Busy Intersection with Traffic",
+                type: "INTERSECTION",
+                position: { x: 640, y: 540 },
+                triggerRadius: 85,
+                question: "You approach a busy intersection with cross traffic. What do you do?",
+                options: [
+                    "A) Yield to traffic that has the right-of-way and wait for a safe gap",
+                    "B) Proceed slowly into the intersection and merge with traffic",
+                    "C) Honk your horn and proceed with caution to claim your space",
+                    "D) Speed up to merge quickly and avoid blocking traffic"
+                ],
+                correctAnswer: 0, // Option A
+                explanation: "Always yield to traffic that has the right-of-way. Wait for a safe gap before proceeding through the intersection.",
+                points: 20,
+                context: "Right-of-way rules prevent accidents. When in doubt, yield to other traffic.",
+                active: true
+            }
+        ];
+    },
+    
+    /**
+     * Get scenario by ID
+     */
+    getScenario(id) {
+        return this.scenarios.find(scenario => scenario.id === id);
+    },
+    
+    /**
+     * Get all active scenarios
+     */
+    getActiveScenarios() {
+        return this.scenarios.filter(scenario => scenario.active);
+    },
+    
+    /**
+     * Check if car triggers any scenarios
+     */
+    checkTriggers(carPosition) {
+        const triggeredScenarios = [];
         
-        const availableScenarios = [...allDrivingScenarios];
-        this.selectedScenarios = [];
+        this.scenarios.forEach(scenario => {
+            if (!scenario.active || this.completedScenarios.has(scenario.id)) {
+                return;
+            }
+            
+            const distance = Math.sqrt(
+                Math.pow(carPosition.x - scenario.position.x, 2) + 
+                Math.pow(carPosition.y - scenario.position.y, 2)
+            );
+            
+            if (distance <= scenario.triggerRadius) {
+                triggeredScenarios.push(scenario);
+            }
+        });
         
-        // Select exactly 5 random scenarios
-        for (let i = 0; i < this.maxScenarios && availableScenarios.length > 0; i++) {
-            const randomIndex = Math.floor(Math.random() * availableScenarios.length);
-            this.selectedScenarios.push(availableScenarios[randomIndex]);
-            availableScenarios.splice(randomIndex, 1); // Remove to avoid duplicates
+        return triggeredScenarios;
+    },
+    
+    /**
+     * Mark scenario as completed
+     */
+    markCompleted(scenarioId) {
+        this.completedScenarios.add(scenarioId);
+        
+        const scenario = this.getScenario(scenarioId);
+        if (scenario) {
+            scenario.active = false;
         }
         
-        console.log('✅ Selected scenarios:', this.selectedScenarios.map(s => s.title));
+        console.log(`✅ Scenario ${scenarioId} completed`);
     },
-
-    // Get current scenario
-    getCurrentScenario() {
-        if (this.scenarioIndex < this.selectedScenarios.length) {
-            return this.selectedScenarios[this.scenarioIndex];
-        }
-        return null;
+    
+    /**
+     * Check if answer is correct
+     */
+    checkAnswer(scenarioId, selectedOption) {
+        const scenario = this.getScenario(scenarioId);
+        if (!scenario) return false;
+        
+        return selectedOption === scenario.correctAnswer;
     },
-
-    // Get next scenario
+    
+    /**
+     * Get scenario results
+     */
+    getScenarioResult(scenarioId, selectedOption) {
+        const scenario = this.getScenario(scenarioId);
+        if (!scenario) return null;
+        
+        const isCorrect = this.checkAnswer(scenarioId, selectedOption);
+        
+        return {
+            scenarioId: scenarioId,
+            question: scenario.question,
+            selectedOption: selectedOption,
+            correctOption: scenario.correctAnswer,
+            isCorrect: isCorrect,
+            points: isCorrect ? scenario.points : 0,
+            explanation: scenario.explanation,
+            context: scenario.context
+        };
+    },
+    
+    /**
+     * Get completion statistics
+     */
+    getCompletionStats() {
+        const totalScenarios = this.scenarios.length;
+        const completedCount = this.completedScenarios.size;
+        const remainingCount = totalScenarios - completedCount;
+        
+        return {
+            total: totalScenarios,
+            completed: completedCount,
+            remaining: remainingCount,
+            completionRate: Math.round((completedCount / totalScenarios) * 100)
+        };
+    },
+    
+    /**
+     * Get all scenario positions for minimap/overview
+     */
+    getScenarioPositions() {
+        return this.scenarios.map(scenario => ({
+            id: scenario.id,
+            position: scenario.position,
+            type: scenario.type,
+            completed: this.completedScenarios.has(scenario.id),
+            active: scenario.active
+        }));
+    },
+    
+    /**
+     * Get next available scenario
+     */
     getNextScenario() {
-        if (this.scenarioIndex < this.selectedScenarios.length - 1) {
-            this.scenarioIndex++;
-            this.currentScenario = this.getCurrentScenario();
-            return this.currentScenario;
-        }
-        return null;
+        return this.scenarios.find(scenario => 
+            scenario.active && !this.completedScenarios.has(scenario.id)
+        );
     },
-
-    // Check if all scenarios are completed
-    isCompleted() {
-        return this.scenarioIndex >= this.maxScenarios;
-    },
-
-    // Get current scenario number (1-based)
-    getCurrentScenarioNumber() {
-        return this.scenarioIndex + 1;
-    },
-
-    // Get total number of scenarios
-    getTotalScenarios() {
-        return this.maxScenarios;
-    },
-
-    // Get scenario progress as string
-    getProgressString() {
-        return `${this.getCurrentScenarioNumber()}/${this.getTotalScenarios()}`;
-    },
-
-    // Reset scenario system
+    
+    /**
+     * Reset all scenarios
+     */
     reset() {
-        this.scenarioIndex = 0;
-        this.currentScenario = null;
-        this.selectRandomScenarios();
+        this.completedScenarios.clear();
+        
+        this.scenarios.forEach(scenario => {
+            scenario.active = true;
+        });
+        
+        console.log('🔄 All scenarios reset');
     },
-
-    // Get all selected scenarios (for debugging)
-    getSelectedScenarios() {
-        return [...this.selectedScenarios];
+    
+    /**
+     * Get scenario difficulty level
+     */
+    getScenarioDifficulty(scenarioId) {
+        const difficultyMap = {
+            1: 'Easy',      // Red light - basic rule
+            2: 'Easy',      // Stop sign - fundamental
+            3: 'Medium',    // Pedestrian - requires judgment
+            4: 'Medium',    // School zone - special rules
+            5: 'Hard'       // Intersection - complex situation
+        };
+        
+        return difficultyMap[scenarioId] || 'Medium';
+    },
+    
+    /**
+     * Get scenario category
+     */
+    getScenarioCategory(scenarioId) {
+        const categoryMap = {
+            1: 'Traffic Signals',
+            2: 'Traffic Signs',
+            3: 'Pedestrian Safety',
+            4: 'Special Zones',
+            5: 'Intersection Rules'
+        };
+        
+        return categoryMap[scenarioId] || 'General';
+    },
+    
+    /**
+     * Generate final report
+     */
+    generateFinalReport() {
+        const stats = this.getCompletionStats();
+        const results = [];
+        
+        this.scenarios.forEach(scenario => {
+            results.push({
+                id: scenario.id,
+                title: scenario.title,
+                type: scenario.type,
+                category: this.getScenarioCategory(scenario.id),
+                difficulty: this.getScenarioDifficulty(scenario.id),
+                completed: this.completedScenarios.has(scenario.id),
+                points: this.completedScenarios.has(scenario.id) ? scenario.points : 0
+            });
+        });
+        
+        return {
+            statistics: stats,
+            scenarios: results,
+            totalPoints: results.reduce((sum, r) => sum + r.points, 0),
+            maxPoints: this.scenarios.length * 20,
+            grade: this.calculateGrade(results)
+        };
+    },
+    
+    /**
+     * Calculate grade based on performance
+     */
+    calculateGrade(results) {
+        const totalPoints = results.reduce((sum, r) => sum + r.points, 0);
+        const maxPoints = this.scenarios.length * 20;
+        const percentage = (totalPoints / maxPoints) * 100;
+        
+        if (percentage >= 90) return 'A';
+        if (percentage >= 80) return 'B';
+        if (percentage >= 70) return 'C';
+        if (percentage >= 60) return 'D';
+        return 'F';
+    },
+    
+    /**
+     * Update scenario based on current game state
+     */
+    update(deltaTime) {
+        // Update any time-based scenario elements
+        // For now, scenarios are static, but this could be used for
+        // dynamic elements like changing traffic lights, moving pedestrians, etc.
     }
 };
 
-// Export to global window object for browser use
-window.ScenariosModule = ScenarioManager;
-window.roadElementTypes = roadElementTypes;
-window.allDrivingScenarios = allDrivingScenarios;
-
-// Export for use in other modules (Node.js compatibility)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { ScenarioManager, roadElementTypes, allDrivingScenarios };
-}
+// Export module
+window.ScenariosModule = ScenariosModule;
