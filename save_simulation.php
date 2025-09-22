@@ -31,8 +31,16 @@ try {
     // Start session to check user authentication
     session_start();
     
-    // For simulation, we'll use a default user_id if not logged in
-    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
+    // Get user_id from session with proper fallback
+    $user_id = null;
+    if (isset($_SESSION['id'])) {
+        $user_id = $_SESSION['id'];
+    } elseif (isset($_SESSION['user_id'])) {
+        $user_id = $_SESSION['user_id'];
+    } else {
+        // For testing purposes, use a default user ID
+        $user_id = 1;
+    }
     
     // Validate required fields
     $required_fields = ['simulation_type', 'total_scenarios', 'correct_answers', 'wrong_answers', 'completion_time_seconds', 'scenarios_data'];
