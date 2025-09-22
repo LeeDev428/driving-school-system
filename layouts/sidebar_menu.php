@@ -55,6 +55,11 @@ if ($user_type == 'admin') {
         <i class="fas fa-car"></i>
         <span>Simulation</span>
     </a>
+
+    <a href="../user/simulation_result.php" <?php if($current_page == "simulation_result.php") echo 'class="active"'; ?>>
+     <i class="fas fa-chart-bar"></i>
+     <span>Simulation Result</span>
+    </a>
     <?php
 }
 ?>
