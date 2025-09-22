@@ -348,6 +348,33 @@ body {
     opacity: 0.7;
 }
 
+/* Go to Results Button */
+.results-btn {
+    padding: 15px 25px;
+    border: 2px solid #e67e22;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.results-btn:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.results-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
 /* Game Status */
 .game-status {
     position: fixed;
