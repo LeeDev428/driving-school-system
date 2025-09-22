@@ -21,30 +21,46 @@ $user_id = $_SESSION["id"];
     <title>Driving Simulation - Driving School System</title>
     <link rel="stylesheet" href="../assets/css/simulation.css">
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         .simulation-container {
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100vw;
             height: 100vh;
-            display: flex;
-            flex-direction: column;
+            display: block;
+            z-index: 1000;
         }
         
         .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             background: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000;
+            height: 60px;
+            flex-shrink: 0;
         }
         
         .game-title {
@@ -78,19 +94,31 @@ $user_id = $_SESSION["id"];
         }
         
         .game-canvas-container {
-            flex: 1;
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             background: #2c3e50;
             overflow: hidden;
+            z-index: 1000;
         }
         
         #gameCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
             display: block;
             cursor: crosshair;
+            background: #2c3e50;
+            z-index: 999;
+            object-fit: cover;
         }
         
         .game-controls {
-            position: absolute;
+            position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
@@ -101,6 +129,7 @@ $user_id = $_SESSION["id"];
             gap: 15px;
             align-items: center;
             color: white;
+            z-index: 3000;
         }
         
         .control-btn {
@@ -345,18 +374,29 @@ $user_id = $_SESSION["id"];
     </div>
 
     <!-- JavaScript Modules -->
+    <script src="../assets/js/modules/message_system.js"></script>
     <script>
         // Global configuration and state
         window.SimulationConfig = {
             userId: <?php echo $user_id; ?>,
-            canvasWidth: window.innerWidth,
-            canvasHeight: window.innerHeight - 120, // Account for header and controls
-            debug: false
+            canvasWidth: window.innerWidth, // Use full window width
+            canvasHeight: window.innerHeight, // Use full window height
+            debug: false, // Set to true for debugging
+            worldWidth: Math.max(window.innerWidth * 1.5, 3200), // Wider world for landscape
+            worldHeight: Math.max(window.innerHeight * 1.2, 1600),
+            cameraFollow: true,
+            aspectRatio: window.innerWidth / window.innerHeight // Dynamic aspect ratio
         };
         
         // Initialize simulation when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Starting Driving Simulation System...');
+            
+            // Initialize message system first
+            if (window.MessageSystem) {
+                window.MessageSystem.init();
+            }
+            
             setTimeout(() => {
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.querySelector('.simulation-container').style.display = 'flex';
