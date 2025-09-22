@@ -88,7 +88,7 @@ ob_start();
             <div class="scenario-panel" id="scenarioPanel">
                 <div class="scenario-header">
                     <h3>Scenario <span id="scenarioNumber">1</span>/5</h3>
-                    <div class="scenario-timer" id="scenarioTimer">30s</div>
+                   
                 </div>
                 <div class="scenario-description" id="scenarioDescription">
                     <p>Loading scenario...</p>
@@ -201,7 +201,15 @@ ob_start();
     </div>
 </div>
 
-<script src="../assets/js/simulation.js"></script>
+<!-- Load simulation modules in correct order -->
+<script src="../assets/js/modules/world.js"></script>
+<script src="../assets/js/modules/car.js"></script>
+<script src="../assets/js/modules/ui.js"></script>
+<script src="../assets/js/modules/gameStats.js"></script>
+<script src="../assets/js/modules/scenarios.js"></script>
+<script src="../assets/js/modules/gameEngine.js"></script>
+<!-- Main simulation controller (loads last to coordinate all modules) -->
+<script src="../assets/js/simulation_main.js"></script>
 <link rel="stylesheet" href="../assets/css/simulation.css">
 
 <?php
