@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pedestrians & Intersections</title>
+</head>
+<body>
+    <h2>Pedestrian & Intersection Test</h2>
+    <p>Open browser console to see test results...</p>
+    
+    <script>
+        // Test loading the world module
+        try {
+            console.log('🧪 Testing World Module...');
+            
+            // Simulate loading the world module
+            const script = document.createElement('script');
+            script.src = 'assets/js/modules/world.js';
+            script.onload = function() {
+                console.log('✅ World module loaded');
+                
+                if (window.WorldModule) {
+                    // Test initialization
+                    window.WorldModule.init();
+                    
+                    // Test pedestrian creation
+                    if (window.WorldModule.pedestrians && window.WorldModule.pedestrians.length > 0) {
+                        console.log(`✅ Created ${window.WorldModule.pedestrians.length} pedestrians`);
+                        console.log('🚶 First pedestrian:', window.WorldModule.pedestrians[0]);
+                    } else {
+                        console.log('❌ No pedestrians created');
+                    }
+                    
+                    // Test intersection detection
+                    const intersections = window.WorldModule.getIntersections();
+                    if (intersections && intersections.length > 0) {
+                        console.log(`✅ Found ${intersections.length} intersections`);
+                        console.log('🛣️ First intersection:', intersections[0]);
+                    } else {
+                        console.log('❌ No intersections found');
+                    }
+                    
+                    // Test pedestrian getter
+                    const activePedestrians = window.WorldModule.getPedestrians();
+                    console.log(`✅ Active pedestrians: ${activePedestrians.length}`);
+                    
+                } else {
+                    console.log('❌ WorldModule not available');
+                }
+            };
+            script.onerror = function() {
+                console.log('❌ Failed to load world module');
+            };
+            document.head.appendChild(script);
+            
+        } catch (error) {
+            console.error('❌ Test error:', error);
+        }
+    </script>
+</body>
+</html>
