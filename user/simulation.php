@@ -1,218 +1,381 @@
 <?php
 session_start();
 
+// Check if user is logged in
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: ../login.php");
     exit;
 }
 
+// Include database connection
 require_once "../config.php";
 
-// Handle AJAX requests for saving simulation results
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
-    header('Content-Type: application/json');
-    
-    if ($_POST['action'] == 'save_simulation_result') {
-        $user_id = $_SESSION["id"];
-        $total_scenarios = (int)$_POST['total_scenarios'];
-        $correct_answers = (int)$_POST['correct_answers'];
-        $wrong_answers = (int)$_POST['wrong_answers'];
-        $completion_time = (int)$_POST['completion_time'];
-        $score_percentage = ($total_scenarios > 0) ? round(($correct_answers / $total_scenarios) * 100, 2) : 0;
-        $scenarios_data = json_encode($_POST['scenarios_data'] ?? []);
-        $status = ($score_percentage >= 70) ? 'completed' : 'failed';
-        
-        $sql = "INSERT INTO simulation_results (user_id, total_scenarios, correct_answers, wrong_answers, score_percentage, completion_time_seconds, scenarios_data, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        if ($stmt = mysqli_prepare($conn, $sql)) {
-            mysqli_stmt_bind_param($stmt, "iiidisss", $user_id, $total_scenarios, $correct_answers, $wrong_answers, $score_percentage, $completion_time, $scenarios_data, $status);
-            
-            if (mysqli_stmt_execute($stmt)) {
-                echo json_encode(['success' => true, 'message' => 'Simulation result saved successfully']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
-            }
-            
-            mysqli_stmt_close($stmt);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Database prepare error: ' . mysqli_error($conn)]);
+$user_id = $_SESSION["id"];
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving Simulation - Driving School System</title>
+    <link rel="stylesheet" href="../assets/css/simulation.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
         }
         
-        exit;
-    }
-}
-
-// Get simulation history for the user
-$user_id = $_SESSION["id"];
-$history_sql = "SELECT * FROM simulation_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 10";
-$simulation_history = [];
-
-if ($stmt = mysqli_prepare($conn, $history_sql)) {
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        $simulation_history[] = $row;
-    }
-    
-    mysqli_stmt_close($stmt);
-}
-
-// Page setup for layout
-$page_title = "Advanced Driving Simulation";
-$header_title = "Professional Driving Practice Simulator";
-
-ob_start();
-?>
-
-<div class="fullscreen-simulation">
-    <!-- Simulation Canvas -->
-    <div class="simulation-canvas-container">
-        <canvas id="simulationCanvas" class="simulation-canvas"></canvas>
+        .simulation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
         
-        <!-- Loading Screen -->
-        <div class="loading-screen" id="loadingScreen">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading Driving Environment...</div>
+        .game-header {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .game-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .game-canvas-container {
+            flex: 1;
+            position: relative;
+            background: #2c3e50;
+            overflow: hidden;
+        }
+        
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .game-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            color: white;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 80px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .control-btn.brake {
+            background: linear-gradient(45deg, #FF4757, #FF3742);
+        }
+        
+        .control-btn.move {
+            background: linear-gradient(45deg, #2ECC71, #27AE60);
+        }
+        
+        .speed-indicator {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .question-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .question-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .question-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .question-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 16px;
+        }
+        
+        .option-btn:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        
+        .option-btn.selected {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        .option-btn.correct {
+            background: #28a745;
+            color: white;
+            border-color: #1e7e34;
+        }
+        
+        .option-btn.incorrect {
+            background: #dc3545;
+            color: white;
+            border-color: #c82333;
+        }
+        
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .question-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: none;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div>Loading Driving Simulation...</div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="simulation-container" style="display: none;">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="game-title">🚗 Driving Simulation Training</div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <div class="stat-label">SCORE</div>
+                    <div class="stat-value" id="scoreDisplay">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">SCENARIOS</div>
+                    <div class="stat-value" id="scenarioDisplay">0/5</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">TIME</div>
+                    <div class="stat-value" id="timeDisplay">00:00</div>
+                </div>
+            </div>
         </div>
-        
-        <!-- Status Message -->
-        <div class="status-message" id="statusMessage" style="display: none;">
-            Loading...
+
+        <!-- Canvas Container -->
+        <div class="game-canvas-container">
+            <canvas id="gameCanvas"></canvas>
         </div>
-        
-        <!-- UI Overlay -->
-        <div class="ui-overlay">
-            <!-- Scenario Panel -->
-            <div class="scenario-panel" id="scenarioPanel">
-                <div class="scenario-header">
-                    <h3>Scenario <span id="scenarioNumber">1</span>/5</h3>
-                   
-                </div>
-                <div class="scenario-description" id="scenarioDescription">
-                    <p>Loading scenario...</p>
-                </div>
-                <div class="scenario-question" id="scenarioQuestion">
-                    <p>No active scenario</p>
-                </div>
-                <div class="scenario-options" id="scenarioOptions">
-                    <!-- Options will be populated by JavaScript -->
-                </div>
-            </div>
-            
-            <!-- Control Panel -->
-            <div class="control-panel">
-                <div class="control-buttons">
-                    <button class="control-btn accelerate-btn" id="accelerateBtn">⬆️ Accelerate</button>
-                    <button class="control-btn brake-btn" id="brakeBtn">⬇️ Brake</button>
-                    <button class="control-btn turn-left-btn" id="turnLeftBtn">⬅️ Turn Left</button>
-                    <button class="control-btn turn-right-btn" id="turnRightBtn">➡️ Turn Right</button>
-                </div>
-            </div>
-            
-            <!-- Speed Panel -->
-            <div class="speed-panel">
-                <div class="speed-display" id="speedDisplay">0</div>
-                <div class="speed-label">km/h</div>
-            </div>
 
-
-            
-            <!-- Mini Map -->
-            <div class="mini-map" id="miniMap">
-                <canvas id="miniMapCanvas" width="150" height="150"></canvas>
+        <!-- Controls -->
+        <div class="game-controls">
+            <div class="speed-indicator">
+                Speed: <span id="speedDisplay">0</span> km/h
             </div>
+            <button class="control-btn brake" id="brakeBtn">🛑 BRAKE</button>
+            <button class="control-btn move" id="moveBtn">▶️ MOVE</button>
+            <button class="control-btn" id="resetBtn">🔄 RESET</button>
         </div>
     </div>
 
-    <!-- Results Screen -->
-    <div class="results-screen" id="resultsScreen">
-        <div class="results-content">
-            <div class="results-header">
-                <div class="results-title" id="resultsTitle">Passed</div>
-                <div class="results-score" id="resultsScore">85%</div>
+    <!-- Question Modal -->
+    <div id="questionModal" class="question-modal">
+        <div class="question-content">
+            <h3 class="question-title" id="questionTitle">Traffic Scenario Question</h3>
+            <div id="questionText"></div>
+            <div class="question-options" id="questionOptions"></div>
+            <div class="question-actions">
+                <div>Question <span id="questionNumber">1</span> of 5</div>
+                <button class="submit-btn" id="submitAnswer" disabled>Submit Answer</button>
             </div>
-            
-            <div class="results-stats">
-                <div class="stat-item">
-                    <div class="stat-circle">
-                        <span class="stat-number" id="totalScenarios">5</span>
-                    </div>
-                    <div class="stat-label">Total Item of<br>scenario</div>
-                </div>
+            <div class="question-feedback" id="questionFeedback"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script>
+        // Global configuration and state
+        window.SimulationConfig = {
+            userId: <?php echo $user_id; ?>,
+            canvasWidth: window.innerWidth,
+            canvasHeight: window.innerHeight - 120, // Account for header and controls
+            debug: false
+        };
+        
+        // Initialize simulation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎮 Starting Driving Simulation System...');
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.querySelector('.simulation-container').style.display = 'flex';
                 
-                <div class="stat-item">
-                    <div class="stat-circle">
-                        <span class="stat-number" id="wrongAnswers">1</span>
-                    </div>
-                    <div class="stat-label">Wrong<br>Answer</div>
-                </div>
-            </div>
-            
-            <div class="results-actions">
-                <button class="btn btn-primary" id="retryBtn">Try Again</button>
-                <button class="btn btn-secondary" onclick="window.location.href='dashboard.php'">Back to Dashboard</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Simulation History Section -->
-<div class="history-section">
-    <h3>Recent Simulation Results</h3>
-    <div class="history-table-container">
-        <?php if (!empty($simulation_history)): ?>
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Score</th>
-                        <th>Scenarios</th>
-                        <th>Correct</th>
-                        <th>Wrong</th>
-                        <th>Time</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($simulation_history as $record): ?>
-                        <tr>
-                            <td><?php echo date('M j, Y g:i A', strtotime($record['created_at'])); ?></td>
-                            <td class="score-cell"><?php echo $record['score_percentage']; ?>%</td>
-                            <td><?php echo $record['total_scenarios']; ?></td>
-                            <td class="correct-cell"><?php echo $record['correct_answers']; ?></td>
-                            <td class="wrong-cell"><?php echo $record['wrong_answers']; ?></td>
-                            <td><?php echo gmdate("i:s", $record['completion_time_seconds']); ?></td>
-                            <td>
-                                <span class="status-badge status-<?php echo $record['status']; ?>">
-                                    <?php echo ucfirst($record['status']); ?>
-                                </span>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <div class="no-history">
-                <p>No simulation results yet. Complete your first simulation to see your progress!</p>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Load simulation modules in correct order -->
-<script src="../assets/js/modules/world.js"></script>
-<script src="../assets/js/modules/car.js"></script>
-<script src="../assets/js/modules/ui.js"></script>
-<script src="../assets/js/modules/gameStats.js"></script>
-<script src="../assets/js/modules/scenarios.js"></script>
-<script src="../assets/js/modules/gameEngine.js"></script>
-<!-- Main simulation controller (loads last to coordinate all modules) -->
-<script src="../assets/js/simulation_main.js"></script>
-<link rel="stylesheet" href="../assets/css/simulation.css">
-
-<?php
-$content = ob_get_clean();
-include '../layouts/main_layout.php';
-?>
+                // Initialize the simulation
+                if (window.SimulationMain) {
+                    window.SimulationMain.init();
+                }
+            }, 2000);
+        });
+    </script>
+    
+    <!-- Load all simulation modules -->
+    <script src="../assets/js/modules/world.js"></script>
+    <script src="../assets/js/modules/car.js"></script>
+    <script src="../assets/js/modules/gameEngine.js"></script>
+    <script src="../assets/js/modules/scenarios.js"></script>
+    <script src="../assets/js/modules/ui.js"></script>
+    <script src="../assets/js/modules/gameStats.js"></script>
+    <script src="../assets/js/simulation_main.js"></script>
+</body>
+</html>
