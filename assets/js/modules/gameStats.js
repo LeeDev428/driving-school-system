@@ -1,300 +1,377 @@
-// Game Statistics Module
-// Handles tracking, storage, and management of game statistics
+/**
+ * Game Stats Module - Database Integration and Statistics
+ * Handles saving simulation results to simulation_results table
+ */
 
 const GameStats = {
-    // Statistics data
-    data: {
-        correct: 0,
-        wrong: 0,
-        total: 0,
+    // Current session data
+    sessionData: {
+        userId: null,
         startTime: null,
         scenarios: [],
-        sessionId: null
+        totalScore: 0,
+        completed: false
     },
-
-    // Initialize statistics
+    
+    // Database endpoints
+    endpoints: {
+        saveProgress: '../save_simulation.php',
+        getStats: '../get_simulation_stats.php'
+    },
+    
+    /**
+     * Initialize game stats module
+     */
     init() {
-        this.reset();
-        this.data.sessionId = this.generateSessionId();
-        console.log('📊 Game statistics initialized with session ID:', this.data.sessionId);
-    },
-
-    // Reset all statistics
-    reset() {
-        this.data.correct = 0;
-        this.data.wrong = 0;
-        this.data.total = 0;
-        this.data.startTime = null;
-        this.data.scenarios = [];
-        console.log('🔄 Game statistics reset');
-    },
-
-    // Start tracking time
-    startSession() {
-        this.data.startTime = Date.now();
-        console.log('⏱️ Session timer started');
-    },
-
-    // Generate unique session ID
-    generateSessionId() {
-        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    },
-
-    // Record a scenario result
-    recordScenario(scenarioData) {
-        const result = {
-            scenario: scenarioData.scenario || 'Unknown',
-            userAnswer: scenarioData.userAnswer || 0,
-            correctAnswer: scenarioData.correctAnswer || 0,
-            isCorrect: scenarioData.isCorrect || false,
-            timestamp: Date.now(),
-            timeFromStart: this.data.startTime ? Date.now() - this.data.startTime : 0
-        };
-
-        this.data.scenarios.push(result);
-        this.data.total++;
-
-        if (result.isCorrect) {
-            this.data.correct++;
-        } else {
-            this.data.wrong++;
-        }
-
-        console.log('📝 Recorded scenario result:', result);
-        return result;
-    },
-
-    // Get current statistics
-    getStats() {
-        return {
-            correct: this.data.correct,
-            wrong: this.data.wrong,
-            total: this.data.total,
-            percentage: this.data.total > 0 ? Math.round((this.data.correct / this.data.total) * 100) : 0,
-            completionTime: this.getCompletionTime(),
-            sessionId: this.data.sessionId
-        };
-    },
-
-    // Get completion time in seconds
-    getCompletionTime() {
-        return this.data.startTime ? Math.floor((Date.now() - this.data.startTime) / 1000) : 0;
-    },
-
-    // Get detailed scenario results
-    getScenarioResults() {
-        return [...this.data.scenarios];
-    },
-
-    // Calculate performance metrics
-    getPerformanceMetrics() {
-        const stats = this.getStats();
-        const scenarios = this.getScenarioResults();
+        console.log('📊 Initializing game statistics...');
         
-        return {
-            accuracy: stats.percentage,
-            averageTimePerScenario: scenarios.length > 0 ? stats.completionTime / scenarios.length : 0,
-            fastestScenario: this.getFastestScenario(),
-            slowestScenario: this.getSlowestScenario(),
-            correctStreaks: this.getCorrectStreaks(),
-            totalTime: stats.completionTime
-        };
-    },
-
-    // Get fastest scenario completion
-    getFastestScenario() {
-        if (this.data.scenarios.length === 0) return null;
+        this.sessionData.userId = window.SimulationConfig?.userId || null;
+        this.sessionData.startTime = new Date().toISOString();
+        this.sessionData.scenarios = [];
+        this.sessionData.totalScore = 0;
+        this.sessionData.completed = false;
         
-        let fastest = null;
-        let minTime = Infinity;
-        
-        for (let i = 1; i < this.data.scenarios.length; i++) {
-            const timeDiff = this.data.scenarios[i].timestamp - this.data.scenarios[i-1].timestamp;
-            if (timeDiff < minTime) {
-                minTime = timeDiff;
-                fastest = this.data.scenarios[i];
-            }
+        if (!this.sessionData.userId) {
+            console.error('❌ No user ID found for statistics');
+            return;
         }
         
-        return fastest ? { scenario: fastest.scenario, time: Math.floor(minTime / 1000) } : null;
+        console.log('✅ Game statistics ready');
     },
-
-    // Get slowest scenario completion
-    getSlowestScenario() {
-        if (this.data.scenarios.length === 0) return null;
-        
-        let slowest = null;
-        let maxTime = 0;
-        
-        for (let i = 1; i < this.data.scenarios.length; i++) {
-            const timeDiff = this.data.scenarios[i].timestamp - this.data.scenarios[i-1].timestamp;
-            if (timeDiff > maxTime) {
-                maxTime = timeDiff;
-                slowest = this.data.scenarios[i];
-            }
+    
+    /**
+     * Save individual scenario result
+     */
+    saveScenarioResult(result) {
+        if (!this.sessionData.userId) {
+            console.warn('Cannot save: No user ID');
+            return;
         }
         
-        return slowest ? { scenario: slowest.scenario, time: Math.floor(maxTime / 1000) } : null;
-    },
-
-    // Calculate correct answer streaks
-    getCorrectStreaks() {
-        const streaks = [];
-        let currentStreak = 0;
+        console.log(`💾 Saving scenario ${result.scenarioId} result...`);
         
-        this.data.scenarios.forEach(scenario => {
-            if (scenario.isCorrect) {
-                currentStreak++;
-            } else {
-                if (currentStreak > 0) {
-                    streaks.push(currentStreak);
-                    currentStreak = 0;
-                }
-            }
+        // Add to session data
+        this.sessionData.scenarios.push({
+            scenarioId: result.scenarioId,
+            question: result.question,
+            selectedOption: result.selectedOption,
+            correctOption: result.correctOption,
+            isCorrect: result.isCorrect,
+            points: result.points,
+            timestamp: new Date().toISOString()
         });
         
-        if (currentStreak > 0) {
-            streaks.push(currentStreak);
+        this.sessionData.totalScore += result.points;
+        
+        // Save to database
+        this.sendToDatabase('scenario', result);
+    },
+    
+    /**
+     * Save final simulation results
+     */
+    saveFinalResults(finalResults) {
+        if (!this.sessionData.userId) {
+            console.warn('Cannot save final results: No user ID');
+            return;
         }
         
-        return {
-            longest: streaks.length > 0 ? Math.max(...streaks) : 0,
-            total: streaks.length,
-            average: streaks.length > 0 ? streaks.reduce((a, b) => a + b, 0) / streaks.length : 0
+        console.log('💾 Saving final simulation results...');
+        
+        this.sessionData.completed = true;
+        this.sessionData.endTime = new Date().toISOString();
+        this.sessionData.totalTime = finalResults.totalTime;
+        this.sessionData.finalScore = finalResults.score;
+        this.sessionData.accuracy = finalResults.accuracy;
+        
+        // Prepare data for database
+        const saveData = {
+            type: 'final',
+            userId: this.sessionData.userId,
+            startTime: this.sessionData.startTime,
+            endTime: this.sessionData.endTime,
+            totalTime: Math.round(finalResults.totalTime / 1000), // Convert to seconds
+            totalScore: finalResults.score,
+            maxScore: finalResults.scenariosCompleted * 20,
+            scenariosCompleted: finalResults.scenariosCompleted,
+            accuracy: Math.round(finalResults.accuracy * 100) / 100, // Round to 2 decimals
+            scenarios: this.sessionData.scenarios,
+            grade: this.calculateGrade(finalResults.accuracy)
         };
+        
+        // Save to database
+        this.sendToDatabase('final', saveData);
     },
-
-    // Export data for saving
-    exportForSave() {
-        const stats = this.getStats();
-        return {
-            simulation_type: 'driving_simulation_2d',
-            total_scenarios: stats.total,
-            correct_answers: stats.correct,
-            wrong_answers: stats.wrong,
-            score_percentage: stats.percentage,
-            completion_time_seconds: stats.completionTime,
-            scenarios_data: JSON.stringify(this.data.scenarios),
-            session_id: stats.sessionId,
-            performance_metrics: JSON.stringify(this.getPerformanceMetrics())
+    
+    /**
+     * Save progress checkpoint
+     */
+    saveProgress(progressData) {
+        if (!this.sessionData.userId) return;
+        
+        const saveData = {
+            type: 'progress',
+            userId: this.sessionData.userId,
+            scenarioId: progressData.scenarioId,
+            answer: progressData.answer,
+            correct: progressData.correct,
+            score: progressData.score,
+            timestamp: new Date().toISOString()
         };
+        
+        this.sendToDatabase('progress', saveData);
     },
-
-    // Save to database
-    async saveToDatabase() {
+    
+    /**
+     * Send data to database
+     */
+    async sendToDatabase(type, data) {
         try {
-            console.log('💾 Saving statistics to database...');
-            
-            const exportData = this.exportForSave();
-            const formData = new FormData();
-            
-            formData.append('action', 'save_simulation_result');
-            Object.keys(exportData).forEach(key => {
-                formData.append(key, exportData[key]);
-            });
-            
-            const response = await fetch('simulation.php', {
+            const response = await fetch(this.endpoints.saveProgress, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    data: data
+                })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const result = await response.json();
             
             if (result.success) {
-                console.log('✅ Statistics saved successfully:', result);
-                return { success: true, data: result };
+                console.log(`✅ ${type} data saved successfully`);
+                if (result.simulationId) {
+                    this.sessionData.simulationId = result.simulationId;
+                }
             } else {
-                console.error('❌ Failed to save statistics:', result.message);
-                return { success: false, error: result.message };
+                console.error(`❌ Failed to save ${type} data:`, result.message);
             }
+            
         } catch (error) {
-            console.error('❌ Error saving statistics:', error);
-            return { success: false, error: error.message };
+            console.error(`❌ Error saving ${type} data:`, error);
+            
+            // Fallback: store in localStorage
+            this.saveToLocalStorage(type, data);
         }
     },
-
-    // Get summary for display
-    getSummary() {
-        const stats = this.getStats();
-        const metrics = this.getPerformanceMetrics();
-        
+    
+    /**
+     * Fallback: save to localStorage if database fails
+     */
+    saveToLocalStorage(type, data) {
+        try {
+            const key = `simulation_${type}_${Date.now()}`;
+            localStorage.setItem(key, JSON.stringify(data));
+            console.log('💿 Data saved to localStorage as fallback');
+        } catch (error) {
+            console.error('❌ Failed to save to localStorage:', error);
+        }
+    },
+    
+    /**
+     * Calculate letter grade from accuracy percentage
+     */
+    calculateGrade(accuracy) {
+        if (accuracy >= 90) return 'A';
+        if (accuracy >= 80) return 'B';
+        if (accuracy >= 70) return 'C';
+        if (accuracy >= 60) return 'D';
+        return 'F';
+    },
+    
+    /**
+     * Get current session statistics
+     */
+    getSessionStats() {
         return {
-            title: 'Driving Simulation Complete!',
-            score: `${stats.correct}/${stats.total} (${stats.percentage}%)`,
-            time: `${stats.completionTime} seconds`,
-            accuracy: `${stats.percentage}% accuracy`,
-            averageTime: `${metrics.averageTimePerScenario.toFixed(1)}s per scenario`,
-            longestStreak: `${metrics.correctStreaks.longest} correct in a row`
+            userId: this.sessionData.userId,
+            startTime: this.sessionData.startTime,
+            totalScore: this.sessionData.totalScore,
+            scenariosCompleted: this.sessionData.scenarios.length,
+            completed: this.sessionData.completed,
+            scenarios: this.sessionData.scenarios.map(s => ({
+                id: s.scenarioId,
+                correct: s.isCorrect,
+                points: s.points
+            }))
         };
     },
-
-    // Local storage backup
-    saveToLocalStorage() {
-        try {
-            const data = {
-                stats: this.data,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('drivingSimulationStats', JSON.stringify(data));
-            console.log('💾 Statistics backed up to local storage');
-        } catch (error) {
-            console.warn('⚠️ Could not save to local storage:', error);
+    
+    /**
+     * Get user's historical statistics
+     */
+    async getUserStats() {
+        if (!this.sessionData.userId) {
+            console.warn('Cannot get stats: No user ID');
+            return null;
         }
-    },
-
-    // Load from local storage
-    loadFromLocalStorage() {
+        
         try {
-            const saved = localStorage.getItem('drivingSimulationStats');
-            if (saved) {
-                const data = JSON.parse(saved);
-                this.data = { ...this.data, ...data.stats };
-                console.log('📂 Statistics loaded from local storage');
-                return true;
+            const response = await fetch(`${this.endpoints.getStats}?userId=${this.sessionData.userId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
+            const stats = await response.json();
+            return stats;
+            
         } catch (error) {
-            console.warn('⚠️ Could not load from local storage:', error);
-        }
-        return false;
-    },
-
-    // Clear local storage
-    clearLocalStorage() {
-        try {
-            localStorage.removeItem('drivingSimulationStats');
-            console.log('🗑️ Local storage cleared');
-        } catch (error) {
-            console.warn('⚠️ Could not clear local storage:', error);
+            console.error('❌ Error fetching user stats:', error);
+            return null;
         }
     },
-
-    // Validate data integrity
-    validate() {
-        const issues = [];
+    
+    /**
+     * Export session data for debugging
+     */
+    exportSessionData() {
+        const exportData = {
+            ...this.sessionData,
+            exportTime: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            screenSize: {
+                width: window.screen.width,
+                height: window.screen.height
+            }
+        };
         
-        if (this.data.correct + this.data.wrong !== this.data.total) {
-            issues.push('Correct + Wrong answers do not equal total');
+        // Create download link
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `simulation_session_${this.sessionData.userId}_${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+    },
+    
+    /**
+     * Generate performance report
+     */
+    generatePerformanceReport() {
+        const scenarios = this.sessionData.scenarios;
+        if (scenarios.length === 0) {
+            return null;
         }
         
-        if (this.data.scenarios.length !== this.data.total) {
-            issues.push('Scenario count does not match total answers');
-        }
+        const correctAnswers = scenarios.filter(s => s.isCorrect).length;
+        const totalQuestions = scenarios.length;
+        const accuracy = (correctAnswers / totalQuestions) * 100;
         
-        if (this.data.startTime && this.data.startTime > Date.now()) {
-            issues.push('Start time is in the future');
-        }
+        // Analyze performance by scenario type
+        const scenarioTypes = {
+            'RED_LIGHT': [],
+            'STOP_SIGN': [],
+            'PEDESTRIAN': [],
+            'SCHOOL_ZONE': [],
+            'INTERSECTION': []
+        };
+        
+        scenarios.forEach(scenario => {
+            const type = this.getScenarioType(scenario.scenarioId);
+            if (scenarioTypes[type]) {
+                scenarioTypes[type].push(scenario);
+            }
+        });
+        
+        const typePerformance = {};
+        Object.entries(scenarioTypes).forEach(([type, typeScenarios]) => {
+            if (typeScenarios.length > 0) {
+                const correct = typeScenarios.filter(s => s.isCorrect).length;
+                typePerformance[type] = {
+                    total: typeScenarios.length,
+                    correct: correct,
+                    accuracy: Math.round((correct / typeScenarios.length) * 100)
+                };
+            }
+        });
         
         return {
-            valid: issues.length === 0,
-            issues: issues
+            overall: {
+                totalQuestions,
+                correctAnswers,
+                accuracy: Math.round(accuracy * 100) / 100,
+                totalScore: this.sessionData.totalScore,
+                maxScore: totalQuestions * 20,
+                grade: this.calculateGrade(accuracy)
+            },
+            byType: typePerformance,
+            timeline: scenarios.map(s => ({
+                scenarioId: s.scenarioId,
+                timestamp: s.timestamp,
+                correct: s.isCorrect,
+                points: s.points
+            }))
         };
+    },
+    
+    /**
+     * Get scenario type by ID
+     */
+    getScenarioType(scenarioId) {
+        const typeMap = {
+            1: 'RED_LIGHT',
+            2: 'STOP_SIGN',
+            3: 'PEDESTRIAN',
+            4: 'SCHOOL_ZONE',
+            5: 'INTERSECTION'
+        };
+        
+        return typeMap[scenarioId] || 'UNKNOWN';
+    },
+    
+    /**
+     * Reset session data
+     */
+    reset() {
+        this.sessionData = {
+            userId: window.SimulationConfig?.userId || null,
+            startTime: new Date().toISOString(),
+            scenarios: [],
+            totalScore: 0,
+            completed: false
+        };
+        
+        console.log('🔄 Game statistics reset');
+    },
+    
+    /**
+     * Validate data before saving
+     */
+    validateData(data) {
+        // Basic validation
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+        
+        // Check required fields based on type
+        if (data.type === 'scenario') {
+            return data.scenarioId && 
+                   typeof data.isCorrect === 'boolean' && 
+                   typeof data.points === 'number';
+        }
+        
+        if (data.type === 'final') {
+            return data.userId && 
+                   data.totalScore !== undefined && 
+                   data.accuracy !== undefined;
+        }
+        
+        return true;
     }
 };
 
-// Export to global window object for browser use
-window.GameStatsModule = GameStats;
-
-// Export for use in other modules (Node.js compatibility)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GameStats;
-}
+// Export module
+window.GameStats = GameStats;
