@@ -286,22 +286,35 @@ const UIModule = {
     },
     
     /**
-     * Hide question modal
+     * Hide question modal (with loop prevention and proper cleanup)
      */
     hideQuestion() {
-        if (this.elements.questionModal) {
+        if (this.isQuestionVisible && this.elements.questionModal) {
+            console.log('🔚 Hiding question modal...');
             this.elements.questionModal.style.display = 'none';
+            
+            // Clean up state in proper order
+            this.isQuestionVisible = false;
+            this.selectedOption = -1;
+            
+            // Keep currentQuestion for a moment to allow proper cleanup
+            setTimeout(() => {
+                this.currentQuestion = null;
+                console.log('✅ Question modal hidden successfully');
+            }, 100);
         }
-        
-        this.isQuestionVisible = false;
-        this.currentQuestion = null;
-        this.selectedOption = -1;
     },
     
     /**
-     * Resume simulation after question
+     * Resume simulation after question with error handling
      */
     resumeSimulation(result) {
+        // Validate that we have a current question
+        if (!this.currentQuestion || !this.currentQuestion.id) {
+            console.error('❌ No valid current question when resuming simulation:', this.currentQuestion);
+            return;
+        }
+        
         // Notify main simulation
         if (window.SimulationMain && window.SimulationMain.handleQuestionAnswered) {
             window.SimulationMain.handleQuestionAnswered(
