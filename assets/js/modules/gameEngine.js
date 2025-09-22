@@ -7,7 +7,7 @@ const GameEngine = {
     // Canvas and rendering
     canvas: null,
     ctx: null,
-    camera: { x: 0, y: 0 },
+    camera: { x: 0, y: 0, zoom: 1.5 }, // Added zoom level for better view
     
     // Timing
     lastFrameTime: 0,
@@ -326,6 +326,17 @@ const GameEngine = {
                 width: this.canvas?.width || 0, 
                 height: this.canvas?.height || 0 
             }
+        };
+    },
+    
+    /**
+     * Get camera object for rendering
+     */
+    getCamera() {
+        return {
+            x: this.camera.x,
+            y: this.camera.y,
+            zoom: this.camera.zoom || 1.5
         };
     },
     
