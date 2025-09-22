@@ -1,354 +1,516 @@
-// UI Management Module
-// Handles all user interface elements, panels, status displays, and interactions
+/**
+ * UI Module - User Interface Management
+ * Handles question display, scoring, controls, and user interactions
+ */
 
-const UI = {
-    // UI state
-    statusTimeout: null,
+const UIModule = {
+    // UI Elements
+    questionModal: null,
+    currentQuestion: null,
+    questionCallback: null,
     
-    // Initialize UI elements
+    // UI State
+    isQuestionVisible: false,
+    selectedOption: -1,
+    
+    // UI Components
+    elements: {},
+    
+    /**
+     * Initialize UI module
+     */
     init() {
+        console.log('🎨 Initializing user interface...');
+        this.setupUIElements();
         this.setupEventListeners();
-        this.setupButtonControls();
-        this.updateStatsDisplay();
+        console.log('✅ UI ready for interaction');
     },
-
-    // Setup keyboard event listeners
-    setupEventListeners() {
-        document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
-    },
-
-    // Handle key down events
-    onKeyDown(event) {
-        if (typeof keys !== 'undefined') {
-            keys[event.code] = true;
-        }
-        event.preventDefault();
-    },
-
-    // Handle key up events  
-    onKeyUp(event) {
-        if (typeof keys !== 'undefined') {
-            keys[event.code] = false;
-        }
-        event.preventDefault();
-    },
-
-    // Setup button controls for mobile/touch devices
-    setupButtonControls() {
-        const buttons = [
-            { id: 'forwardBtn', action: 'forward' },
-            { id: 'reverseBtn', action: 'reverse' },
-            { id: 'leftBtn', action: 'left' },
-            { id: 'rightBtn', action: 'right' }
-        ];
-
-        buttons.forEach(button => {
-            const element = document.getElementById(button.id);
-            if (element && typeof buttonStates !== 'undefined') {
-                element.addEventListener('mousedown', () => {
-                    buttonStates[button.action] = true;
-                });
-                
-                element.addEventListener('mouseup', () => {
-                    buttonStates[button.action] = false;
-                });
-                
-                element.addEventListener('mouseleave', () => {
-                    buttonStates[button.action] = false;
-                });
-                
-                // Touch events for mobile
-                element.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    buttonStates[button.action] = true;
-                });
-                
-                element.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    buttonStates[button.action] = false;
-                });
+    
+    /**
+     * Setup UI element references
+     */
+    setupUIElements() {
+        this.elements = {
+            questionModal: document.getElementById('questionModal'),
+            questionTitle: document.getElementById('questionTitle'),
+            questionText: document.getElementById('questionText'),
+            questionOptions: document.getElementById('questionOptions'),
+            questionNumber: document.getElementById('questionNumber'),
+            submitButton: document.getElementById('submitAnswer'),
+            questionFeedback: document.getElementById('questionFeedback'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            scenarioDisplay: document.getElementById('scenarioDisplay'),
+            timeDisplay: document.getElementById('timeDisplay'),
+            speedDisplay: document.getElementById('speedDisplay')
+        };
+        
+        // Verify essential elements exist
+        Object.entries(this.elements).forEach(([name, element]) => {
+            if (!element) {
+                console.warn(`⚠️ UI element '${name}' not found`);
             }
         });
     },
-
-    // Show status message
-    showStatus(message, duration = 3000) {
-        const statusElement = document.getElementById('gameStatus');
-        if (statusElement) {
-            statusElement.innerHTML = message;
-            statusElement.style.display = 'block';
-            
-            // Clear existing timeout
-            if (this.statusTimeout) {
-                clearTimeout(this.statusTimeout);
-            }
-            
-            // Hide after duration
-            this.statusTimeout = setTimeout(() => {
-                statusElement.style.display = 'none';
-            }, duration);
-        }
-    },
-
-    // Update statistics display
-    updateStatsDisplay() {
-        if (typeof gameStats === 'undefined') return;
-        
-        const correctElement = document.getElementById('correctAnswers');
-        const wrongElement = document.getElementById('wrongAnswers');
-        const totalElement = document.getElementById('totalAnswers');
-        
-        if (correctElement) correctElement.textContent = gameStats.correct || 0;
-        if (wrongElement) wrongElement.textContent = gameStats.wrong || 0;
-        if (totalElement) totalElement.textContent = gameStats.total || 0;
-    },
-
-    // Update speed display
-    updateSpeedDisplay(speed) {
-        const speedElement = document.getElementById('currentSpeed');
-        if (speedElement) {
-            speedElement.textContent = `${speed} km/h`;
-        }
-    },
-
-    // Update scenario panel
-    updateScenarioPanel(scenario, scenarioIndex) {
-        // Update scenario number
-        const scenarioNumberElement = document.getElementById('scenarioNumber');
-        if (scenarioNumberElement) {
-            scenarioNumberElement.textContent = scenarioIndex + 1;
-        }
-        
-        // Update scenario description and question
-        const descriptionElement = document.getElementById('scenarioDescription');
-        if (descriptionElement) {
-            descriptionElement.innerHTML = `<p><strong>${scenario.title}</strong></p>`;
-        }
-        
-        const questionElement = document.getElementById('scenarioQuestion');
-        if (questionElement) {
-            questionElement.innerHTML = `<p>${scenario.question}</p>`;
-        }
-        
-        const optionsContainer = document.getElementById('scenarioOptions');
-        if (optionsContainer) {
-            optionsContainer.innerHTML = '';
-            
-            scenario.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'option-btn';
-                button.textContent = option;
-                button.onclick = () => this.selectOption(index);
-                optionsContainer.appendChild(button);
+    
+    /**
+     * Setup UI event listeners
+     */
+    setupEventListeners() {
+        // Submit button
+        if (this.elements.submitButton) {
+            this.elements.submitButton.addEventListener('click', () => {
+                this.handleSubmitAnswer();
             });
         }
-
-        // Add "Go to Results" button if this is the 5th scenario
-        if (scenarioIndex === 4) { // 0-based index, so 4 is the 5th scenario
-            const resultsButton = document.createElement('button');
-            resultsButton.textContent = 'Go to Results';
-            resultsButton.className = 'results-btn';
-            resultsButton.id = 'goToResultsBtn';
-            resultsButton.style.display = 'none'; // Initially hidden
-            resultsButton.onclick = () => this.goToResults();
-            
-            if (optionsContainer) {
-                optionsContainer.appendChild(resultsButton);
-            }
+        
+        // Close modal on outside click
+        if (this.elements.questionModal) {
+            this.elements.questionModal.addEventListener('click', (e) => {
+                if (e.target === this.elements.questionModal) {
+                    // Don't allow closing by clicking outside during question
+                    // this.hideQuestion();
+                }
+            });
         }
         
-        const scenarioPanel = document.getElementById('scenarioPanel');
-        if (scenarioPanel) {
-            scenarioPanel.style.display = 'block';
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (this.isQuestionVisible) {
+                this.handleQuestionKeyboard(e);
+            }
+        });
+    },
+    
+    /**
+     * Show scenario question
+     */
+    showScenarioQuestion(scenario) {
+        if (!scenario || !this.elements.questionModal) {
+            console.error('Cannot show question: missing scenario or modal');
+            return;
+        }
+        
+        console.log(`📝 Showing question for scenario ${scenario.id}`);
+        
+        this.currentQuestion = scenario;
+        this.selectedOption = -1;
+        this.isQuestionVisible = true;
+        
+        // Update question content
+        this.updateQuestionContent(scenario);
+        
+        // Show modal
+        this.elements.questionModal.style.display = 'flex';
+        
+        // Reset submit button
+        if (this.elements.submitButton) {
+            this.elements.submitButton.disabled = true;
+            this.elements.submitButton.textContent = 'Submit Answer';
+        }
+        
+        // Hide feedback
+        if (this.elements.questionFeedback) {
+            this.elements.questionFeedback.style.display = 'none';
         }
     },
-
-    // Handle option selection
+    
+    /**
+     * Update question content
+     */
+    updateQuestionContent(scenario) {
+        // Set title
+        if (this.elements.questionTitle) {
+            this.elements.questionTitle.textContent = scenario.title || 'Traffic Scenario';
+        }
+        
+        // Set question text
+        if (this.elements.questionText) {
+            this.elements.questionText.innerHTML = `
+                <p style="font-size: 18px; margin-bottom: 20px; line-height: 1.4;">
+                    ${scenario.question}
+                </p>
+            `;
+        }
+        
+        // Set question number
+        if (this.elements.questionNumber) {
+            this.elements.questionNumber.textContent = scenario.id;
+        }
+        
+        // Create option buttons
+        this.createOptionButtons(scenario.options);
+    },
+    
+    /**
+     * Create option buttons
+     */
+    createOptionButtons(options) {
+        if (!this.elements.questionOptions || !options) return;
+        
+        // Clear existing options
+        this.elements.questionOptions.innerHTML = '';
+        
+        // Create option buttons
+        options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.textContent = option;
+            button.dataset.optionIndex = index;
+            
+            // Add click handler
+            button.addEventListener('click', () => {
+                this.selectOption(index);
+            });
+            
+            this.elements.questionOptions.appendChild(button);
+        });
+    },
+    
+    /**
+     * Handle option selection
+     */
     selectOption(optionIndex) {
-        if (typeof currentScenario === 'undefined' || !currentScenario) return;
+        // Remove previous selection
+        const allOptions = this.elements.questionOptions.querySelectorAll('.option-btn');
+        allOptions.forEach(btn => btn.classList.remove('selected'));
         
-        const isCorrect = optionIndex === currentScenario.correctAnswer;
-        
-        // Update game stats (assuming gameStats is global)
-        if (typeof gameStats !== 'undefined') {
-            gameStats.total++;
+        // Select new option
+        const selectedButton = this.elements.questionOptions.querySelector(`[data-option-index="${optionIndex}"]`);
+        if (selectedButton) {
+            selectedButton.classList.add('selected');
+            this.selectedOption = optionIndex;
             
-            if (isCorrect) {
-                gameStats.correct++;
-                this.showStatus("✅ Correct! " + currentScenario.explanation, 4000);
-            } else {
-                gameStats.wrong++;
-                this.showStatus("❌ Wrong. " + currentScenario.explanation, 4000);
+            // Enable submit button
+            if (this.elements.submitButton) {
+                this.elements.submitButton.disabled = false;
             }
-            
-            // Save scenario result
-            gameStats.scenarios.push({
-                scenario: currentScenario.title,
-                userAnswer: optionIndex,
-                correctAnswer: currentScenario.correctAnswer,
-                isCorrect: isCorrect,
-                timestamp: Date.now()
-            });
-            
-            this.updateStatsDisplay();
         }
-        
-        // If this is the 5th scenario, show the "Go to Results" button
-        if (typeof scenarioIndex !== 'undefined' && scenarioIndex === 4) {
-            const goToResultsBtn = document.getElementById('goToResultsBtn');
-            if (goToResultsBtn) {
-                goToResultsBtn.style.display = 'block';
-            }
-            // Don't move to next scenario, let user click "Go to Results"
+    },
+    
+    /**
+     * Handle submit answer
+     */
+    handleSubmitAnswer() {
+        if (this.selectedOption === -1 || !this.currentQuestion) {
             return;
         }
         
-        // Move to next scenario after delay
-        setTimeout(() => {
-            this.hideScenarioPanel();
-            this.showStatus("You may continue driving. Be safe!", 2000);
-            
-            // Notify game engine to continue
-            if (typeof window.continueAfterScenario === 'function') {
-                window.continueAfterScenario();
-            }
-        }, 2000);
-    },
-
-    // Hide scenario panel
-    hideScenarioPanel() {
-        const scenarioPanel = document.getElementById('scenarioPanel');
-        if (scenarioPanel) {
-            scenarioPanel.style.display = 'none';
-        }
-    },
-
-    // Go to results page
-    goToResults() {
-        console.log('🎯 Go to Results button clicked - Final scenario completed');
+        // Get scenario result
+        const result = window.ScenariosModule?.getScenarioResult(
+            this.currentQuestion.id, 
+            this.selectedOption
+        );
         
-        if (typeof gameStats === 'undefined') {
-            console.error('❌ Game stats not available');
+        if (!result) {
+            console.error('Could not get scenario result');
             return;
         }
         
-        // Calculate final stats
-        const completionTime = gameStats.startTime ? Math.floor((Date.now() - gameStats.startTime) / 1000) : 0;
+        // Show feedback
+        this.showAnswerFeedback(result);
         
-        // Show loading message
-        this.showStatus('Saving results...', 1000);
+        // Disable submit button
+        if (this.elements.submitButton) {
+            this.elements.submitButton.disabled = true;
+            this.elements.submitButton.textContent = 'Continue';
+        }
+        
+        // Mark as completed in scenarios module
+        if (window.ScenariosModule) {
+            window.ScenariosModule.markCompleted(this.currentQuestion.id);
+        }
         
         // Save to database
-        const data = new FormData();
-        data.append('action', 'save_simulation_result');
-        data.append('simulation_type', 'driving_simulation_2d');
-        data.append('total_scenarios', gameStats.total || 5); // Ensure 5 scenarios
-        data.append('correct_answers', gameStats.correct || 0);
-        data.append('wrong_answers', gameStats.wrong || 0);
-        data.append('completion_time', completionTime);
-        data.append('scenarios_data', JSON.stringify(gameStats.scenarios || []));
+        this.saveQuestionResult(result);
         
-        fetch('simulation.php', {
-            method: 'POST',
-            body: data
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                console.log('✅ Results saved successfully - Redirecting to results page');
-                this.showStatus(`Results saved! Redirecting...`, 2000);
-                
-                // Redirect to results page after 2 seconds
-                setTimeout(() => {
-                    window.location.href = 'simulation_result.php';
-                }, 2000);
-            } else {
-                console.error('❌ Failed to save results:', result.message);
-                this.showStatus('⚠️ Could not save results. Redirecting anyway...', 3000);
-                
-                // Still redirect even if save failed
-                setTimeout(() => {
-                    window.location.href = 'simulation_result.php';
-                }, 3000);
-            }
-        })
-        .catch(error => {
-            console.error('❌ Error saving results:', error);
-            this.showStatus('⚠️ Network error. Redirecting anyway...', 3000);
+        // Auto-close after delay
+        setTimeout(() => {
+            this.hideQuestion();
+            this.resumeSimulation(result);
+        }, 3000);
+    },
+    
+    /**
+     * Show answer feedback
+     */
+    showAnswerFeedback(result) {
+        if (!this.elements.questionFeedback) return;
+        
+        // Style feedback based on correctness
+        const isCorrect = result.isCorrect;
+        const feedbackClass = isCorrect ? 'correct' : 'incorrect';
+        const icon = isCorrect ? '✅' : '❌';
+        const title = isCorrect ? 'Correct!' : 'Incorrect';
+        
+        this.elements.questionFeedback.innerHTML = `
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 24px; margin-right: 10px;">${icon}</span>
+                <strong style="font-size: 18px; color: ${isCorrect ? '#28a745' : '#dc3545'};">${title}</strong>
+            </div>
+            <p style="margin-bottom: 10px; font-weight: bold;">
+                Correct Answer: ${this.currentQuestion.options[result.correctOption]}
+            </p>
+            <p style="margin-bottom: 10px; line-height: 1.4;">
+                ${result.explanation}
+            </p>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 4px solid #007bff;">
+                <small><strong>Remember:</strong> ${result.context}</small>
+            </div>
+            <div style="text-align: center; margin-top: 15px; font-weight: bold; color: #28a745;">
+                Points Earned: ${result.points}
+            </div>
+        `;
+        
+        this.elements.questionFeedback.style.display = 'block';
+        this.elements.questionFeedback.className = `question-feedback ${feedbackClass}`;
+        
+        // Update option button styles
+        this.updateOptionStyles(result);
+    },
+    
+    /**
+     * Update option button styles after answer
+     */
+    updateOptionStyles(result) {
+        const allOptions = this.elements.questionOptions.querySelectorAll('.option-btn');
+        
+        allOptions.forEach((btn, index) => {
+            btn.disabled = true;
             
-            // Still redirect even if network error
-            setTimeout(() => {
-                window.location.href = 'simulation_result.php';
-            }, 3000);
+            if (index === result.correctOption) {
+                btn.classList.add('correct');
+            } else if (index === result.selectedOption && !result.isCorrect) {
+                btn.classList.add('incorrect');
+            }
         });
     },
-
-    // Show end simulation screen
-    showEndSimulation() {
-        if (typeof gameStats === 'undefined') return;
-        
-        const completionTime = gameStats.startTime ? Math.floor((Date.now() - gameStats.startTime) / 1000) : 0;
-        const scorePercentage = gameStats.total > 0 ? Math.round((gameStats.correct / gameStats.total) * 100) : 0;
-        
-        this.showStatus(`
-            🎉 Simulation Complete!<br>
-            Score: ${scorePercentage}% (${gameStats.correct}/${gameStats.total})<br>
-            Time: ${completionTime}s<br>
-            <button onclick="location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Play Again
-            </button>
-        `, 10000);
-    },
-
-    // Update minimap (if exists)
-    updateMiniMap(car, camera, world) {
-        const miniMapCanvas = document.getElementById('miniMapCanvas');
-        if (!miniMapCanvas) return;
-        
-        const miniMapCtx = miniMapCanvas.getContext('2d');
-        const scale = 0.1; // Scale factor for minimap
-        
-        // Clear minimap
-        miniMapCtx.clearRect(0, 0, miniMapCanvas.width, miniMapCanvas.height);
-        
-        // Draw world outline
-        miniMapCtx.strokeStyle = '#666';
-        miniMapCtx.strokeRect(0, 0, world.width * scale, world.height * scale);
-        
-        // Draw car position
-        miniMapCtx.fillStyle = '#ff4444';
-        const carX = car.properties.x * scale;
-        const carY = car.properties.y * scale;
-        miniMapCtx.fillRect(carX - 2, carY - 2, 4, 4);
-        
-        // Draw camera view area
-        miniMapCtx.strokeStyle = '#00ff00';
-        miniMapCtx.strokeRect(
-            camera.x * scale,
-            camera.y * scale,
-            800 * scale, // Canvas width
-            600 * scale  // Canvas height
-        );
-    },
-
-    // Clean up UI resources
-    cleanup() {
-        if (this.statusTimeout) {
-            clearTimeout(this.statusTimeout);
-            this.statusTimeout = null;
+    
+    /**
+     * Hide question modal
+     */
+    hideQuestion() {
+        if (this.elements.questionModal) {
+            this.elements.questionModal.style.display = 'none';
         }
         
-        // Remove event listeners
-        document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keyup', this.onKeyUp);
+        this.isQuestionVisible = false;
+        this.currentQuestion = null;
+        this.selectedOption = -1;
+    },
+    
+    /**
+     * Resume simulation after question
+     */
+    resumeSimulation(result) {
+        // Notify main simulation
+        if (window.SimulationMain && window.SimulationMain.handleQuestionAnswered) {
+            window.SimulationMain.handleQuestionAnswered(
+                this.currentQuestion, 
+                result.selectedOption, 
+                result.isCorrect
+            );
+        }
+        
+        // Resume game engine
+        if (window.GameEngine) {
+            window.GameEngine.resumeFromScenario(this.currentQuestion.id);
+        }
+    },
+    
+    /**
+     * Handle keyboard input during questions
+     */
+    handleQuestionKeyboard(e) {
+        if (!this.isQuestionVisible) return;
+        
+        // Number keys 1-4 for options
+        const keyNumber = parseInt(e.key);
+        if (keyNumber >= 1 && keyNumber <= 4) {
+            const optionIndex = keyNumber - 1;
+            if (optionIndex < this.currentQuestion.options.length) {
+                this.selectOption(optionIndex);
+                e.preventDefault();
+            }
+        }
+        
+        // Enter to submit
+        if (e.key === 'Enter' && this.selectedOption !== -1) {
+            this.handleSubmitAnswer();
+            e.preventDefault();
+        }
+    },
+    
+    /**
+     * Update score display
+     */
+    updateScore(score) {
+        if (this.elements.scoreDisplay) {
+            this.elements.scoreDisplay.textContent = score;
+        }
+    },
+    
+    /**
+     * Update scenario progress display
+     */
+    updateScenarioProgress(completed, total) {
+        if (this.elements.scenarioDisplay) {
+            this.elements.scenarioDisplay.textContent = `${completed}/${total}`;
+        }
+    },
+    
+    /**
+     * Update speed display
+     */
+    updateSpeed(speed) {
+        if (this.elements.speedDisplay) {
+            this.elements.speedDisplay.textContent = Math.round(speed);
+        }
+    },
+    
+    /**
+     * Save question result to database
+     */
+    saveQuestionResult(result) {
+        if (!window.GameStats) {
+            console.warn('GameStats module not available for saving');
+            return;
+        }
+        
+        window.GameStats.saveScenarioResult(result);
+    },
+    
+    /**
+     * Show completion screen
+     */
+    showCompletionScreen(finalResults) {
+        console.log('🏁 Showing completion screen');
+        
+        // Create completion modal
+        const completionHTML = `
+            <div class="completion-modal" style="
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center;
+                z-index: 3000;
+            ">
+                <div class="completion-content" style="
+                    background: white; border-radius: 15px; padding: 40px; max-width: 600px; width: 90%;
+                    text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <h2 style="color: #28a745; margin-bottom: 20px;">🎉 Simulation Complete!</h2>
+                    <div style="font-size: 18px; margin-bottom: 30px;">
+                        <p><strong>Final Score:</strong> ${finalResults.score} / ${finalResults.scenariosCompleted * 20}</p>
+                        <p><strong>Scenarios Completed:</strong> ${finalResults.scenariosCompleted}/5</p>
+                        <p><strong>Accuracy:</strong> ${finalResults.accuracy.toFixed(1)}%</p>
+                        <p><strong>Time:</strong> ${this.formatTime(finalResults.totalTime)}</p>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        ${this.getGradeDisplay(finalResults.accuracy)}
+                    </div>
+                    <button onclick="location.reload()" style="
+                        background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;
+                        padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;
+                        margin: 10px;
+                    ">Try Again</button>
+                    <button onclick="window.location.href='dashboard.php'" style="
+                        background: linear-gradient(45deg, #28a745, #1e7e34); color: white; border: none;
+                        padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;
+                        margin: 10px;
+                    ">Back to Dashboard</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', completionHTML);
+    },
+    
+    /**
+     * Get grade display based on accuracy
+     */
+    getGradeDisplay(accuracy) {
+        let grade, color, message;
+        
+        if (accuracy >= 90) {
+            grade = 'A'; color = '#28a745'; message = 'Excellent driving knowledge!';
+        } else if (accuracy >= 80) {
+            grade = 'B'; color = '#17a2b8'; message = 'Good understanding of traffic rules!';
+        } else if (accuracy >= 70) {
+            grade = 'C'; color = '#ffc107'; message = 'Fair performance, keep practicing!';
+        } else if (accuracy >= 60) {
+            grade = 'D'; color = '#fd7e14'; message = 'Needs improvement, review traffic rules!';
+        } else {
+            grade = 'F'; color = '#dc3545'; message = 'Please study traffic rules more carefully!';
+        }
+        
+        return `
+            <div style="font-size: 48px; font-weight: bold; color: ${color}; margin-bottom: 10px;">
+                Grade: ${grade}
+            </div>
+            <p style="color: ${color}; font-weight: bold;">${message}</p>
+        `;
+    },
+    
+    /**
+     * Format time display
+     */
+    formatTime(milliseconds) {
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    },
+    
+    /**
+     * Render game UI elements on canvas
+     */
+    renderGame(ctx, camera) {
+        // This can be used for any in-game UI overlays
+        // For now, most UI is handled via HTML elements
+        
+        if (window.SimulationConfig?.debug) {
+            this.renderDebugOverlay(ctx);
+        }
+    },
+    
+    /**
+     * Render debug overlay
+     */
+    renderDebugOverlay(ctx) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(10, 10, 200, 100);
+        
+        ctx.fillStyle = '#00FF00';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'left';
+        
+        const debugInfo = [
+            `Question Visible: ${this.isQuestionVisible}`,
+            `Selected Option: ${this.selectedOption}`,
+            `Current Question: ${this.currentQuestion?.id || 'None'}`
+        ];
+        
+        debugInfo.forEach((info, index) => {
+            ctx.fillText(info, 15, 30 + index * 15);
+        });
+    },
+    
+    /**
+     * Reset UI state
+     */
+    reset() {
+        this.hideQuestion();
+        this.selectedOption = -1;
+        this.currentQuestion = null;
+        this.isQuestionVisible = false;
+        
+        // Reset displays
+        this.updateScore(0);
+        this.updateScenarioProgress(0, 5);
+        this.updateSpeed(0);
+        
+        console.log('🔄 UI reset complete');
     }
 };
 
-// Export to global window object for browser use
-window.UIModule = UI;
-
-// Export for use in other modules (Node.js compatibility)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = UI;
-}
+// Export module
+window.UIModule = UIModule;
