@@ -57,15 +57,22 @@ const WorldModule = {
      * Calculate world dimensions based on screen size
      */
     calculateWorldDimensions() {
-        // Get current window dimensions
-        const screenWidth = window.innerWidth || 1920;
-        const screenHeight = window.innerHeight || 1080;
-        
-        // Make world significantly larger than screen
-        this.width = Math.max(screenWidth * 3, 5760);   // 3x screen width, minimum 5760
-        this.height = Math.max(screenHeight * 2, 2160); // 2x screen height, minimum 2160
-        
-        console.log(`🌍 World dimensions calculated: ${this.width}x${this.height} (Screen: ${screenWidth}x${screenHeight})`);
+        // Use SimulationConfig dimensions if available, otherwise fallback to window dimensions
+        if (window.SimulationConfig) {
+            this.width = window.SimulationConfig.worldWidth;
+            this.height = window.SimulationConfig.worldHeight;
+            console.log(`🌍 World dimensions from SimulationConfig: ${this.width}x${this.height}`);
+        } else {
+            // Fallback to window dimensions
+            const screenWidth = window.innerWidth || 1920;
+            const screenHeight = window.innerHeight || 1080;
+            
+            // Make world significantly larger than screen
+            this.width = Math.max(screenWidth * 3, 5760);   // 3x screen width, minimum 5760
+            this.height = Math.max(screenHeight * 2, 2160); // 2x screen height, minimum 2160
+            
+            console.log(`🌍 World dimensions calculated (fallback): ${this.width}x${this.height} (Screen: ${screenWidth}x${screenHeight})`);
+        }
     },
     
     /**
@@ -461,60 +468,50 @@ const WorldModule = {
     createPedestrianLanes() {
         this.pedestrianLanes = [];
         
-        // Get the actual road positions from the created roads
+        // Get road positions for reference
         const horizontalRoads = this.roads.filter(road => road.type === 'horizontal_street');
         const verticalRoads = this.roads.filter(road => road.type === 'vertical_street');
         
-        console.log(`Creating pedestrian crossings for ${horizontalRoads.length} horizontal and ${verticalRoads.length} vertical roads`);
+        console.log(`Creating SIMPLE pedestrian crossings in green areas only`);
         
-        // Create zebra crossings at intersections - PROPERLY POSITIONED
         let crossingId = 0;
         
-        // Create crossings only at major intersections to avoid clutter
-        for (let h = 0; h < Math.min(horizontalRoads.length, 6); h++) {
-            for (let v = 0; v < Math.min(verticalRoads.length, 10); v++) {
-                const hRoad = horizontalRoads[h];
-                const vRoad = verticalRoads[v];
-                
-                // Check if roads intersect
-                const intersects = (
-                    hRoad.x < vRoad.x + vRoad.width &&
-                    hRoad.x + hRoad.width > vRoad.x &&
-                    hRoad.y < vRoad.y + vRoad.height &&
-                    hRoad.y + hRoad.height > vRoad.y
-                );
-                
-                if (intersects) {
-                    // Create horizontal crossing (across the vertical road)
-                    this.pedestrianLanes.push({
-                        id: crossingId++,
-                        x: vRoad.x + 10, // Start 10px into the vertical road
-                        y: hRoad.y + hRoad.height/2 - 8, // Center of horizontal road
-                        width: vRoad.width - 20, // Width of vertical road minus margins
-                        height: 16, // Standard crossing height
-                        direction: 'horizontal',
-                        street: `${hRoad.name} crossing ${vRoad.name}`,
-                        alertRadius: 50,
-                        active: true
-                    });
-                    
-                    // Create vertical crossing (across the horizontal road)
-                    this.pedestrianLanes.push({
-                        id: crossingId++,
-                        x: vRoad.x + vRoad.width/2 - 8, // Center of vertical road
-                        y: hRoad.y + 10, // Start 10px into the horizontal road
-                        width: 16, // Standard crossing width
-                        height: hRoad.height - 20, // Height of horizontal road minus margins
-                        direction: 'vertical',
-                        street: `${vRoad.name} crossing ${hRoad.name}`,
-                        alertRadius: 50,
-                        active: true
-                    });
-                }
+        // Create SPECIFIC pedestrian lanes in predetermined green areas
+        // NO overlapping, NO random placement - ONLY strategic green area crossings
+        
+        if (horizontalRoads.length >= 2 && verticalRoads.length >= 3) {
+            // Place pedestrian crossings in green areas between specific building blocks
+            
+            // Crossing 1: Between first two buildings horizontally
+            this.pedestrianLanes.push({
+                id: crossingId++,
+                x: verticalRoads[1].x + verticalRoads[1].width + 40, // In green area after 2nd vertical road
+                y: horizontalRoads[0].y + horizontalRoads[0].height + 60, // In green area below 1st horizontal road
+                width: 60, // Short crossing in green area
+                height: 12,
+                direction: 'horizontal',
+                street: 'Green Area Crossing 1',
+                alertRadius: 30,
+                active: true
+            });
+            
+            // Crossing 2: Between buildings vertically (if there are enough roads)
+            if (horizontalRoads.length >= 3) {
+                this.pedestrianLanes.push({
+                    id: crossingId++,
+                    x: verticalRoads[0].x + verticalRoads[0].width + 60, // In green area after 1st vertical road
+                    y: horizontalRoads[1].y + horizontalRoads[1].height + 40, // In green area below 2nd horizontal road
+                    width: 12,
+                    height: 50, // Short vertical crossing in green area
+                    direction: 'vertical',
+                    street: 'Green Area Crossing 2',
+                    alertRadius: 30,
+                    active: true
+                });
             }
         }
         
-        console.log(`🚶 Created ${this.pedestrianLanes.length} pedestrian crossing lanes`);
+        console.log(`🚶 Created ${this.pedestrianLanes.length} pedestrian crossing lanes in green areas (NO road overlaps)`);
     },
     
     /**
