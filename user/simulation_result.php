@@ -10,8 +10,15 @@ require_once "../config.php";
 
 // Get the latest simulation result for the user
 $user_id = $_SESSION["id"];
-$sql = "SELECT * FROM simulation_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 1";
-$latest_result = null;
+
+// First try to get from quiz_sessions (new table)
+$latest_quiz_session = null;
+$sql = "SELECT qs.*, 
+        (SELECT COUNT(*) FROM quiz_responses qr WHERE qr.session_id = qs.session_id AND qr.is_correct = 1) as correct_answers_count
+        FROM quiz_sessions qs 
+        WHERE qs.user_id = ? 
+        ORDER BY qs.completed_at DESC, qs.created_at DESC 
+        LIMIT 1";
 
 if ($stmt = mysqli_prepare($conn, $sql)) {
     mysqli_stmt_bind_param($stmt, "i", $user_id);
@@ -19,10 +26,47 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
     $result = mysqli_stmt_get_result($stmt);
     
     if ($row = mysqli_fetch_assoc($result)) {
-        $latest_result = $row;
+        $latest_quiz_session = $row;
     }
     
     mysqli_stmt_close($stmt);
+}
+
+// Get detailed quiz responses if available
+$quiz_responses = [];
+if ($latest_quiz_session && $latest_quiz_session['session_id']) {
+    $sql = "SELECT * FROM quiz_responses 
+            WHERE session_id = ? AND user_id = ? 
+            ORDER BY scenario_id";
+    
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param($stmt, "si", $latest_quiz_session['session_id'], $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $quiz_responses[] = $row;
+        }
+        
+        mysqli_stmt_close($stmt);
+    }
+}
+
+// Fallback: Get from old simulation_results table if no quiz session found
+$legacy_result = null;
+if (!$latest_quiz_session) {
+    $sql = "SELECT * FROM simulation_results WHERE user_id = ? ORDER BY created_at DESC LIMIT 1";
+    if ($stmt = mysqli_prepare($conn, $sql)) {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        if ($row = mysqli_fetch_assoc($result)) {
+            $legacy_result = $row;
+        }
+        
+        mysqli_stmt_close($stmt);
+    }
 }
 
 // Page setup for layout
@@ -33,77 +77,146 @@ ob_start();
 ?>
 
 <div class="results-container">
-    <?php if ($latest_result): ?>
+    <?php if ($latest_quiz_session): ?>
+        <!-- NEW QUIZ RESULTS FROM quiz_sessions TABLE -->
         <div class="results-header">
-            <h2>🏁 Simulation Complete!</h2>
+            <h2>🏁 Quiz Simulation Complete!</h2>
             <div class="completion-date">
-                Completed on: <?php echo date('F j, Y \a\t g:i A', strtotime($latest_result['created_at'])); ?>
+                Completed on: <?php echo date('F j, Y \a\t g:i A', strtotime($latest_quiz_session['completed_at'] ?: $latest_quiz_session['created_at'])); ?>
             </div>
         </div>
 
         <div class="results-summary">
-            <div class="score-card <?php echo $latest_result['status'] === 'completed' ? 'passed' : 'failed'; ?>">
+            <div class="score-card <?php echo $latest_quiz_session['session_status'] === 'completed' ? 'passed' : 'failed'; ?>">
                 <div class="score-percentage">
-                    <?php echo number_format($latest_result['score_percentage'], 1); ?>%
+                    <?php echo number_format($latest_quiz_session['completion_percentage'], 1); ?>%
                 </div>
                 <div class="score-label">
-                    <?php echo $latest_result['status'] === 'completed' ? 'PASSED' : 'NEEDS IMPROVEMENT'; ?>
+                    <?php echo $latest_quiz_session['session_status'] === 'completed' ? 'COMPLETED' : 'IN PROGRESS'; ?>
                 </div>
             </div>
 
-            <div class="stats-grid">
+            <div class="results-stats">
                 <div class="stat-item">
-                    <div class="stat-number"><?php echo $latest_result['total_scenarios']; ?></div>
-                    <div class="stat-label">Total Scenarios</div>
-                </div>
-                <div class="stat-item correct">
-                    <div class="stat-number"><?php echo $latest_result['correct_answers']; ?></div>
+                    <div class="stat-value"><?php echo $latest_quiz_session['correct_answers']; ?>/<?php echo $latest_quiz_session['total_questions']; ?></div>
                     <div class="stat-label">Correct Answers</div>
                 </div>
-                <div class="stat-item wrong">
-                    <div class="stat-number"><?php echo $latest_result['wrong_answers']; ?></div>
-                    <div class="stat-label">Wrong Answers</div>
-                </div>
+                
                 <div class="stat-item">
-                    <div class="stat-number"><?php echo gmdate("i:s", $latest_result['completion_time_seconds']); ?></div>
-                    <div class="stat-label">Completion Time</div>
+                    <div class="stat-value"><?php echo $latest_quiz_session['total_points']; ?></div>
+                    <div class="stat-label">Total Points</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo $latest_quiz_session['questions_answered']; ?>/5</div>
+                    <div class="stat-label">Scenarios Completed</div>
+                </div>
+                
+                <?php if ($latest_quiz_session['total_time_seconds']): ?>
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo gmdate('i:s', $latest_quiz_session['total_time_seconds']); ?></div>
+                    <div class="stat-label">Time Taken</div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php if (!empty($quiz_responses)): ?>
+        <!-- DETAILED QUIZ RESPONSES -->
+        <div class="detailed-results">
+            <h3>📋 Detailed Quiz Responses</h3>
+            <div class="responses-container">
+                <?php foreach ($quiz_responses as $response): ?>
+                    <div class="response-card">
+                        <div class="response-header">
+                            <h4>Scenario <?php echo $response['scenario_id']; ?></h4>
+                            <span class="response-result <?php echo $response['is_correct'] ? 'correct' : 'incorrect'; ?>">
+                                <?php echo $response['is_correct'] ? '✅ Correct' : '❌ Incorrect'; ?>
+                            </span>
+                        </div>
+                        
+                        <div class="question-text">
+                            <?php echo htmlspecialchars($response['question_text']); ?>
+                        </div>
+                        
+                        <div class="answer-details">
+                            <div class="answer-row">
+                                <strong>Your Answer:</strong> Option <?php echo chr(65 + $response['selected_option']); ?>
+                            </div>
+                            <div class="answer-row">
+                                <strong>Correct Answer:</strong> Option <?php echo chr(65 + $response['correct_option']); ?>
+                            </div>
+                            <div class="answer-row">
+                                <strong>Points Earned:</strong> <?php echo $response['points_earned']; ?>/20
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+    <?php elseif ($legacy_result): ?>
+        <!-- FALLBACK: OLD SIMULATION RESULTS -->
+        <div class="results-header">
+            <h2>🏁 Simulation Complete!</h2>
+            <div class="completion-date">
+                Completed on: <?php echo date('F j, Y \a\t g:i A', strtotime($legacy_result['created_at'])); ?>
+            </div>
+        </div>
+
+        <div class="results-summary">
+            <div class="score-card <?php echo $legacy_result['status'] === 'completed' ? 'passed' : 'failed'; ?>">
+                <div class="score-percentage">
+                    <?php echo number_format($legacy_result['score_percentage'], 1); ?>%
+                </div>
+                <div class="score-label">
+                    <?php echo $legacy_result['status'] === 'completed' ? 'PASSED' : 'NEEDS IMPROVEMENT'; ?>
+                </div>
+            </div>
+
+            <div class="results-stats">
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo $legacy_result['correct_answers']; ?>/<?php echo $legacy_result['total_questions']; ?></div>
+                    <div class="stat-label">Correct Answers</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo $legacy_result['total_score']; ?></div>
+                    <div class="stat-label">Total Score</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value"><?php echo gmdate('i:s', $legacy_result['completion_time_seconds']); ?></div>
+                    <div class="stat-label">Time Taken</div>
                 </div>
             </div>
         </div>
 
-        <?php if (!empty($latest_result['scenarios_data'])): ?>
-            <?php $scenarios_data = json_decode($latest_result['scenarios_data'], true); ?>
-            <?php if (is_array($scenarios_data) && count($scenarios_data) > 0): ?>
-                <div class="detailed-results">
-                    <h3>📋 Detailed Scenario Results</h3>
-                    <div class="scenarios-list">
-                        <?php foreach ($scenarios_data as $index => $scenario): ?>
-                            <div class="scenario-result <?php echo $scenario['isCorrect'] ? 'correct' : 'incorrect'; ?>">
-                                <div class="scenario-header">
-                                    <span class="scenario-number">Scenario <?php echo $index + 1; ?></span>
-                                    <span class="scenario-status">
-                                        <?php echo $scenario['isCorrect'] ? '✅ Correct' : '❌ Incorrect'; ?>
-                                    </span>
-                                </div>
-                                <div class="scenario-title"><?php echo htmlspecialchars($scenario['scenario']); ?></div>
-                                <div class="scenario-details">
-                                    <span>Your answer: Option <?php echo $scenario['userAnswer'] + 1; ?></span>
-                                    <span>Correct answer: Option <?php echo $scenario['correctAnswer'] + 1; ?></span>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
+    <?php else: ?>
+        <!-- NO RESULTS FOUND -->
+        <div class="no-results">
+            <div style="text-align: center; padding: 50px;">
+                <h3>No Simulation Results Found</h3>
+                <p>You haven't completed any driving simulation quizzes yet.</p>
+                <a href="simulation.php" class="btn btn-primary">Start Your First Simulation</a>
+            </div>
+        </div>
+    <?php endif; ?>
 
-        <div class="results-actions">
-            <a href="simulation.php" class="btn btn-primary">
-                🔄 Try Again
-            </a>
-            <a href="dashboard.php" class="btn btn-secondary">
-                📊 Back to Dashboard
-            </a>
+    <!-- ACTION BUTTONS -->
+    <div class="results-actions">
+        <a href="simulation.php" class="btn btn-primary">
+            🔄 Take New Quiz
+        </a>
+        <a href="dashboard.php" class="btn btn-secondary">
+            📊 Back to Dashboard
+        </a>
+        <a href="../view_quiz_results.php" class="btn btn-info">
+            � View All Results
+        </a>
+    </div>
+</div>
         </div>
 
         <?php if ($latest_result['score_percentage'] >= 70): ?>
@@ -155,6 +268,200 @@ ob_start();
 
 .completion-date {
     color: #7f8c8d;
+    font-size: 14px;
+}
+
+.results-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.score-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.score-card.passed {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+}
+
+.score-card.failed {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.score-percentage {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.score-label {
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.results-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+}
+
+/* NEW: Detailed Quiz Response Styles */
+.detailed-results {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.detailed-results h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.responses-container {
+    display: grid;
+    gap: 15px;
+}
+
+.response-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    transition: transform 0.2s;
+}
+
+.response-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.response-header h4 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.response-result {
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.response-result.correct {
+    background: #d4edda;
+    color: #155724;
+}
+
+.response-result.incorrect {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.question-text {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #007bff;
+    font-style: italic;
+}
+
+.answer-details {
+    display: grid;
+    gap: 8px;
+}
+
+.answer-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 5px;
+    border-left: 3px solid #6c757d;
+}
+
+.no-results {
+    text-align: center;
+    padding: 50px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.results-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    margin: 0 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #545b62);
+    color: white;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+}
     font-size: 14px;
 }
 
