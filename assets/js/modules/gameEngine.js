@@ -31,9 +31,9 @@ const GameEngine = {
         this.canvas = canvas;
         this.ctx = ctx;
         
-        // Set camera to show wider view - car positioned for better visibility
-        this.cameraOffset.x = this.canvas.width * 0.4; // Car in left 40% of screen
-        this.cameraOffset.y = this.canvas.height / 2;   // Vertically centered
+        // Set camera to center car perfectly in viewport - NO BLANK SPACES
+        this.cameraOffset.x = this.canvas.width / 2;   // Car perfectly centered horizontally
+        this.cameraOffset.y = this.canvas.height / 2;  // Car perfectly centered vertically
         
         console.log(`✅ Game engine ready - Camera offset: ${this.cameraOffset.x}, ${this.cameraOffset.y}`);
     },
@@ -63,15 +63,15 @@ const GameEngine = {
         this.camera.x += (targetX - this.camera.x) * this.cameraSmoothing;
         this.camera.y += (targetY - this.camera.y) * this.cameraSmoothing;
         
-        // Keep camera within world bounds but allow generous view
+        // Keep camera within world bounds - NO BLANK AREAS ALLOWED
         if (window.WorldModule) {
             const worldDim = window.WorldModule.getDimensions();
             
-            // Allow camera to move more freely to show the full world
-            this.camera.x = Math.max(-this.canvas.width * 0.2, 
-                           Math.min(worldDim.width - this.canvas.width * 0.8, this.camera.x));
-            this.camera.y = Math.max(-this.canvas.height * 0.2, 
-                           Math.min(worldDim.height - this.canvas.height * 0.8, this.camera.y));
+            // Ensure camera never shows blank areas by constraining tightly
+            this.camera.x = Math.max(0, 
+                           Math.min(worldDim.width - this.canvas.width, this.camera.x));
+            this.camera.y = Math.max(0, 
+                           Math.min(worldDim.height - this.canvas.height, this.camera.y));
         }
     },
     
