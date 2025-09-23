@@ -393,14 +393,14 @@ const UIModule = {
     },
     
     /**
-     * Show completion screen
+     * Show completion screen with Proceed button
      */
     showCompletionScreen(finalResults) {
-        console.log('🏁 Showing completion screen');
+        console.log('🏁 Showing completion screen with Proceed option');
         
         // Create completion modal
         const completionHTML = `
-            <div class="completion-modal" style="
+            <div class="completion-modal" id="completionModal" style="
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                 background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center;
                 z-index: 3000;
@@ -409,31 +409,106 @@ const UIModule = {
                     background: white; border-radius: 15px; padding: 40px; max-width: 600px; width: 90%;
                     text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
                 ">
-                    <h2 style="color: #28a745; margin-bottom: 20px;">🎉 Simulation Complete!</h2>
+                    <h2 style="color: #28a745; margin-bottom: 20px;">🎉 All 5 Scenarios Complete!</h2>
                     <div style="font-size: 18px; margin-bottom: 30px;">
-                        <p><strong>Final Score:</strong> ${finalResults.score} / ${finalResults.scenariosCompleted * 20}</p>
-                        <p><strong>Scenarios Completed:</strong> ${finalResults.scenariosCompleted}/5</p>
-                        <p><strong>Accuracy:</strong> ${finalResults.accuracy.toFixed(1)}%</p>
-                        <p><strong>Time:</strong> ${this.formatTime(finalResults.totalTime)}</p>
+                        <p><strong>Quiz Responses:</strong> ${finalResults.scenariosCompleted}/5 scenarios answered</p>
+                        <p><strong>Estimated Score:</strong> ${finalResults.score} points</p>
+                        <p><strong>Time Taken:</strong> ${this.formatTime(finalResults.totalTime)}</p>
                     </div>
-                    <div style="margin: 20px 0;">
-                        ${this.getGradeDisplay(finalResults.accuracy)}
+                    <div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <p style="margin: 0; color: #495057;">
+                            <i class="fas fa-info-circle"></i> Your responses are saved temporarily. 
+                            Click <strong>Proceed</strong> to save your results to the database and view detailed results.
+                        </p>
                     </div>
-                    <button onclick="location.reload()" style="
-                        background: linear-gradient(45deg, #007bff, #0056b3); color: white; border: none;
-                        padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;
-                        margin: 10px;
-                    ">Try Again</button>
-                    <button onclick="window.location.href='dashboard.php'" style="
-                        background: linear-gradient(45deg, #28a745, #1e7e34); color: white; border: none;
-                        padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;
-                        margin: 10px;
-                    ">Back to Dashboard</button>
+                    <div id="loadingIndicator" style="display: none; margin: 20px 0;">
+                        <div style="color: #007bff;">
+                            <i class="fas fa-spinner fa-spin"></i> Saving your results to database...
+                        </div>
+                    </div>
+                    <div id="buttonContainer">
+                        <button id="proceedBtn" onclick="window.UIModule.proceedToResults()" style="
+                            background: linear-gradient(45deg, #28a745, #1e7e34); color: white; border: none;
+                            padding: 15px 40px; border-radius: 8px; font-size: 18px; cursor: pointer;
+                            margin: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                        ">Proceed to Results</button>
+                        <button onclick="location.reload()" style="
+                            background: linear-gradient(45deg, #6c757d, #545b62); color: white; border: none;
+                            padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer;
+                            margin: 10px;
+                        ">Retake Quiz</button>
+                    </div>
                 </div>
             </div>
         `;
         
         document.body.insertAdjacentHTML('beforeend', completionHTML);
+        
+        // Store final results for later use
+        this.pendingResults = finalResults;
+    },
+
+    /**
+     * Proceed to save results and redirect to results page
+     */
+    async proceedToResults() {
+        console.log('🚀 User clicked Proceed - saving to database...');
+        
+        // Show loading indicator
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const buttonContainer = document.getElementById('buttonContainer');
+        const proceedBtn = document.getElementById('proceedBtn');
+        
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        if (proceedBtn) proceedBtn.disabled = true;
+        
+        try {
+            // Save final results to database
+            if (window.GameStats && this.pendingResults) {
+                const saveResult = await window.GameStats.saveFinalResults(this.pendingResults);
+                
+                if (saveResult && saveResult.success) {
+                    console.log('✅ Results saved to database successfully!');
+                    
+                    // Show success message briefly
+                    if (loadingIndicator) {
+                        loadingIndicator.innerHTML = '<div style="color: #28a745;"><i class="fas fa-check-circle"></i> Results saved successfully!</div>';
+                    }
+                    
+                    // Redirect to results page after short delay
+                    setTimeout(() => {
+                        window.location.href = 'simulation_result.php';
+                    }, 1500);
+                } else {
+                    console.error('❌ Database save failed:', saveResult?.error);
+                    this.showSaveError('Failed to save results to database. Please try again.');
+                }
+            } else {
+                console.error('❌ No GameStats module or pending results available');
+                this.showSaveError('Unable to save results. Missing required data.');
+            }
+        } catch (error) {
+            console.error('❌ Error during save process:', error);
+            this.showSaveError('An error occurred while saving. Please try again.');
+        }
+    },
+
+    /**
+     * Show save error message
+     */
+    showSaveError(message) {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const proceedBtn = document.getElementById('proceedBtn');
+        
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+            loadingIndicator.innerHTML = `<div style="color: #dc3545;"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
+        }
+        
+        if (proceedBtn) {
+            proceedBtn.disabled = false;
+            proceedBtn.textContent = 'Try Again';
+        }
     },
     
     /**
