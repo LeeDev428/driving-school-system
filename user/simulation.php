@@ -334,13 +334,25 @@ $user_id = $_SESSION["id"];
         }
         
         .question-feedback {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 2px solid #28a745;
             color: #155724;
             display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .question-feedback.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .loading-screen {
@@ -544,24 +556,15 @@ $user_id = $_SESSION["id"];
             aspectRatio: window.innerWidth / window.innerHeight // Dynamic aspect ratio
         };
         
-        // Initialize simulation when page loads
+        // Note: Initialization now happens via startSimulation() function
+        // when user clicks the START button, preventing duplicate initialization
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎮 Starting Driving Simulation System...');
+            console.log('🎮 Simulation page loaded - waiting for user to start...');
             
-            // Initialize message system first
+            // Initialize message system only
             if (window.MessageSystem) {
                 window.MessageSystem.init();
             }
-            
-            setTimeout(() => {
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.querySelector('.simulation-container').style.display = 'flex';
-                
-                // Initialize the simulation
-                if (window.SimulationMain) {
-                    window.SimulationMain.init();
-                }
-            }, 2000);
         });
     </script>
     
@@ -588,9 +591,14 @@ $user_id = $_SESSION["id"];
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.querySelector('.simulation-container').style.display = 'block';
                 
-                // Initialize the game if not already initialized
-                if (typeof initializeGame === 'function') {
-                    initializeGame();
+                // Initialize the simulation (SINGLE POINT OF INITIALIZATION)
+                if (window.SimulationMain && !window.SimulationMain.initialized) {
+                    console.log('🎮 Starting Driving Simulation System...');
+                    window.SimulationMain.init();
+                } else if (window.SimulationMain && window.SimulationMain.initialized) {
+                    console.log('⚠️ Simulation already initialized, skipping duplicate init');
+                } else {
+                    console.error('❌ SimulationMain not available');
                 }
             }, 2000); // 2 second loading delay
         }
