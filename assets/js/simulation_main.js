@@ -80,6 +80,8 @@ const SimulationMain = {
         window.addEventListener('resize', () => this.handleResize());
         
         console.log(`📱 Canvas setup (TRUE FULLSCREEN): ${this.canvas.width}x${this.canvas.height} (World: ${window.SimulationConfig.worldWidth}x${window.SimulationConfig.worldHeight})`);
+        console.log(`🔍 DEBUG: Viewport=${viewportWidth}x${viewportHeight}, Canvas CSS=${this.canvas.style.width}x${this.canvas.style.height}`);
+        console.log(`🔍 DEBUG: Canvas actual size=${this.canvas.width}x${this.canvas.height}, Canvas position=${this.canvas.style.position}`);
     },
     
     /**
@@ -415,10 +417,10 @@ const SimulationMain = {
     },
     
     /**
-     * Handle simulation completion
+     * Handle simulation completion - show proceed modal instead of automatic save
      */
-    handleSimulationComplete() {
-        console.log('🏁 Simulation complete!');
+    async handleSimulationComplete() {
+        console.log('🏁 All 5 scenarios completed!');
         
         this.stopSimulation();
         
@@ -430,14 +432,17 @@ const SimulationMain = {
             accuracy: (this.currentScore / (this.totalScenarios * 20)) * 100
         };
         
-        // Save final results
-        if (this.modules.GameStats) {
-            this.modules.GameStats.saveFinalResults(finalResults);
-        }
+        console.log('📊 Final results calculated:', finalResults);
+        console.log('💾 Data is stored in localStorage, waiting for user to proceed...');
         
-        // Show completion screen
+        // Show completion screen with Proceed button (no automatic database save)
         if (this.modules.UIModule) {
             this.modules.UIModule.showCompletionScreen(finalResults);
+        } else {
+            console.error('❌ UIModule not available for completion screen');
+            // Fallback - show basic alert
+            alert(`Simulation Complete!\nScore: ${finalResults.score}\nScenarios: ${finalResults.scenariosCompleted}/5\nClick OK to continue.`);
+            window.location.href = 'simulation_result.php';
         }
     },
     
