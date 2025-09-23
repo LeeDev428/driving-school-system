@@ -185,10 +185,14 @@ $user_id = $_SESSION["id"];
             background: white;
             border-radius: 15px;
             padding: 30px;
-            max-width: 600px;
-            width: 90%;
+            max-width: 900px;  /* Wider for landscape */
+            width: 95%;
+            max-height: 70vh;  /* Limit height */
+            overflow-y: auto;  /* Allow scrolling if needed */
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             animation: slideIn 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
         
         @keyframes slideIn {
@@ -197,39 +201,66 @@ $user_id = $_SESSION["id"];
         }
         
         .question-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
             color: #2c3e50;
+            text-align: center;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            color: #495057;
         }
         
         .question-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;  /* Two columns for landscape */
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .question-options {
+                grid-template-columns: 1fr;  /* Single column on mobile */
+            }
+            .question-content {
+                max-width: 95%;
+                padding: 20px;
+            }
         }
         
         .option-btn {
             background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            padding: 15px 20px;
-            border-radius: 8px;
+            border: 3px solid #e9ecef;
+            padding: 20px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: left;
             font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
         }
         
         .option-btn:hover {
             background: #e9ecef;
             border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
         }
         
         .option-btn.selected {
             background: #007bff;
             color: white;
             border-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
         }
         
         .option-btn.correct {
@@ -248,22 +279,33 @@ $user_id = $_SESSION["id"];
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .question-counter {
+            font-size: 16px;
+            color: #6c757d;
+            font-weight: 500;
         }
         
         .submit-btn {
-            background: linear-gradient(45deg, #007bff, #0056b3);
+            background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            padding: 15px 30px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 16px;
             transition: all 0.3s ease;
+            min-width: 120px;
         }
         
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
         }
         
         .submit-btn:disabled {
@@ -271,6 +313,24 @@ $user_id = $_SESSION["id"];
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+        
+        .next-btn {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.3);
         }
         
         .question-feedback {
@@ -459,10 +519,10 @@ $user_id = $_SESSION["id"];
     <div id="questionModal" class="question-modal">
         <div class="question-content">
             <h3 class="question-title" id="questionTitle">Traffic Scenario Question</h3>
-            <div id="questionText"></div>
+            <div class="question-text" id="questionText"></div>
             <div class="question-options" id="questionOptions"></div>
             <div class="question-actions">
-                <div>Question <span id="questionNumber">1</span> of 5</div>
+                <div class="question-counter">Question <span id="questionNumber">1</span> of 5</div>
                 <button class="submit-btn" id="submitAnswer" disabled>Submit Answer</button>
             </div>
             <div class="question-feedback" id="questionFeedback"></div>
