@@ -382,8 +382,8 @@ $user_id = $_SESSION["id"];
             canvasWidth: window.innerWidth, // Use full window width
             canvasHeight: window.innerHeight, // Use full window height
             debug: false, // Set to true for debugging
-            worldWidth: Math.max(window.innerWidth * 1.5, 3200), // Wider world for landscape
-            worldHeight: Math.max(window.innerHeight * 1.2, 1600),
+            worldWidth: Math.max(window.innerWidth * 2, 4800), // Much wider world
+            worldHeight: Math.max(window.innerHeight * 1.5, 2000), // Taller world
             cameraFollow: true,
             aspectRatio: window.innerWidth / window.innerHeight // Dynamic aspect ratio
         };
