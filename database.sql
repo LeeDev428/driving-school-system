@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `appointments` (
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE SET NULL,
   CONSTRAINT `appointments_ibfk_3` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `appointments_ibfk_4` FOREIGN KEY (`appointment_type_id`) REFERENCES `appointment_types` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -156,21 +156,71 @@ CREATE TABLE IF NOT EXISTS `instructors` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table driving_school.quiz_questions
-CREATE TABLE IF NOT EXISTS `quiz_questions` (
+-- Dumping structure for table driving_school.quiz_responses
+CREATE TABLE IF NOT EXISTS `quiz_responses` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `quiz_id` int NOT NULL,
-  `question` text NOT NULL,
-  `option_a` varchar(255) NOT NULL,
-  `option_b` varchar(255) NOT NULL,
-  `option_c` varchar(255) NOT NULL,
-  `option_d` varchar(255) NOT NULL,
-  `correct_answer` enum('A','B','C','D') NOT NULL,
-  `points` int DEFAULT '1',
+  `user_id` int NOT NULL,
+  `session_id` varchar(100) NOT NULL COMMENT 'Unique session identifier for grouping responses',
+  `scenario_id` int NOT NULL COMMENT 'Which scenario (1-5)',
+  `question_text` text NOT NULL COMMENT 'The actual question asked',
+  `selected_option` int NOT NULL COMMENT 'User selected option (0-3)',
+  `correct_option` int NOT NULL COMMENT 'Correct option (0-3)',
+  `is_correct` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Whether answer was correct',
+  `points_earned` int NOT NULL DEFAULT '0' COMMENT 'Points earned for this question',
+  `time_taken_seconds` int DEFAULT NULL COMMENT 'Time taken to answer',
+  `answered_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `quiz_id` (`quiz_id`),
-  CONSTRAINT `quiz_questions_ibfk_1` FOREIGN KEY (`quiz_id`) REFERENCES `elearning_quizzes` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `user_id` (`user_id`),
+  KEY `session_id` (`session_id`),
+  KEY `scenario_id` (`scenario_id`),
+  CONSTRAINT `quiz_responses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table driving_school.quiz_sessions
+CREATE TABLE IF NOT EXISTS `quiz_sessions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `session_id` varchar(100) NOT NULL COMMENT 'Links to quiz_responses',
+  `user_id` int NOT NULL,
+  `total_questions` int NOT NULL DEFAULT '5',
+  `questions_answered` int NOT NULL DEFAULT '0',
+  `correct_answers` int NOT NULL DEFAULT '0',
+  `total_points` int NOT NULL DEFAULT '0',
+  `max_points` int NOT NULL DEFAULT '100',
+  `completion_percentage` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `session_status` enum('in_progress','completed','abandoned') NOT NULL DEFAULT 'in_progress',
+  `started_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `total_time_seconds` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `session_id` (`session_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `quiz_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Data exporting was unselected.
+
+-- Dumping structure for table driving_school.simulation_results
+CREATE TABLE IF NOT EXISTS `simulation_results` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `simulation_type` varchar(50) NOT NULL DEFAULT 'basic_driving',
+  `total_scenarios` int NOT NULL DEFAULT '0',
+  `correct_answers` int NOT NULL DEFAULT '0',
+  `wrong_answers` int NOT NULL DEFAULT '0',
+  `score_percentage` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `completion_time_seconds` int NOT NULL DEFAULT '0',
+  `scenarios_data` json DEFAULT NULL,
+  `status` enum('completed','failed','abandoned') NOT NULL DEFAULT 'completed',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `simulation_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -231,23 +281,21 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
 
 -- Data exporting was unselected.
 
--- Dumping structure for table driving_school.simulation_results
-CREATE TABLE IF NOT EXISTS `simulation_results` (
+-- Dumping structure for table driving_school.violation_logs
+CREATE TABLE IF NOT EXISTS `violation_logs` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `simulation_type` varchar(50) NOT NULL DEFAULT 'basic_driving',
-  `total_scenarios` int NOT NULL DEFAULT '0',
-  `correct_answers` int NOT NULL DEFAULT '0',
-  `wrong_answers` int NOT NULL DEFAULT '0',
-  `score_percentage` decimal(5,2) NOT NULL DEFAULT '0.00',
-  `completion_time_seconds` int NOT NULL DEFAULT '0',
-  `scenarios_data` json DEFAULT NULL,
-  `status` enum('completed','failed','abandoned') NOT NULL DEFAULT 'completed',
+  `user_id` int DEFAULT NULL,
+  `session_id` varchar(100) NOT NULL,
+  `violation_type` varchar(50) NOT NULL,
+  `violation_message` text NOT NULL,
+  `severity` enum('info','warning','error') NOT NULL DEFAULT 'warning',
+  `violation_timestamp` bigint NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `simulation_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `session_id` (`session_id`),
+  KEY `violation_timestamp` (`violation_timestamp`)
+) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
