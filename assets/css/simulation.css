@@ -172,13 +172,19 @@ body {
 }
 
 #gameCanvas {
-    width: 100%;
-    max-width: 600px;
-    height: 500px;
-    border: 3px solid #34495e;
-    border-radius: 10px;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border: none;
+    border-radius: 0;
     display: block;
-    margin: 0 auto;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
     background: #2c3e50;
 }
 
