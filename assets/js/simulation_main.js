@@ -70,11 +70,11 @@ const SimulationMain = {
         this.canvas.style.zIndex = '999';
         this.canvas.style.objectFit = 'cover';
         
-        // Update config for true fullscreen world
+        // Update config for TRUE FULLSCREEN world that utilizes entire viewport
         window.SimulationConfig.canvasWidth = viewportWidth;
         window.SimulationConfig.canvasHeight = viewportHeight;
-        window.SimulationConfig.worldWidth = Math.max(viewportWidth * 1.5, 3200);
-        window.SimulationConfig.worldHeight = Math.max(viewportHeight * 1.2, 1600);
+        window.SimulationConfig.worldWidth = Math.max(viewportWidth * 2.0, 4800); // Increased multiplier
+        window.SimulationConfig.worldHeight = Math.max(viewportHeight * 1.8, 2400); // Increased multiplier
         
         // Handle window resize to maintain fullscreen
         window.addEventListener('resize', () => this.handleResize());
@@ -297,25 +297,21 @@ const SimulationMain = {
      * Render all visual elements
      */
     render() {
-        // Clear canvas
+        // Clear canvas with background
         this.ctx.fillStyle = '#2c3e50';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Get camera from game engine
-        const camera = this.modules.GameEngine ? this.modules.GameEngine.getCamera() : { x: 0, y: 0, zoom: 1.5 };
+        // Get camera from game engine (no zoom applied)
+        const camera = this.modules.GameEngine ? this.modules.GameEngine.getCamera() : { x: 0, y: 0 };
         
-        // Apply zoom transformation
-        this.ctx.save();
-        this.ctx.scale(camera.zoom || 1.5, camera.zoom || 1.5);
-        
-        // Adjust camera position for zoom
+        // Use camera directly without zoom transformation
         const adjustedCamera = {
-            x: camera.x / (camera.zoom || 1.5),
-            y: camera.y / (camera.zoom || 1.5),
-            zoom: camera.zoom || 1.5
+            x: camera.x,
+            y: camera.y,
+            zoom: 1.0 // Always 1:1 scale for fullscreen display
         };
         
-        // Render in proper order (back to front)
+        // Render in proper order (back to front) - no transformation needed
         if (this.modules.WorldModule) {
             this.modules.WorldModule.render(this.ctx, adjustedCamera);
         }
@@ -328,10 +324,7 @@ const SimulationMain = {
             this.modules.UIModule.renderGame(this.ctx, adjustedCamera);
         }
         
-        // Restore context transformation
-        this.ctx.restore();
-        
-        // Debug info (rendered without zoom)
+        // Debug info
         if (window.SimulationConfig.debug) {
             this.renderDebugInfo();
         }
@@ -592,13 +585,19 @@ const SimulationMain = {
      */
     handleResize() {
         const newWidth = window.innerWidth;
-        const newHeight = window.innerHeight - 120;
+        const newHeight = window.innerHeight;
         
         this.canvas.width = newWidth;
         this.canvas.height = newHeight;
         
+        // Update styles to maintain fullscreen coverage
+        this.canvas.style.width = '100vw';
+        this.canvas.style.height = '100vh';
+        
         window.SimulationConfig.canvasWidth = newWidth;
         window.SimulationConfig.canvasHeight = newHeight;
+        window.SimulationConfig.worldWidth = Math.max(newWidth * 1.5, 3200);
+        window.SimulationConfig.worldHeight = Math.max(newHeight * 1.2, 1600);
         
         console.log(`📱 Canvas resized: ${newWidth}x${newHeight}`);
     },
