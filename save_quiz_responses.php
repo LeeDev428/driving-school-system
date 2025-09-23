@@ -117,6 +117,20 @@ function saveSingleResponse($pdo, $user_id, $input) {
         }
     }
     
+    // Check for duplicate entry
+    $check_sql = "SELECT id FROM quiz_responses WHERE session_id = ? AND scenario_id = ?";
+    $check_stmt = $pdo->prepare($check_sql);
+    $check_stmt->execute([$input['session_id'], $input['scenario_id']]);
+    
+    if ($check_stmt->fetch()) {
+        // Response already exists, skip saving
+        return [
+            'success' => true,
+            'message' => 'Response already exists, skipping duplicate',
+            'duplicate' => true
+        ];
+    }
+    
     // Save individual response
     $sql = "INSERT INTO quiz_responses (
         user_id, session_id, scenario_id, question_text, selected_option, 
