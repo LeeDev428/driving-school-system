@@ -1,12 +1,13 @@
 /**
- * Game Stats Module - Database Integration and Statistics
- * Handles saving simulation results to simulation_results table
+ * Game Stats Module - Enhanced Database Integration with localStorage
+ * Handles temporary localStorage storage and final database saving
  */
 
 const GameStats = {
     // Current session data
     sessionData: {
         userId: null,
+        sessionId: null,
         startTime: null,
         scenarios: [],
         totalScore: 0,
@@ -15,92 +16,283 @@ const GameStats = {
     
     // Database endpoints
     endpoints: {
-        saveProgress: '../save_simulation.php',
-        getStats: '../get_simulation_stats.php'
+        saveQuizResponses: '../save_quiz_responses.php',
+        saveSimulation: '../save_simulation.php'
+    },
+    
+    // LocalStorage keys
+    storageKeys: {
+        sessionId: 'quiz_session_id',
+        responses: 'quiz_responses',
+        startTime: 'quiz_start_time'
     },
     
     /**
      * Initialize game stats module
      */
     init() {
-        console.log('📊 Initializing game statistics...');
+        console.log('📊 Initializing enhanced game statistics...');
         
         this.sessionData.userId = window.SimulationConfig?.userId || null;
-        this.sessionData.startTime = new Date().toISOString();
-        this.sessionData.scenarios = [];
-        this.sessionData.totalScore = 0;
-        this.sessionData.completed = false;
         
         if (!this.sessionData.userId) {
             console.error('❌ No user ID found for statistics');
             return;
         }
         
-        console.log('✅ Game statistics ready');
+        // Start new quiz session
+        this.startNewQuizSession();
+        
+        console.log('✅ Game statistics ready with localStorage backup');
     },
     
     /**
-     * Save individual scenario result
+     * Start a new quiz session
      */
-    saveScenarioResult(result) {
-        if (!this.sessionData.userId) {
-            console.warn('Cannot save: No user ID');
+    async startNewQuizSession() {
+        try {
+            // Clear any existing localStorage data
+            this.clearLocalStorage();
+            
+            // Generate session ID
+            this.sessionData.sessionId = `quiz_${this.sessionData.userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            this.sessionData.startTime = new Date().toISOString();
+            
+            // Save to localStorage
+            localStorage.setItem(this.storageKeys.sessionId, this.sessionData.sessionId);
+            localStorage.setItem(this.storageKeys.startTime, this.sessionData.startTime);
+            localStorage.setItem(this.storageKeys.responses, JSON.stringify([]));
+            
+            // Start session in database
+            const response = await fetch(this.endpoints.saveQuizResponses, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'start_session',
+                    user_id: this.sessionData.userId
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                console.log('✅ Quiz session started:', this.sessionData.sessionId);
+            } else {
+                console.warn('⚠️ Database session start failed, using localStorage only');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error starting quiz session:', error);
+            // Continue with localStorage only
+        }
+    },
+    
+    /**
+     * Save individual scenario result to localStorage and database
+     */
+    async saveScenarioResult(result) {
+        if (!this.sessionData.userId || !this.sessionData.sessionId) {
+            console.warn('Cannot save: No user ID or session ID');
             return;
         }
         
-        console.log(`💾 Saving scenario ${result.scenarioId} result...`);
+        console.log(`💾 Saving scenario ${result.scenarioId} result to localStorage...`);
         
-        // Add to session data
-        this.sessionData.scenarios.push({
+        const scenarioData = {
             scenarioId: result.scenarioId,
             question: result.question,
             selectedOption: result.selectedOption,
             correctOption: result.correctOption,
             isCorrect: result.isCorrect,
             points: result.points,
-            timestamp: new Date().toISOString()
-        });
+            timestamp: new Date().toISOString(),
+            timeTaken: this.calculateTimeTaken()
+        };
         
+        // Add to session data
+        this.sessionData.scenarios.push(scenarioData);
         this.sessionData.totalScore += result.points;
         
-        // Save to database
-        this.sendToDatabase('scenario', result);
+        // Save to localStorage (primary storage)
+        try {
+            const existingResponses = JSON.parse(localStorage.getItem(this.storageKeys.responses) || '[]');
+            existingResponses.push(scenarioData);
+            localStorage.setItem(this.storageKeys.responses, JSON.stringify(existingResponses));
+            
+            console.log(`✅ Scenario ${result.scenarioId} saved to localStorage`);
+        } catch (error) {
+            console.error('❌ Failed to save to localStorage:', error);
+        }
+        
+        // Try to save to database immediately (backup)
+        try {
+            const response = await fetch(this.endpoints.saveQuizResponses, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_single_response',
+                    session_id: this.sessionData.sessionId,
+                    scenario_id: result.scenarioId,
+                    question_text: result.question,
+                    selected_option: result.selectedOption,
+                    correct_option: result.correctOption,
+                    is_correct: result.isCorrect,
+                    points_earned: result.points,
+                    time_taken_seconds: scenarioData.timeTaken
+                })
+            });
+
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            // Check content type before parsing JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.warn(`⚠️ Expected JSON but got: ${text.substring(0, 100)}`);
+                throw new Error('Server returned non-JSON response');
+            }
+
+            const dbResult = await response.json();
+            if (dbResult.success) {
+                console.log(`✅ Scenario ${result.scenarioId} also saved to database`);
+            } else {
+                console.warn(`⚠️ Database save failed for scenario ${result.scenarioId}:`, dbResult.error);
+            }
+        } catch (error) {
+            console.warn(`⚠️ Database save failed for scenario ${result.scenarioId}:`, error.message);
+        }
     },
     
     /**
-     * Save final simulation results
+     * Calculate time taken for current scenario
      */
-    saveFinalResults(finalResults) {
+    calculateTimeTaken() {
+        // Simple calculation - in real implementation, you'd track per-scenario timing
+        const totalTime = Date.now() - new Date(this.sessionData.startTime).getTime();
+        return Math.round(totalTime / 1000); // Convert to seconds
+    },
+    
+    /**
+     * Save final simulation results from localStorage to database
+     */
+    async saveFinalResults(finalResults) {
         if (!this.sessionData.userId) {
             console.warn('Cannot save final results: No user ID');
             return;
         }
         
-        console.log('💾 Saving final simulation results...');
+        console.log('💾 Saving final simulation results from localStorage to database...');
+        
+        // Get responses from localStorage
+        let responses = [];
+        try {
+            responses = JSON.parse(localStorage.getItem(this.storageKeys.responses) || '[]');
+        } catch (error) {
+            console.error('❌ Failed to read from localStorage:', error);
+            return;
+        }
+        
+        // Ensure all 5 scenarios are completed
+        if (responses.length < 5) {
+            console.warn(`Cannot save final results: Only ${responses.length}/5 scenarios completed`);
+            return;
+        }
         
         this.sessionData.completed = true;
         this.sessionData.endTime = new Date().toISOString();
-        this.sessionData.totalTime = finalResults.totalTime;
-        this.sessionData.finalScore = finalResults.score;
-        this.sessionData.accuracy = finalResults.accuracy;
         
-        // Prepare data for database
-        const saveData = {
-            type: 'final',
-            userId: this.sessionData.userId,
-            startTime: this.sessionData.startTime,
-            endTime: this.sessionData.endTime,
-            totalTime: Math.round(finalResults.totalTime / 1000), // Convert to seconds
-            totalScore: finalResults.score,
-            maxScore: finalResults.scenariosCompleted * 20,
-            scenariosCompleted: finalResults.scenariosCompleted,
-            accuracy: Math.round(finalResults.accuracy * 100) / 100, // Round to 2 decimals
-            scenarios: this.sessionData.scenarios,
-            grade: this.calculateGrade(finalResults.accuracy)
-        };
+        // Calculate completion time
+        const startTime = new Date(localStorage.getItem(this.storageKeys.startTime) || this.sessionData.startTime);
+        const completionTimeSeconds = Math.round((Date.now() - startTime.getTime()) / 1000);
         
-        // Save to database
-        this.sendToDatabase('final', saveData);
+        try {
+            // Save complete quiz to database
+            const response = await fetch(this.endpoints.saveQuizResponses, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'complete_quiz',
+                    session_id: this.sessionData.sessionId,
+                    completion_time_seconds: completionTimeSeconds
+                })
+            });
+            
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            // Check content type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('❌ Expected JSON response but got:', text.substring(0, 200));
+                throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
+            }
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log(`🎉 Final results saved successfully!`);
+                console.log(`📊 Results: ${result.correct_answers}/5 correct (${result.score_percentage}%), Status: ${result.status}`);
+                
+                // Clear localStorage after successful save
+                this.clearLocalStorage();
+                
+                return {
+                    success: true,
+                    simulationId: result.simulation_id,
+                    sessionId: result.session_id,
+                    scorePercentage: result.score_percentage,
+                    correctAnswers: result.correct_answers,
+                    wrongAnswers: result.wrong_answers,
+                    totalPoints: result.total_points,
+                    status: result.status
+                };
+            } else {
+                console.error('❌ Failed to save final results:', result.error);
+                return { success: false, error: result.error };
+            }
+            
+        } catch (error) {
+            console.error('❌ Error saving final results:', error);
+            
+            // Keep localStorage data if database save fails
+            console.log('💿 Keeping data in localStorage due to database error');
+            return { success: false, error: error.message };
+        }
+    },
+    
+    /**
+     * Clear localStorage data
+     */
+    clearLocalStorage() {
+        try {
+            localStorage.removeItem(this.storageKeys.sessionId);
+            localStorage.removeItem(this.storageKeys.responses);
+            localStorage.removeItem(this.storageKeys.startTime);
+            console.log('🧹 LocalStorage cleared');
+        } catch (error) {
+            console.error('❌ Failed to clear localStorage:', error);
+        }
+    },
+    
+    /**
+     * Get responses from localStorage (for debugging/recovery)
+     */
+    getLocalStorageData() {
+        try {
+            return {
+                sessionId: localStorage.getItem(this.storageKeys.sessionId),
+                responses: JSON.parse(localStorage.getItem(this.storageKeys.responses) || '[]'),
+                startTime: localStorage.getItem(this.storageKeys.startTime)
+            };
+        } catch (error) {
+            console.error('❌ Failed to read localStorage:', error);
+            return null;
+        }
     },
     
     /**
@@ -127,15 +319,45 @@ const GameStats = {
      */
     async sendToDatabase(type, data) {
         try {
+            let requestData;
+            
+            if (type === 'final') {
+                // Format data for save_simulation.php requirements
+                const correctAnswers = this.sessionData.scenarios.filter(s => s.isCorrect).length;
+                const wrongAnswers = this.sessionData.scenarios.length - correctAnswers;
+                
+                requestData = {
+                    simulation_type: 'driving_scenarios',
+                    total_scenarios: this.sessionData.scenarios.length,
+                    correct_answers: correctAnswers,
+                    wrong_answers: wrongAnswers,
+                    completion_time_seconds: Math.round(data.totalTime),
+                    scenarios_data: this.sessionData.scenarios.map(s => ({
+                        scenario_id: s.scenarioId,
+                        question: s.question,
+                        selected_option: s.selectedOption,
+                        correct_option: s.correctOption,
+                        is_correct: s.isCorrect,
+                        points_earned: s.points,
+                        timestamp: s.timestamp
+                    }))
+                };
+                
+                console.log('💾 Sending final results to database:', requestData);
+            } else {
+                // For other types (progress, scenario), keep existing format
+                requestData = {
+                    type: type,
+                    data: data
+                };
+            }
+            
             const response = await fetch(this.endpoints.saveProgress, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    type: type,
-                    data: data
-                })
+                body: JSON.stringify(requestData)
             });
             
             if (!response.ok) {
@@ -145,12 +367,17 @@ const GameStats = {
             const result = await response.json();
             
             if (result.success) {
-                console.log(`✅ ${type} data saved successfully`);
-                if (result.simulationId) {
-                    this.sessionData.simulationId = result.simulationId;
+                console.log(`✅ ${type} data saved successfully to database`);
+                if (result.simulation_id) {
+                    this.sessionData.simulationId = result.simulation_id;
+                }
+                
+                // Show success message for final results
+                if (type === 'final') {
+                    console.log(`🎉 Final simulation results saved! ID: ${result.simulation_id}, Score: ${result.score_percentage}%`);
                 }
             } else {
-                console.error(`❌ Failed to save ${type} data:`, result.message);
+                console.error(`❌ Failed to save ${type} data:`, result.error || result.message);
             }
             
         } catch (error) {
