@@ -409,13 +409,14 @@ $user_id = $_SESSION["id"];
         });
     </script>
     
-    <!-- Load all simulation modules -->
-    <script src="../assets/js/modules/world.js"></script>
-    <script src="../assets/js/modules/car.js"></script>
-    <script src="../assets/js/modules/gameEngine.js"></script>
-    <script src="../assets/js/modules/scenarios.js"></script>
-    <script src="../assets/js/modules/ui.js"></script>
-    <script src="../assets/js/modules/gameStats.js"></script>
-    <script src="../assets/js/simulation_main.js"></script>
+    <!-- Load all simulation modules with cache busting -->
+    <?php $timestamp = time(); ?>
+    <script src="../assets/js/modules/world.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/modules/car.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/modules/gameEngine.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/modules/scenarios.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/modules/ui.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/modules/gameStats.js?v=<?php echo $timestamp; ?>"></script>
+    <script src="../assets/js/simulation_main.js?v=<?php echo $timestamp; ?>"></script>
 </body>
 </html>
