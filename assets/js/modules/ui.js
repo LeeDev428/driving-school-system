@@ -209,25 +209,28 @@ const UIModule = {
         // Show feedback
         this.showAnswerFeedback(result);
         
-        // Disable submit button
+        // Change submit button to Next button
         if (this.elements.submitButton) {
-            this.elements.submitButton.disabled = true;
-            this.elements.submitButton.textContent = 'Continue';
+            this.elements.submitButton.textContent = 'Next Question';
+            this.elements.submitButton.className = 'next-btn';
+            this.elements.submitButton.onclick = () => this.proceedToNext(result);
         }
         
-        // Mark as completed in scenarios module
-        if (window.ScenariosModule) {
+        // Mark as completed in scenarios module (prevent duplicates)
+        if (window.ScenariosModule && !window.ScenariosModule.completedScenarios.has(this.currentQuestion.id)) {
             window.ScenariosModule.markCompleted(this.currentQuestion.id);
         }
         
         // Save to database
         this.saveQuestionResult(result);
-        
-        // Auto-close after delay
-        setTimeout(() => {
-            this.hideQuestion();
-            this.resumeSimulation(result);
-        }, 3000);
+    },
+    
+    /**
+     * Proceed to next question or complete quiz
+     */
+    proceedToNext(result) {
+        this.hideQuestion();
+        this.resumeSimulation(result);
     },
     
     /**
@@ -292,6 +295,19 @@ const UIModule = {
         if (this.isQuestionVisible && this.elements.questionModal) {
             console.log('🔚 Hiding question modal...');
             this.elements.questionModal.style.display = 'none';
+            
+            // Reset button state for next question
+            if (this.elements.submitButton) {
+                this.elements.submitButton.textContent = 'Submit Answer';
+                this.elements.submitButton.className = 'submit-btn';
+                this.elements.submitButton.disabled = true;
+                this.elements.submitButton.onclick = null;
+            }
+            
+            // Hide feedback
+            if (this.elements.questionFeedback) {
+                this.elements.questionFeedback.style.display = 'none';
+            }
             
             // Clean up state in proper order
             this.isQuestionVisible = false;
