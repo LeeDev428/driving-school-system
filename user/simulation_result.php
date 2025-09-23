@@ -9,7 +9,37 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once "../config.php";
 
 // Get the latest simulation result for the user
-$user_id = $_SESSION["id"];
+$us         <!-- ACTION BUTTONS -->
+    <div class="results-actions">
+        <a href="simulation.php" class="btn btn-primary">
+            🔄 Take New Quiz
+        </a>
+        <a href="dashboard.php" class="btn btn-secondary">
+            📊 Back to Dashboard
+        </a>
+        <a href="../view_quiz_results.php" class="btn btn-info">
+            📋 View All Results
+        </a>
+    </div>
+</div>
+
+<?php
+$content = ob_get_clean();
+
+// Add styles
+$extra_styles = <<<EOT
+<style>    <a href="../view_quiz_results.php" class="btn btn-info">
+            📋 View All Results
+        </a>
+    </div>
+</div>
+
+<?php
+$content = ob_get_clean();
+
+// Add styles
+$extra_styles = <<<EOT
+<style>= $_SESSION["id"];
 
 // First try to get from quiz_sessions (new table)
 $latest_quiz_session = null;
