@@ -14,6 +14,9 @@ const GameStats = {
         completed: false
     },
     
+    // Initialization flag to prevent duplicates
+    initialized: false,
+    
     // Database endpoints
     endpoints: {
         saveQuizResponses: '../save_quiz_responses.php',
@@ -31,6 +34,12 @@ const GameStats = {
      * Initialize game stats module
      */
     init() {
+        // Prevent duplicate initialization
+        if (this.initialized) {
+            console.warn('⚠️ GameStats already initialized, skipping duplicate init');
+            return;
+        }
+        
         console.log('📊 Initializing enhanced game statistics...');
         
         this.sessionData.userId = window.SimulationConfig?.userId || null;
@@ -43,6 +52,9 @@ const GameStats = {
         // Start new quiz session
         this.startNewQuizSession();
         
+        // Mark as initialized
+        this.initialized = true;
+        
         console.log('✅ Game statistics ready with localStorage backup');
     },
     
@@ -54,16 +66,7 @@ const GameStats = {
             // Clear any existing localStorage data
             this.clearLocalStorage();
             
-            // Generate session ID
-            this.sessionData.sessionId = `quiz_${this.sessionData.userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            this.sessionData.startTime = new Date().toISOString();
-            
-            // Save to localStorage
-            localStorage.setItem(this.storageKeys.sessionId, this.sessionData.sessionId);
-            localStorage.setItem(this.storageKeys.startTime, this.sessionData.startTime);
-            localStorage.setItem(this.storageKeys.responses, JSON.stringify([]));
-            
-            // Start session in database
+            // Start session in database first to get proper session_id
             const response = await fetch(this.endpoints.saveQuizResponses, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -74,15 +77,32 @@ const GameStats = {
             });
             
             const result = await response.json();
-            if (result.success) {
-                console.log('✅ Quiz session started:', this.sessionData.sessionId);
+            if (result.success && result.session_id) {
+                // Use the database-generated session ID
+                this.sessionData.sessionId = result.session_id;
+                this.sessionData.startTime = new Date().toISOString();
+                
+                // Save to localStorage with the database session ID
+                localStorage.setItem(this.storageKeys.sessionId, this.sessionData.sessionId);
+                localStorage.setItem(this.storageKeys.startTime, this.sessionData.startTime);
+                localStorage.setItem(this.storageKeys.responses, JSON.stringify([]));
+                
+                console.log('✅ Quiz session started with database sync:', this.sessionData.sessionId);
             } else {
-                console.warn('⚠️ Database session start failed, using localStorage only');
+                throw new Error('Failed to create database session');
             }
             
         } catch (error) {
             console.error('❌ Error starting quiz session:', error);
-            // Continue with localStorage only
+            // Fallback: Create client-side session only
+            this.sessionData.sessionId = `quiz_${this.sessionData.userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            this.sessionData.startTime = new Date().toISOString();
+            
+            localStorage.setItem(this.storageKeys.sessionId, this.sessionData.sessionId);
+            localStorage.setItem(this.storageKeys.startTime, this.sessionData.startTime);
+            localStorage.setItem(this.storageKeys.responses, JSON.stringify([]));
+            
+            console.warn('⚠️ Using client-side session only');
         }
     },
     
@@ -92,6 +112,13 @@ const GameStats = {
     async saveScenarioResult(result) {
         if (!this.sessionData.userId || !this.sessionData.sessionId) {
             console.warn('Cannot save: No user ID or session ID');
+            return;
+        }
+        
+        // Prevent duplicate saves for the same scenario
+        const existingScenario = this.sessionData.scenarios.find(s => s.scenarioId === result.scenarioId);
+        if (existingScenario) {
+            console.warn(`⚠️ Scenario ${result.scenarioId} already saved, skipping duplicate`);
             return;
         }
         
@@ -296,9 +323,17 @@ const GameStats = {
     },
     
     /**
-     * Save progress checkpoint
+     * Save progress checkpoint (DEPRECATED - Use saveScenarioResult instead)
+     * This method is disabled to prevent duplicate saves
      */
     saveProgress(progressData) {
+        console.warn('⚠️ saveProgress is deprecated - duplicate saves prevented');
+        console.warn('💡 Use saveScenarioResult instead for proper database integration');
+        // Method disabled to prevent duplicate database entries
+        return;
+        
+        /*
+        // OLD CODE - REMOVED TO PREVENT DUPLICATES
         if (!this.sessionData.userId) return;
         
         const saveData = {
@@ -312,6 +347,7 @@ const GameStats = {
         };
         
         this.sendToDatabase('progress', saveData);
+        */
     },
     
     /**
