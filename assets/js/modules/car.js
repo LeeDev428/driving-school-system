@@ -4,9 +4,9 @@
  */
 
 const CarModule = {
-    // Car position and rotation (positioned for better camera view)
-    x: 400,
-    y: 350,  // Start on a road in the middle area
+    // Car position and rotation (SAFELY IN CENTER OF FIRST ROADS)
+    x: 210,  // Center of first vertical road (150 + streetWidth/2 = 150 + 60 = 210)
+    y: 210,  // Center of first horizontal road (150 + streetWidth/2 = 150 + 60 = 210)
     angle: 0, // Rotation in radians
     
     // Car dimensions (realistic car size)
@@ -54,6 +54,7 @@ const CarModule = {
         console.log('🚗 Initializing Enhanced Player Vehicle...');
         this.setupControls();
         this.resetPosition();
+        console.log(`🔍 DEBUG: Car initialized at position (${this.x}, ${this.y})`);
         console.log('✅ Vehicle ready for driving - Press W or UP arrow to move!');
     },
     
@@ -61,12 +62,12 @@ const CarModule = {
      * Reset car to starting position
      */
     resetPosition() {
-        this.x = 400;  // Start in a good position for camera view
-        this.y = 350;  // On a road in the middle area
+        this.x = 210;  // Center of first vertical road (150 + 60 = 210)
+        this.y = 210;  // Center of first horizontal road (150 + 60 = 210)
         this.angle = 0;
         this.speed = 0;
         this.resetLights();
-        console.log('🔄 Car reset to starting position');
+        console.log('🔄 Car reset to starting position - CENTER OF INTERSECTION');
     },
     
     /**
