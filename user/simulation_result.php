@@ -24,8 +24,8 @@ try {
                END as status,
                qs.total_time_seconds as completion_time_seconds
         FROM quiz_sessions qs 
-        WHERE qs.user_id = ? AND qs.session_status = 'completed'
-        ORDER BY qs.completed_at DESC 
+        WHERE qs.user_id = ? AND (qs.session_status = 'completed' OR qs.questions_answered = 5)
+        ORDER BY qs.completed_at DESC, qs.updated_at DESC 
         LIMIT 1
     ");
     $stmt->execute([$user_id]);
@@ -47,6 +47,11 @@ try {
         ");
         $stmt->execute([$simulation_result['session_id']]);
         $simulation_result['scenarios'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // If no completed_at, use updated_at for display
+        if (!$simulation_result['completed_at']) {
+            $simulation_result['completed_at'] = $simulation_result['updated_at'];
+        }
     }
 } catch (Exception $e) {
     $error_message = "Error loading results: " . $e->getMessage();
@@ -223,7 +228,7 @@ try {
                                         </div>
                                         <div class="scenario-body">
                                             <h6><strong>Question:</strong></h6>
-                                            <p><?php echo htmlspecialchars($scenario['question']); ?></p>
+                                            <p><?php echo htmlspecialchars($scenario['question_text'] ?? 'Question not available'); ?></p>
                                             
                                             <div class="row">
                                                 <div class="col-md-6">
