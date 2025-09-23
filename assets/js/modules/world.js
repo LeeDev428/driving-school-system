@@ -4,9 +4,9 @@
  */
 
 const WorldModule = {
-    // World dimensions (FORCED LANDSCAPE - much wider than tall)
-    width: 3200,   // Increased from 2400 to 3200 for true landscape
-    height: 1600,  // Increased from 1400 to 1600 but kept ratio wide
+    // World dimensions (WILL BE CALCULATED DYNAMICALLY)
+    width: 4800,   // Default fallback
+    height: 2000,  // Default fallback
     
     // Visual elements
     roads: [],
@@ -44,9 +44,28 @@ const WorldModule = {
      */
     init() {
         console.log('🌍 Building realistic city world...');
+        
+        // Calculate world dimensions dynamically
+        this.calculateWorldDimensions();
+        
         this.createCityLayout();
         this.createTrafficElements();
-        console.log('✅ City world ready with traffic infrastructure');
+        console.log(`✅ City world ready: ${this.width}x${this.height} with traffic infrastructure`);
+    },
+    
+    /**
+     * Calculate world dimensions based on screen size
+     */
+    calculateWorldDimensions() {
+        // Get current window dimensions
+        const screenWidth = window.innerWidth || 1920;
+        const screenHeight = window.innerHeight || 1080;
+        
+        // Make world significantly larger than screen
+        this.width = Math.max(screenWidth * 3, 5760);   // 3x screen width, minimum 5760
+        this.height = Math.max(screenHeight * 2, 2160); // 2x screen height, minimum 2160
+        
+        console.log(`🌍 World dimensions calculated: ${this.width}x${this.height} (Screen: ${screenWidth}x${screenHeight})`);
     },
     
     /**
@@ -61,66 +80,73 @@ const WorldModule = {
     },
     
     /**
-     * Create enhanced road network with organized grid pattern (LANDSCAPE)
+     * Create enhanced road network with organized grid pattern (FULLSCREEN)
      */
     createEnhancedRoadNetwork() {
         // Clear existing roads
         this.roads = [];
         
-        // Create organized grid of wide roads for true landscape layout
+        console.log(`Creating road network for world: ${this.width}x${this.height}`);
         
-        // Horizontal roads (running left to right) - wider spacing for landscape
-        const horizontalRoads = [
-            { y: 150, name: 'North Avenue' },
-            { y: 400, name: 'First Street' },
-            { y: 650, name: 'Main Boulevard' },
-            { y: 900, name: 'Central Street' },
-            { y: 1150, name: 'South Avenue' }
-        ];
+        // Create organized grid of roads spanning the full world
+        
+        // Horizontal roads (running left to right) - spanning full world width
+        const horizontalRoadSpacing = Math.max(200, this.height / 8); // Distribute evenly
+        const horizontalRoads = [];
+        
+        for (let i = 0; i < 8; i++) {
+            const y = 150 + (i * horizontalRoadSpacing);
+            if (y < this.height - 150) {
+                horizontalRoads.push({
+                    y: y,
+                    name: `Avenue ${i + 1}`
+                });
+            }
+        }
         
         horizontalRoads.forEach(road => {
             this.roads.push({
                 x: 0,
                 y: road.y,
-                width: this.width,
+                width: this.width, // Use FULL world width
                 height: this.streetWidth,
                 type: 'horizontal_street',
                 name: road.name,
-                lanes: road.name === 'Main Boulevard' ? 4 : 2,
+                lanes: 2,
                 markings: true,
                 sidewalks: true
             });
         });
         
-        // Vertical roads (running top to bottom) - more roads for landscape
-        const verticalRoads = [
-            { x: 200, name: 'West Avenue' },
-            { x: 500, name: '1st Street' },
-            { x: 800, name: '2nd Avenue' },
-            { x: 1100, name: 'Main Street' },
-            { x: 1400, name: '4th Avenue' },
-            { x: 1700, name: '5th Street' },
-            { x: 2000, name: '6th Avenue' },
-            { x: 2300, name: '7th Street' },
-            { x: 2600, name: '8th Avenue' },
-            { x: 2900, name: 'East Boulevard' }
-        ];
+        // Vertical roads (running top to bottom) - spanning full world height
+        const verticalRoadSpacing = Math.max(200, this.width / 20); // More roads for wider world
+        const verticalRoads = [];
+        
+        for (let i = 0; i < 20; i++) { // Create 20 vertical roads
+            const x = 150 + (i * verticalRoadSpacing);
+            if (x < this.width - 150) {
+                verticalRoads.push({
+                    x: x,
+                    name: `Street ${i + 1}`
+                });
+            }
+        }
         
         verticalRoads.forEach(road => {
             this.roads.push({
                 x: road.x,
                 y: 0,
                 width: this.streetWidth,
-                height: this.height,
+                height: this.height, // Use FULL world height
                 type: 'vertical_street',
                 name: road.name,
-                lanes: road.name === 'Main Street' ? 4 : 2,
+                lanes: 2,
                 markings: true,
                 sidewalks: true
             });
         });
         
-        console.log(`🛣️ Created LANDSCAPE road network: ${this.roads.length} roads`);
+        console.log(`🛣️ Created road network: ${horizontalRoads.length} horizontal + ${verticalRoads.length} vertical = ${this.roads.length} total roads`);
     },
     
     /**
@@ -130,7 +156,7 @@ const WorldModule = {
         // Clear existing buildings
         this.buildings = [];
         
-        // Create organized city blocks in grid pattern matching reference image
+        // Create organized city blocks in grid pattern with no overlaps
         this.createOrganizedCityBlocks();
         
         console.log(`🏢 Created ${this.buildings.length} buildings in organized city blocks`);
@@ -140,6 +166,9 @@ const WorldModule = {
      * Create organized city blocks with consistent spacing
      */
     createOrganizedCityBlocks() {
+        // Clear existing buildings first
+        this.buildings = [];
+        
         // Define building colors for variety
         const buildingColors = [
             '#D32F2F', '#1976D2', '#388E3C', '#F57C00', 
@@ -149,67 +178,54 @@ const WorldModule = {
         
         const buildingTypes = [
             'House', 'House', 'School', 'House', 
-            'House', 'School', 'House', 'Shop',
-            'House', 'House', 'School', 'House'
+            'House', 'Shop', 'House', 'School',
+            'House', 'House', 'Shop', 'House'
         ];
         
-        // Fixed building rows to avoid road overlaps
-        // Roads are at y: 150, 400, 650, 900, 1150 (height 120 each)
+        // Get actual road positions
+        const horizontalRoads = this.roads.filter(road => road.type === 'horizontal_street');
+        const verticalRoads = this.roads.filter(road => road.type === 'vertical_street');
         
-        // Row 1: Top row (y: 20-130) - above first road at y:150
-        this.createBuildingRow(20, 110, buildingColors, buildingTypes, 0);
+        console.log(`Creating buildings between ${horizontalRoads.length} horizontal and ${verticalRoads.length} vertical roads`);
         
-        // Row 2: Between 1st and 2nd roads (y: 290-380) - between y:150+120=270 and y:400
-        this.createBuildingRow(290, 90, buildingColors, buildingTypes, 1);
-        
-        // Row 3: Between 2nd and 3rd roads (y: 540-630) - between y:400+120=520 and y:650
-        this.createBuildingRow(540, 90, buildingColors, buildingTypes, 2);
-        
-        // Row 4: Between 3rd and 4th roads (y: 790-880) - between y:650+120=770 and y:900
-        this.createBuildingRow(790, 90, buildingColors, buildingTypes, 3);
-        
-        // Row 5: Between 4th and 5th roads (y: 1040-1130) - between y:900+120=1020 and y:1150
-        this.createBuildingRow(1040, 90, buildingColors, buildingTypes, 4);
-        
-        // Row 6: Bottom row (y: 1290-1380) - below last road at y:1150+120=1270
-        this.createBuildingRow(1290, 90, buildingColors, buildingTypes, 5);
-    },
-    
-    /**
-     * Create a row of buildings with consistent spacing
-     */
-    createBuildingRow(yPos, height, colors, types, rowIndex) {
-        // Building positions based on vertical road spacing
-        // Vertical roads are at x: 200, 500, 800, 1100, 1400, 1700, 2000, 2300, 2600, 2900 (width 120 each)
-        // Buildings should be placed BETWEEN roads, not on them
-        
-        const buildingXPositions = [
-            { x: 20, width: 160 },      // Before 1st vertical road (x: 20-180, road at 200)
-            { x: 340, width: 140 },     // Between 1st and 2nd roads (x: 340-480, roads at 200 and 500)
-            { x: 640, width: 140 },     // Between 2nd and 3rd roads (x: 640-780, roads at 500 and 800)
-            { x: 940, width: 140 },     // Between 3rd and 4th roads (x: 940-1080, roads at 800 and 1100)
-            { x: 1240, width: 140 },    // Between 4th and 5th roads (x: 1240-1380, roads at 1100 and 1400)
-            { x: 1540, width: 140 },    // Between 5th and 6th roads (x: 1540-1680, roads at 1400 and 1700)
-            { x: 1840, width: 140 },    // Between 6th and 7th roads (x: 1840-1980, roads at 1700 and 2000)
-            { x: 2140, width: 140 },    // Between 7th and 8th roads (x: 2140-2280, roads at 2000 and 2300)
-            { x: 2440, width: 140 },    // Between 8th and 9th roads (x: 2440-2580, roads at 2300 and 2600)
-            { x: 2740, width: 140 }     // Between 9th and 10th roads (x: 2740-2880, roads at 2600 and 2900)
-        ];
-        
-        buildingXPositions.forEach((pos, index) => {
-            const colorIndex = (rowIndex * buildingXPositions.length + index) % colors.length;
-            const typeIndex = (rowIndex * buildingXPositions.length + index) % types.length;
+        // Create building blocks between roads (avoid overlaps)
+        for (let hIndex = 0; hIndex < horizontalRoads.length - 1; hIndex++) {
+            const topRoad = horizontalRoads[hIndex];
+            const bottomRoad = horizontalRoads[hIndex + 1];
             
-            this.createBuildingBlock(
-                pos.x, 
-                yPos, 
-                pos.width, 
-                height, 
-                colors[colorIndex], 
-                types[typeIndex], 
-                Math.floor(Math.random() * 3) + 1 // 1-3 floors
-            );
-        });
+            // Calculate safe building area between roads
+            const buildingAreaY = topRoad.y + topRoad.height + 10; // 10px margin from road
+            const buildingAreaHeight = bottomRoad.y - buildingAreaY - 10; // 10px margin to next road
+            
+            if (buildingAreaHeight > 60) { // Only create buildings if there's enough space
+                for (let vIndex = 0; vIndex < verticalRoads.length - 1; vIndex++) {
+                    const leftRoad = verticalRoads[vIndex];
+                    const rightRoad = verticalRoads[vIndex + 1];
+                    
+                    // Calculate safe building area between roads
+                    const buildingAreaX = leftRoad.x + leftRoad.width + 10; // 10px margin from road
+                    const buildingAreaWidth = rightRoad.x - buildingAreaX - 10; // 10px margin to next road
+                    
+                    if (buildingAreaWidth > 80) { // Only create buildings if there's enough space
+                        const colorIndex = (hIndex * verticalRoads.length + vIndex) % buildingColors.length;
+                        const typeIndex = (hIndex * verticalRoads.length + vIndex) % buildingTypes.length;
+                        
+                        // Create building with safe positioning
+                        this.createBuildingBlock(
+                            buildingAreaX + 5, // Small additional margin
+                            buildingAreaY + 5, // Small additional margin
+                            Math.min(buildingAreaWidth - 10, 120), // Cap width and leave margins
+                            Math.min(buildingAreaHeight - 10, 80), // Cap height and leave margins
+                            buildingColors[colorIndex], 
+                            buildingTypes[typeIndex], 
+                            Math.floor(Math.random() * 3) + 1 // 1-3 floors
+                        );
+                    }
+                }
+            }
+        }
+        
+        console.log(`✅ Created ${this.buildings.length} buildings without overlaps`);
     },
     
     /**
@@ -240,39 +256,29 @@ const WorldModule = {
     createDecorations() {
         this.decorations = [];
         
-        // Add grass patches around buildings
-        this.createGrassPatches();
-        
-        // Add trees strategically around the city
+        // Only add trees strategically around the city (NO grass patches)
         this.createTreesAroundCity();
         
         // Add streetlights on roads
         this.createStreetlights();
         
-        console.log(`🌳 Created ${this.decorations.length} decorative elements`);
+        console.log(`🌳 Created ${this.decorations.length} decorative elements (no bushes/grass)`);
     },
     
     /**
      * Create grass patches around buildings and empty areas
      */
     createGrassPatches() {
-        // Create larger grass areas between building blocks
+        // Create small, strategic grass areas only in non-intrusive locations
         const grassAreas = [
-            // Around scenario areas (more grass for test scenes)
-            { x: 50, y: 50, width: 100, height: 80 },
-            { x: 300, y: 50, width: 120, height: 80 },
-            { x: 550, y: 50, width: 120, height: 80 },
+            // Small grass areas at world edges only
+            { x: 50, y: 50, width: 80, height: 60 },
+            { x: this.width * 0.5, y: 50, width: 80, height: 60 },
+            { x: this.width - 150, y: 50, width: 80, height: 60 },
             
-            // Between building rows
-            { x: 50, y: 200, width: 140, height: 40 },
-            { x: 270, y: 200, width: 150, height: 40 },
-            { x: 520, y: 200, width: 150, height: 40 },
-            { x: 770, y: 200, width: 150, height: 40 },
-            
-            // More grass near scenario test scenes
-            { x: 50, y: 400, width: 140, height: 40 },
-            { x: 270, y: 400, width: 150, height: 40 },
-            { x: 520, y: 400, width: 150, height: 40 },
+            // Grass areas at world edges
+            { x: 50, y: this.height - 100, width: 100, height: 60 },
+            { x: this.width - 150, y: this.height - 100, width: 100, height: 60 },
         ];
         
         grassAreas.forEach(area => {
@@ -291,37 +297,69 @@ const WorldModule = {
      * Create trees around the city
      */
     createTreesAroundCity() {
-        // Trees around building blocks (more near scenario areas)
-        const treePositions = [
-            // Around first row (scenario area)
-            { x: 80, y: 80 }, { x: 120, y: 90 }, { x: 160, y: 85 },
-            { x: 330, y: 80 }, { x: 370, y: 90 }, { x: 410, y: 85 },
-            { x: 580, y: 80 }, { x: 620, y: 90 }, { x: 660, y: 85 },
-            
-            // Between roads
-            { x: 100, y: 230 }, { x: 150, y: 240 }, { x: 200, y: 235 },
-            { x: 300, y: 230 }, { x: 350, y: 240 }, { x: 400, y: 235 },
-            { x: 550, y: 230 }, { x: 600, y: 240 }, { x: 650, y: 235 },
-            
-            // Near scenario test areas
-            { x: 80, y: 430 }, { x: 130, y: 440 }, { x: 180, y: 435 },
-            { x: 300, y: 430 }, { x: 350, y: 440 }, { x: 400, y: 435 },
-            
-            // Scattered throughout city
-            { x: 800, y: 100 }, { x: 850, y: 110 }, { x: 900, y: 105 },
-            { x: 1100, y: 100 }, { x: 1150, y: 110 }, { x: 1200, y: 105 },
-            { x: 1400, y: 100 }, { x: 1450, y: 110 }, { x: 1500, y: 105 },
-        ];
+        // Trees placed strategically away from roads and buildings
+        const treePositions = [];
         
+        // Get road positions for safe tree placement
+        const horizontalRoads = this.roads.filter(road => road.type === 'horizontal_street');
+        const verticalRoads = this.roads.filter(road => road.type === 'vertical_street');
+        
+        // Place trees in safe zones between roads
+        for (let h = 0; h < horizontalRoads.length - 1; h++) {
+            for (let v = 0; v < verticalRoads.length - 1; v++) {
+                const topRoad = horizontalRoads[h];
+                const bottomRoad = horizontalRoads[h + 1];
+                const leftRoad = verticalRoads[v];
+                const rightRoad = verticalRoads[v + 1];
+                
+                // Calculate safe zone between roads (LARGER MARGINS)
+                const safeX = leftRoad.x + leftRoad.width + 40; // Increased from 20 to 40
+                const safeY = topRoad.y + topRoad.height + 40; // Increased from 20 to 40
+                const safeWidth = rightRoad.x - safeX - 40; // Increased margins
+                const safeHeight = bottomRoad.y - safeY - 40; // Increased margins
+                
+                // Only place trees if there's enough safe space (more restrictive)
+                if (safeWidth > 120 && safeHeight > 120) { // Increased minimum space requirement
+                    // Place only 1 tree maximum in this safe zone (reduced from 1-2)
+                    if (Math.random() > 0.6) { // Only 40% chance to place a tree
+                        const treeX = safeX + 50 + Math.random() * (safeWidth - 100); // More margin
+                        const treeY = safeY + 50 + Math.random() * (safeHeight - 100); // More margin
+                        
+                        treePositions.push({ x: treeX, y: treeY });
+                    }
+                }
+            }
+        }
+        
+        // Add trees at world edges for decoration
+        const edgeTreeSpacing = 200;
+        for (let x = 100; x < this.width - 100; x += edgeTreeSpacing) {
+            treePositions.push({ x: x, y: 50 }); // Top edge
+            if (this.height > 1000) {
+                treePositions.push({ x: x, y: this.height - 50 }); // Bottom edge
+            }
+        }
+        
+        for (let y = 100; y < this.height - 100; y += edgeTreeSpacing) {
+            treePositions.push({ x: 50, y: y }); // Left edge
+            treePositions.push({ x: this.width - 50, y: y }); // Right edge
+        }
+        
+        // Create trees with collision checking
         treePositions.forEach(pos => {
-            this.decorations.push({
-                type: 'tree',
-                x: pos.x,
-                y: pos.y,
-                size: Math.random() * 15 + 20, // 20-35 size
-                color: '#2E7D32'
-            });
+            // Only place tree if it's not on a road or too close to buildings
+            if (!this.isOnRoad(pos.x, pos.y) && !this.isTooCloseToBuilding(pos.x, pos.y)) {
+                this.decorations.push({
+                    type: 'tree',
+                    x: pos.x,
+                    y: pos.y,
+                    size: Math.random() * 6 + 8, // MUCH smaller trees: 8-14 size (was 12-20)
+                    color: '#2E7D32'
+                });
+            }
         });
+        
+        console.log(`🌳 Placed ${this.decorations.filter(d => d.type === 'tree').length} trees safely`);
     },
     
     /**
@@ -423,61 +461,58 @@ const WorldModule = {
     createPedestrianLanes() {
         this.pedestrianLanes = [];
         
-        // Define road positions for proper alignment
-        const horizontalRoads = [150, 400, 650, 900, 1150]; // y positions
-        const verticalRoads = [200, 500, 800, 1100, 1400, 1700, 2000, 2300, 2600, 2900]; // x positions
-        const roadWidth = 120; // Street width
+        // Get the actual road positions from the created roads
+        const horizontalRoads = this.roads.filter(road => road.type === 'horizontal_street');
+        const verticalRoads = this.roads.filter(road => road.type === 'vertical_street');
         
-        // Create zebra crossings at major intersections
-        const crossings = [];
+        console.log(`Creating pedestrian crossings for ${horizontalRoads.length} horizontal and ${verticalRoads.length} vertical roads`);
         
-        // Horizontal crossings (crossing vertical roads) - zebra stripes going across vertical roads
-        horizontalRoads.forEach((roadY, hIndex) => {
-            verticalRoads.forEach((roadX, vIndex) => {
-                // Only create crossings at major intersections (not all)
-                if (hIndex < 3 && vIndex < 5) { // Limit to first 3 horizontal and 5 vertical roads
-                    crossings.push({
-                        x: roadX - roadWidth/2 + 20, // Center on vertical road
-                        y: roadY + roadWidth/2 - 10, // Just after the horizontal road
-                        width: roadWidth - 40, // Zebra stripe width
-                        height: 20, // Zebra stripe height
+        // Create zebra crossings at intersections - PROPERLY POSITIONED
+        let crossingId = 0;
+        
+        // Create crossings only at major intersections to avoid clutter
+        for (let h = 0; h < Math.min(horizontalRoads.length, 6); h++) {
+            for (let v = 0; v < Math.min(verticalRoads.length, 10); v++) {
+                const hRoad = horizontalRoads[h];
+                const vRoad = verticalRoads[v];
+                
+                // Check if roads intersect
+                const intersects = (
+                    hRoad.x < vRoad.x + vRoad.width &&
+                    hRoad.x + hRoad.width > vRoad.x &&
+                    hRoad.y < vRoad.y + vRoad.height &&
+                    hRoad.y + hRoad.height > vRoad.y
+                );
+                
+                if (intersects) {
+                    // Create horizontal crossing (across the vertical road)
+                    this.pedestrianLanes.push({
+                        id: crossingId++,
+                        x: vRoad.x + 10, // Start 10px into the vertical road
+                        y: hRoad.y + hRoad.height/2 - 8, // Center of horizontal road
+                        width: vRoad.width - 20, // Width of vertical road minus margins
+                        height: 16, // Standard crossing height
                         direction: 'horizontal',
-                        street: `Crossing at ${this.getStreetName(roadX, 'vertical')} & ${this.getStreetName(roadY, 'horizontal')}`
+                        street: `${hRoad.name} crossing ${vRoad.name}`,
+                        alertRadius: 50,
+                        active: true
                     });
-                }
-            });
-        });
-        
-        // Vertical crossings (crossing horizontal roads) - zebra stripes going across horizontal roads
-        verticalRoads.forEach((roadX, vIndex) => {
-            horizontalRoads.forEach((roadY, hIndex) => {
-                // Only create crossings at major intersections (not all)
-                if (vIndex < 5 && hIndex < 3) { // Limit to first 5 vertical and 3 horizontal roads
-                    crossings.push({
-                        x: roadX + roadWidth/2 - 10, // Just after the vertical road
-                        y: roadY - roadWidth/2 + 20, // Center on horizontal road
-                        width: 20, // Zebra stripe width
-                        height: roadWidth - 40, // Zebra stripe height
+                    
+                    // Create vertical crossing (across the horizontal road)
+                    this.pedestrianLanes.push({
+                        id: crossingId++,
+                        x: vRoad.x + vRoad.width/2 - 8, // Center of vertical road
+                        y: hRoad.y + 10, // Start 10px into the horizontal road
+                        width: 16, // Standard crossing width
+                        height: hRoad.height - 20, // Height of horizontal road minus margins
                         direction: 'vertical',
-                        street: `Crossing at ${this.getStreetName(roadX, 'vertical')} & ${this.getStreetName(roadY, 'horizontal')}`
+                        street: `${vRoad.name} crossing ${hRoad.name}`,
+                        alertRadius: 50,
+                        active: true
                     });
                 }
-            });
-        });
-        
-        crossings.forEach((crossing, index) => {
-            this.pedestrianLanes.push({
-                id: index,
-                x: crossing.x,
-                y: crossing.y,
-                width: crossing.width,
-                height: crossing.height,
-                direction: crossing.direction,
-                street: crossing.street,
-                alertRadius: 80, // Distance to trigger slow-down warning
-                active: true
-            });
-        });
+            }
+        }
         
         console.log(`🚶 Created ${this.pedestrianLanes.length} pedestrian crossing lanes`);
     },
@@ -1146,24 +1181,23 @@ const WorldModule = {
      * Render a realistic tree
      */
     renderTree(ctx, x, y, size) {
-        // Tree trunk
-        ctx.fillStyle = '#8D6E63';
-        ctx.fillRect(x - 3, y, 6, size * 0.6);
+        // Ensure size is within reasonable bounds
+        const treeSize = Math.min(size, 20); // Cap at size 20
         
-        // Tree canopy (multiple circles for natural look)
+        // Tree trunk (smaller)
+        ctx.fillStyle = '#8D6E63';
+        ctx.fillRect(x - 2, y, 4, treeSize * 0.5);
+        
+        // Tree canopy (smaller, single circle for cleaner look)
         ctx.fillStyle = this.colors.tree;
         ctx.beginPath();
-        ctx.arc(x, y - size * 0.2, size * 0.8, 0, Math.PI * 2);
+        ctx.arc(x, y - treeSize * 0.1, treeSize * 0.6, 0, Math.PI * 2);
         ctx.fill();
         
-        // Lighter green highlights
+        // Small highlight (reduced complexity)
         ctx.fillStyle = '#66BB6A';
         ctx.beginPath();
-        ctx.arc(x - size * 0.3, y - size * 0.4, size * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.arc(x + size * 0.2, y - size * 0.1, size * 0.3, 0, Math.PI * 2);
+        ctx.arc(x - treeSize * 0.2, y - treeSize * 0.2, treeSize * 0.3, 0, Math.PI * 2);
         ctx.fill();
     },
     
@@ -1258,6 +1292,20 @@ const WorldModule = {
             x >= road.x && x <= road.x + road.width &&
             y >= road.y && y <= road.y + road.height
         );
+    },
+    
+    /**
+     * Check if position is too close to buildings
+     */
+    isTooCloseToBuilding(x, y) {
+        const minDistance = 25; // Minimum distance from buildings
+        return this.buildings.some(building => {
+            const distance = Math.sqrt(
+                Math.pow(x - (building.x + building.width/2), 2) + 
+                Math.pow(y - (building.y + building.height/2), 2)
+            );
+            return distance < minDistance;
+        });
     },
     
     /**
