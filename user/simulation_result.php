@@ -216,39 +216,33 @@ ob_start();
             � View All Results
         </a>
     </div>
-</div>
+            </div>
         </div>
-
-        <?php if ($latest_result['score_percentage'] >= 70): ?>
-            <div class="congratulations">
-                <h3>🎉 Congratulations!</h3>
-                <p>You passed the driving simulation! You demonstrated good knowledge of safe driving practices.</p>
-            </div>
-        <?php else: ?>
-            <div class="improvement-tips">
-                <h3>💡 Areas for Improvement</h3>
-                <p>Consider reviewing driving rules and safety practices before taking the simulation again.</p>
-                <ul>
-                    <li>Always stop for pedestrians at crossings</li>
-                    <li>Follow traffic signals and signs</li>
-                    <li>Maintain safe speeds in school zones</li>
-                    <li>Be extra cautious at intersections</li>
-                </ul>
-            </div>
-        <?php endif; ?>
 
     <?php else: ?>
+        <!-- NO RESULTS FOUND -->
         <div class="no-results">
-            <h2>📋 No Results Found</h2>
-            <p>You haven't completed any simulation yet.</p>
-            <a href="simulation.php" class="btn btn-primary">
-                🚗 Start Simulation
-            </a>
+            <div style="text-align: center; padding: 50px;">
+                <h3>No Simulation Results Found</h3>
+                <p>You haven't completed any driving simulation quizzes yet.</p>
+                <a href="simulation.php" class="btn btn-primary">Start Your First Simulation</a>
+            </div>
         </div>
     <?php endif; ?>
-</div>
 
-<style>
+    <!-- ACTION BUTTONS -->
+    <div class="results-actions">
+        <a href="simulation.php" class="btn btn-primary">
+            🔄 Take New Quiz
+        </a>
+        <a href="dashboard.php" class="btn btn-secondary">
+            � Back to Dashboard
+        </a>
+        <a href="../view_quiz_results.php" class="btn btn-info">
+            � View All Results
+        </a>
+    </div>
+</div><style>
 .results-container {
     max-width: 800px;
     margin: 0 auto;
