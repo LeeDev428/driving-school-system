@@ -4,9 +4,9 @@
  */
 
 const CarModule = {
-    // Car position and rotation (positioned on left lane of first horizontal road)
-    x: 120,
-    y: 175,  // Inside the first horizontal road (y: 160-220)
+    // Car position and rotation (positioned for better camera view)
+    x: 400,
+    y: 350,  // Start on a road in the middle area
     angle: 0, // Rotation in radians
     
     // Car dimensions (realistic car size)
@@ -61,8 +61,8 @@ const CarModule = {
      * Reset car to starting position
      */
     resetPosition() {
-        this.x = 200;  // Left side of road
-        this.y = 480;  // On main horizontal road
+        this.x = 400;  // Start in a good position for camera view
+        this.y = 350;  // On a road in the middle area
         this.angle = 0;
         this.speed = 0;
         this.resetLights();
