@@ -57,7 +57,8 @@ try {
                       (SELECT COUNT(*) FROM appointments WHERE status = 'pending') as pending_appointments,
                       (SELECT COUNT(*) FROM appointments WHERE status = 'confirmed') as confirmed_appointments,
                       (SELECT COUNT(*) FROM users WHERE user_type = 'student' AND DATE(created_at) = CURDATE()) as new_students_today,
-                      (SELECT COUNT(*) FROM users WHERE user_type = 'student') as total_students";
+                      (SELECT COUNT(*) FROM users WHERE user_type = 'student') as total_students,
+                      (SELECT COUNT(DISTINCT session_id) FROM quiz_responses) as total_simulation_sessions";
     $stats_result = $conn->query($stats_query);
     $stats = $stats_result ? $stats_result->fetch_assoc() : [];
     
@@ -66,7 +67,7 @@ try {
     $new_applicants = [];
     $today_schedule = [];
     $notification_count = 0;
-    $stats = ['pending_appointments' => 0, 'confirmed_appointments' => 0, 'new_students_today' => 0, 'total_students' => 0];
+    $stats = ['pending_appointments' => 0, 'confirmed_appointments' => 0, 'new_students_today' => 0, 'total_students' => 0, 'total_simulation_sessions' => 0];
 }
 
 // Generate content
@@ -196,7 +197,7 @@ ob_start();
 </div>
 
 <!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px;">
     <div class="card" style="text-align: center; padding: 15px;">
         <div style="font-size: 24px; font-weight: 600; color: #ffcc00; margin-bottom: 5px;">
             <?php echo $stats['pending_appointments'] ?? 0; ?>
@@ -230,6 +231,18 @@ ob_start();
         </div>
         <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
             Total Students
+        </div>
+    </div>
+    
+    <div class="card" style="text-align: center; padding: 15px; cursor: pointer;" onclick="window.location.href='simulation_result.php'">
+        <div style="font-size: 24px; font-weight: 600; color: #FF5722; margin-bottom: 5px;">
+            <?php echo $stats['total_simulation_sessions'] ?? 0; ?>
+        </div>
+        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
+            Simulation Sessions
+        </div>
+        <div style="font-size: 10px; color: #ffcc00; margin-top: 5px;">
+            <i class="fas fa-chart-bar"></i> View Results
         </div>
     </div>
 </div>
