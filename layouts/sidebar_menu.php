@@ -30,10 +30,10 @@ if ($user_type == 'admin') {
         <i class="fas fa-user-graduate"></i>
         <span>Students</span>
     </a>
-    <a href="../admin/payments.php" <?php if($current_page == "payments.php") echo 'class="active"'; ?>>
+    <!-- <a href="../admin/payments.php" <?php if($current_page == "payments.php") echo 'class="active"'; ?>>
         <i class="fas fa-credit-card"></i>
         <span>Payments</span>
-    </a>
+    </a> -->
        <a href="../admin/simulation_result.php" <?php if($current_page == "simulation_result.php") echo 'class="active"'; ?>>
      <i class="fas fa-chart-bar"></i>
      <span>Simulation Result</span>
