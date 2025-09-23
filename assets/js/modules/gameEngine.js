@@ -7,13 +7,13 @@ const GameEngine = {
     // Canvas and rendering
     canvas: null,
     ctx: null,
-    camera: { x: 0, y: 0, zoom: 1.5 }, // Added zoom level for better view
+    camera: { x: 0, y: 0, zoom: 1.0 }, // No zoom by default for fullscreen view
     
     // Timing
     lastFrameTime: 0,
     
     // Camera properties
-    cameraSmoothing: 0.1,
+    cameraSmoothing: 0.08,
     cameraOffset: { x: 0, y: 0 },
     
     // Collision detection
@@ -31,11 +31,11 @@ const GameEngine = {
         this.canvas = canvas;
         this.ctx = ctx;
         
-        // Set camera offset to center car on screen
-        this.cameraOffset.x = this.canvas.width / 2;
-        this.cameraOffset.y = this.canvas.height / 2;
+        // Set camera to show wider view - car positioned for better visibility
+        this.cameraOffset.x = this.canvas.width * 0.4; // Car in left 40% of screen
+        this.cameraOffset.y = this.canvas.height / 2;   // Vertically centered
         
-        console.log('✅ Game engine ready');
+        console.log(`✅ Game engine ready - Camera offset: ${this.cameraOffset.x}, ${this.cameraOffset.y}`);
     },
     
     /**
@@ -55,7 +55,7 @@ const GameEngine = {
         
         const carPos = window.CarModule.getPosition();
         
-        // Target camera position (car position minus offset to center car)
+        // Target camera position (car position minus offset)
         const targetX = carPos.x - this.cameraOffset.x;
         const targetY = carPos.y - this.cameraOffset.y;
         
@@ -63,12 +63,15 @@ const GameEngine = {
         this.camera.x += (targetX - this.camera.x) * this.cameraSmoothing;
         this.camera.y += (targetY - this.camera.y) * this.cameraSmoothing;
         
-        // Keep camera within world bounds
+        // Keep camera within world bounds but allow generous view
         if (window.WorldModule) {
             const worldDim = window.WorldModule.getDimensions();
             
-            this.camera.x = Math.max(0, Math.min(worldDim.width - this.canvas.width, this.camera.x));
-            this.camera.y = Math.max(0, Math.min(worldDim.height - this.canvas.height, this.camera.y));
+            // Allow camera to move more freely to show the full world
+            this.camera.x = Math.max(-this.canvas.width * 0.2, 
+                           Math.min(worldDim.width - this.canvas.width * 0.8, this.camera.x));
+            this.camera.y = Math.max(-this.canvas.height * 0.2, 
+                           Math.min(worldDim.height - this.canvas.height * 0.8, this.camera.y));
         }
     },
     
