@@ -9,6 +9,7 @@ const SimulationMain = {
     ctx: null,
     gameLoop: null,
     isRunning: false,
+    initialized: false, // Flag to prevent duplicate initialization
     
     // Timing
     lastTime: 0,
@@ -27,6 +28,12 @@ const SimulationMain = {
      * Initialize the entire simulation system
      */
     init() {
+        // Prevent duplicate initialization
+        if (this.initialized) {
+            console.warn('⚠️ SimulationMain already initialized, skipping duplicate init');
+            return;
+        }
+        
         console.log('🚀 Initializing Driving Simulation...');
         
         try {
@@ -34,6 +41,9 @@ const SimulationMain = {
             this.initializeModules();
             this.setupEventListeners();
             this.startSimulation();
+            
+            // Mark as initialized to prevent duplicates
+            this.initialized = true;
             
             console.log('✅ Simulation initialized successfully');
         } catch (error) {
@@ -386,10 +396,8 @@ const SimulationMain = {
             this.currentScore += 20; // 20 points per correct answer
         }
         
-        // Mark scenario as completed
-        if (this.modules.ScenariosModule) {
-            this.modules.ScenariosModule.markCompleted(scenario.id);
-        }
+        // NOTE: markCompleted is now handled by UI.js to prevent duplicates
+        // UI.js already handles: markCompleted + saveScenarioResult
         
         this.scenariosCompleted++;
         
@@ -401,19 +409,8 @@ const SimulationMain = {
             this.startSimulation();
         }, 2000);
         
-        // Save progress to database with error handling
-        if (this.modules.GameStats) {
-            try {
-                this.modules.GameStats.saveProgress({
-                    scenarioId: scenario.id,
-                    answer: answer,
-                    correct: correct,
-                    score: this.currentScore
-                });
-            } catch (error) {
-                console.error('❌ Error saving progress:', error);
-            }
-        }
+        // NOTE: Removed duplicate save call - UI.js now handles all database saves
+        console.log('✅ Question processing complete, UI.js handles database save');
     },
     
     /**
