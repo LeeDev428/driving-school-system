@@ -153,12 +153,20 @@ ob_start();
             
             <hr style="border: none; border-top: 1px solid #3a3f48; margin: 15px 0;">
             
-            <div>
+            <div style="margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                     <div style="font-size: 16px; font-weight: 500;">Road Markings</div>
                     <span class="badge badge-success">88%</span>
                 </div>
                 <div style="font-size: 13px; color: #8b8d93;">June 10, 2025</div>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #3a3f48; margin: 15px 0;">
+            
+            <div style="text-align: center;">
+                <a href="../view_quiz_results.php" class="btn" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; transition: background 0.3s;">
+                    <i class="fas fa-chart-line"></i> View Quiz Results
+                </a>
             </div>
         </div>
     </div>
