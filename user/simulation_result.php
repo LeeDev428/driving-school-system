@@ -12,14 +12,20 @@ require_once "../config.php";
 
 $user_id = $_SESSION["id"];
 
-// Get the latest simulation result for this user
+// Get the latest quiz session result for this user
 try {
     $stmt = $pdo->prepare("
-        SELECT sr.*, qs.session_id, qs.created_at as session_started
-        FROM simulation_results sr 
-        LEFT JOIN quiz_sessions qs ON qs.user_id = sr.user_id 
-        WHERE sr.user_id = ? 
-        ORDER BY sr.completed_at DESC 
+        SELECT qs.*, 
+               (5 - qs.correct_answers) as wrong_answers,
+               qs.completion_percentage as score_percentage,
+               CASE 
+                   WHEN qs.completion_percentage >= 60 THEN 'completed' 
+                   ELSE 'failed' 
+               END as status,
+               qs.total_time_seconds as completion_time_seconds
+        FROM quiz_sessions qs 
+        WHERE qs.user_id = ? AND qs.session_status = 'completed'
+        ORDER BY qs.completed_at DESC 
         LIMIT 1
     ");
     $stmt->execute([$user_id]);
@@ -29,10 +35,18 @@ try {
         $simulation_result = null;
     } else {
         $simulation_result = $result[0];
-        // Decode scenarios data
-        if ($simulation_result['scenarios_data']) {
-            $simulation_result['scenarios'] = json_decode($simulation_result['scenarios_data'], true);
-        }
+        $simulation_result['total_scenarios'] = $simulation_result['total_questions'];
+        
+        // Get individual responses for this session
+        $stmt = $pdo->prepare("
+            SELECT scenario_id, question_text, selected_option, correct_option, 
+                   is_correct, points_earned, answered_at
+            FROM quiz_responses 
+            WHERE session_id = ? 
+            ORDER BY scenario_id
+        ");
+        $stmt->execute([$simulation_result['session_id']]);
+        $simulation_result['scenarios'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
     $error_message = "Error loading results: " . $e->getMessage();
@@ -168,7 +182,7 @@ try {
                                 <i class="fas fa-<?php echo $simulation_result['status'] == 'completed' ? 'check-circle' : 'times-circle'; ?>"></i>
                                 Simulation <?php echo ucfirst($simulation_result['status']); ?>
                             </h2>
-                            <p class="mb-0">
+                            <p>
                                 Completed on <?php echo date('F j, Y \a\t g:i A', strtotime($simulation_result['completed_at'])); ?>
                             </p>
                         </div>
@@ -189,7 +203,7 @@ try {
                                     <div class="stat-label">Total Scenarios</div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-number text-info"><?php echo gmdate("i:s", $simulation_result['completion_time_seconds']); ?></div>
+                                    <div class="stat-number text-info"><?php echo gmdate("i:s", $simulation_result['total_time_seconds'] ?? 0); ?></div>
                                     <div class="stat-label">Time Taken</div>
                                 </div>
                             </div>
@@ -216,7 +230,7 @@ try {
                                                     <h6><strong>Your Answer:</strong></h6>
                                                     <p class="<?php echo $scenario['is_correct'] ? 'text-success' : 'text-danger'; ?>">
                                                         <i class="fas fa-<?php echo $scenario['is_correct'] ? 'check' : 'times'; ?>"></i>
-                                                        <?php echo htmlspecialchars($scenario['selected_option']); ?>
+                                                        Option <?php echo $scenario['selected_option'] + 1; ?>
                                                     </p>
                                                 </div>
                                                 <?php if (!$scenario['is_correct']): ?>
@@ -224,7 +238,7 @@ try {
                                                         <h6><strong>Correct Answer:</strong></h6>
                                                         <p class="text-success">
                                                             <i class="fas fa-check"></i>
-                                                            <?php echo htmlspecialchars($scenario['correct_option']); ?>
+                                                            Option <?php echo $scenario['correct_option'] + 1; ?>
                                                         </p>
                                                     </div>
                                                 <?php endif; ?>
