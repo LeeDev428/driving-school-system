@@ -313,11 +313,107 @@ $user_id = $_SESSION["id"];
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Start Screen Styles */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: white;
+            text-align: center;
+        }
+        
+        .start-content {
+            max-width: 600px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .start-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .start-description {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .start-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            margin-top: 15px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="start-screen">
+        <div class="start-content">
+            <div class="start-title">🚗 Driving Simulation</div>
+            <div class="start-description">
+                Welcome to the driving simulation training! Test your driving knowledge through 5 challenging scenarios.
+            </div>
+            <button class="start-btn" onclick="startSimulation()">
+                🎯 START SIMULATION
+            </button>
+            <div class="instructions">
+                <strong>Instructions:</strong>
+                <ul>
+                    <li>Complete 5 driving scenarios</li>
+                    <li>Use BRAKE and MOVE buttons to control your vehicle</li>
+                    <li>Answer questions about traffic situations</li>
+                    <li>Achieve 60% or higher to pass</li>
+                    <li>Results will be saved to your profile</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
+    <div id="loadingScreen" class="loading-screen" style="display: none;">
         <div class="loading-spinner"></div>
         <div>Loading Driving Simulation...</div>
     </div>
@@ -418,5 +514,26 @@ $user_id = $_SESSION["id"];
     <script src="../assets/js/modules/ui.js?v=<?php echo $timestamp; ?>"></script>
     <script src="../assets/js/modules/gameStats.js?v=<?php echo $timestamp; ?>"></script>
     <script src="../assets/js/simulation_main.js?v=<?php echo $timestamp; ?>"></script>
+    
+    <script>
+        function startSimulation() {
+            // Hide start screen
+            document.getElementById('startScreen').style.display = 'none';
+            
+            // Show loading screen
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            // Start the simulation after a brief delay
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.querySelector('.simulation-container').style.display = 'block';
+                
+                // Initialize the game if not already initialized
+                if (typeof initializeGame === 'function') {
+                    initializeGame();
+                }
+            }, 2000); // 2 second loading delay
+        }
+    </script>
 </body>
 </html>
