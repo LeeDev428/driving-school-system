@@ -204,12 +204,7 @@ ob_start();
         <button class="tab-btn active" onclick="switchTab('calendar')">
             <i class="far fa-calendar-alt"></i> Calendar View
         </button>
-        <button class="tab-btn" onclick="switchTab('upcoming')">
-            <i class="far fa-clock"></i> Upcoming Appointments
-        </button>
-        <button class="tab-btn" onclick="switchTab('history')">
-            <i class="fas fa-history"></i> Appointment History
-        </button>
+     
     </div>
 
     <!-- Calendar View Tab -->
