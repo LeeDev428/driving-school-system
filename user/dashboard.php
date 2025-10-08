@@ -1,5 +1,5 @@
 <?php
-session_start(); // ADD THIS LINE - CRITICAL!
+session_start();
 
 // Check if user is logged in
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -9,6 +9,15 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 // Include database connection
 require_once "../config.php";
+
+// Include access control
+require_once "access_control.php";
+
+// CHECK ACCESS - Redirect to appointments if user hasn't paid or not approved
+$access_check = checkUserAccess($_SESSION["id"], $conn);
+if (!$access_check['has_access']) {
+    redirectToAppointments($access_check['message']);
+}
 
 // Initialize variables
 $page_title = "Dashboard";
