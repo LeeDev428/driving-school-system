@@ -557,7 +557,7 @@ ob_start();
 $content = ob_get_clean();
 
 // Add additional styles - ADD COURSE BADGE STYLES
-$extra_styles = <<<EOT
+$extra_styles = <<<'EOT'
 <style>
 /* Course Type Badges */
 .course-badge {
@@ -1294,7 +1294,7 @@ $extra_styles = <<<EOT
 EOT;
 
 // Add additional scripts - UPDATE CALENDAR TO SHOW COURSE TYPE
-$extra_scripts = <<<EOT
+$extra_scripts = <<<'EOT'
 <script>
 let currentDate = new Date();
 let currentView = 'calendar';
@@ -1498,7 +1498,7 @@ document.getElementById('appointment_type').addEventListener('change', function(
     document.getElementById('payment_amount').value = downPayment;
     
     // Update placeholder with calculation info
-    document.getElementById('payment_amount').placeholder = `20% of $${price.toFixed(2)}`;
+    document.getElementById('payment_amount').placeholder = '20% of \$' + price.toFixed(2);
 });
 
 // Toggle payment reference field based on payment method
