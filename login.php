@@ -9,13 +9,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get email and password
     $email = trim($_POST["email"]);
     $password = trim($_POST["password"]);
-    $login_type = isset($_POST['login_type']) ? $_POST['login_type'] : 'student';
     
     // Validate email and password are not empty
     if (empty($email) || empty($password)) {
         $error = "Please enter both email and password.";
     } else {
-        // CHANGE 1: Search by email only, then verify user type afterward
+        // Search by email only - unified login for both admin and student
         $sql = "SELECT id, email, password, user_type, full_name FROM users WHERE email = ?";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -34,35 +33,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     
                     if (mysqli_stmt_fetch($stmt)) {
                         if (password_verify($password, $hashed_password)) {
-                            // CHANGE 2: Check if user type matches selected login type
-                            if ($user_type == $login_type) {
-                                // Password is correct, store data in session variables
-                                $_SESSION["loggedin"] = true;
-                                $_SESSION["id"] = $id;
-                                $_SESSION["email"] = $email;
-                                $_SESSION["user_type"] = $user_type;
-                                $_SESSION["full_name"] = $full_name;
-                                
-                                // CHANGE 3: Redirect with proper paths and exit
-                                if ($user_type == "admin") {
-                                    header("location: admin/dashboard.php");
-                                    exit;
-                                } else {
-                                    header("location: user/dashboard.php");
-                                    exit;
-                                }
+                            // Password is correct, store data in session variables
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                            $_SESSION["email"] = $email;
+                            $_SESSION["user_type"] = $user_type;
+                            $_SESSION["full_name"] = $full_name;
+                            
+                            // Redirect based on user type
+                            if ($user_type == "admin") {
+                                header("location: admin/dashboard.php");
+                                exit;
                             } else {
-                                // User exists but wrong login type selected
-                                $error = "Invalid account type selected. Please use the correct login tab.";
+                                header("location: user/dashboard.php");
+                                exit;
                             }
                         } else {
                             // Password is not valid
-                            $error = "Invalid password.";
+                            $error = "Invalid email or password.";
                         }
                     }
                 } else {
                     // Email doesn't exist
-                    $error = "No account found with that email address.";
+                    $error = "Invalid email or password.";
                 }
             } else {
                 $error = "Oops! Something went wrong. Please try again later.";
@@ -121,32 +114,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             height: 80px;
         }
         
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background-color: #3a3f48;
-            color: #9a9a9a;
-            cursor: pointer;
-        }
-        
-        .tab-button.active {
-            background-color: #ffc107;
-            color: #282c34;
+        .login-title {
+            font-size: 24px;
             font-weight: 600;
-        }
-        
-        .tab-button:first-child {
-            border-radius: 5px 0 0 5px;
-        }
-        
-        .tab-button:last-child {
-            border-radius: 0 5px 5px 0;
+            margin-bottom: 30px;
+            color: #ffc107;
         }
         
         .form-group {
@@ -236,17 +208,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <img src="images/logo.png" alt="Success Driving Logo">
         </div>
         
-        <div class="tab-buttons">
-            <button class="tab-button" onclick="switchTab('student')">Student Login</button>
-            <button class="tab-button active" onclick="switchTab('admin')">Admin Login</button>
-        </div>
+        <h2 class="login-title">Sign In to Your Account</h2>
         
         <?php if(!empty($error)): ?>
             <div class="error-message"><?php echo $error; ?></div>
         <?php endif; ?>
         
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-            <input type="hidden" name="login_type" id="login_type" value="admin">
             
             <div class="form-group">
                 <label for="email">Email address</label>
@@ -269,7 +237,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <a href="#" class="forgot-link">Forgot your password?</a>
             </div>
             
-            <button type="submit" class="submit-btn" id="login-button">Admin Login</button>
+            <button type="submit" class="submit-btn">Login</button>
         </form>
         
         <div class="copyright">
@@ -290,26 +258,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 passwordField.type = 'password';
                 toggleIcon.classList.remove('fa-eye-slash');
                 toggleIcon.classList.add('fa-eye');
-            }
-        }
-        
-        function switchTab(tabType) {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const loginTypeInput = document.getElementById('login_type');
-            const loginButton = document.getElementById('login-button');
-            
-            tabButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            if (tabType === 'admin') {
-                tabButtons[1].classList.add('active');
-                loginTypeInput.value = 'admin';
-                loginButton.textContent = 'Admin Login';
-            } else {
-                tabButtons[0].classList.add('active');
-                loginTypeInput.value = 'student';
-                loginButton.textContent = 'Student Login';
             }
         }
     </script>
