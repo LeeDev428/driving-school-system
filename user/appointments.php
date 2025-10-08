@@ -195,10 +195,19 @@ if ($stmt = mysqli_prepare($conn, $sql_history)) {
     mysqli_stmt_close($stmt);
 }
 
+// Include access control
+require_once "access_control.php";
+
 ob_start();
 ?>
 
 <div class="appointment-container">
+    <!-- Access Status Banner -->
+    <?php 
+    displayAccessMessage(); // Show redirect message if any
+    echo getAccessStatusHTML($_SESSION["id"], $conn); // Show current access status
+    ?>
+    
     <!-- Tab Navigation -->
     <div class="appointment-tabs">
         <button class="tab-btn active" onclick="switchTab('calendar')">
@@ -494,26 +503,44 @@ ob_start();
             </div>
             
             <!-- Payment Information -->
-            <div class="form-group">
-                <label for="payment_amount">Payment Amount</label>
-                <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" placeholder="0.00">
-            </div>
-            
-            <div class="form-group">
-                <label for="payment_method">Payment Method</label>
-                <select id="payment_method" name="payment_method" onchange="togglePaymentReference()">
-                    <option value="">Select payment method</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Credit/Debit Card</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="online">Online Payment</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="payment_reference_group" style="display: none;">
-                <label for="payment_reference">Payment Reference Number</label>
-                <input type="text" id="payment_reference" name="payment_reference" placeholder="Enter transaction/reference number">
-                <small class="form-help">Required for card, bank transfer, and online payments to verify the transaction.</small>
+            <div class="payment-section">
+                <h4 class="payment-title">💰 Payment Information</h4>
+                <div class="payment-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <p><strong>Required:</strong> 20% down payment to secure your appointment. Full access to Dashboard and E-Learning will be granted after admin approval.</p>
+                </div>
+                
+                <!-- GCash QR Code -->
+                <div class="gcash-section">
+                    <h5>Pay via GCash</h5>
+                    <div class="gcash-qr-container">
+                        <img src="../assets/images/dss_gcash.png" alt="GCash QR Code" class="gcash-qr">
+                        <p class="gcash-instructions">Scan the QR code with your GCash app to pay the 20% down payment</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_amount">20% Down Payment Amount <span class="required">*</span></label>
+                    <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" placeholder="0.00" required>
+                    <small class="form-help">Enter 20% of the total appointment fee</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_method">Payment Method <span class="required">*</span></label>
+                    <select id="payment_method" name="payment_method" onchange="togglePaymentReference()" required>
+                        <option value="">Select payment method</option>
+                        <option value="online">GCash / Online Payment</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="cash">Cash</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="payment_reference_group" style="display: none;">
+                    <label for="payment_reference">Payment Reference Number <span class="required">*</span></label>
+                    <input type="text" id="payment_reference" name="payment_reference" placeholder="Enter GCash reference number" required>
+                    <small class="form-help">Enter the 13-digit GCash reference number from your transaction receipt.</small>
+                </div>
             </div>
             
           
@@ -564,6 +591,134 @@ $extra_styles = <<<EOT
 .appointment-container {
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Access Status Styles */
+.access-notice-banner {
+    background: linear-gradient(135deg, rgba(255, 77, 77, 0.2), rgba(255, 204, 0, 0.2));
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+.access-notice-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.access-notice-content i {
+    font-size: 32px;
+    color: #ffcc00;
+    margin-top: 5px;
+}
+
+.access-notice-text h4 {
+    margin: 0 0 10px 0;
+    color: #ffcc00;
+    font-size: 20px;
+}
+
+.access-notice-text p {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.access-status-granted {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(129, 199, 132, 0.2));
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.access-status-granted i {
+    font-size: 28px;
+    color: #4caf50;
+}
+
+.access-status-granted span {
+    color: #4caf50;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.access-status-locked {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1));
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 20px;
+}
+
+.access-status-locked > i {
+    font-size: 48px;
+    color: #ffcc00;
+    margin-top: 5px;
+}
+
+.access-status-info h4 {
+    margin: 0 0 10px 0;
+    color: #ffcc00;
+    font-size: 20px;
+}
+
+.access-status-info p {
+    margin: 0 0 20px 0;
+    color: #fff;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.access-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.checklist-item i {
+    font-size: 20px;
+}
+
+.checklist-item.completed i {
+    color: #4caf50;
+}
+
+.checklist-item.pending i {
+    color: #666;
+}
+
+.checklist-item span {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(255, 204, 0, 0);
+    }
 }
 
 .appointment-tabs {
@@ -988,6 +1143,90 @@ $extra_styles = <<<EOT
     display: block;
 }
 
+/* Payment Section Styles */
+.payment-section {
+    background: #1e2129;
+    border: 2px solid #3a3f48;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.payment-title {
+    color: #ffcc00;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.payment-notice {
+    background: rgba(255, 204, 0, 0.1);
+    border-left: 4px solid #ffcc00;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.payment-notice i {
+    color: #ffcc00;
+    margin-top: 2px;
+    font-size: 18px;
+}
+
+.payment-notice p {
+    margin: 0;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.payment-notice strong {
+    color: #ffcc00;
+}
+
+.gcash-section {
+    background: #282c34;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.gcash-section h5 {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.gcash-qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.gcash-qr {
+    max-width: 250px;
+    width: 100%;
+    height: auto;
+    border: 3px solid #ffcc00;
+    border-radius: 8px;
+    padding: 10px;
+    background: white;
+}
+
+.gcash-instructions {
+    color: #8b8d93;
+    font-size: 13px;
+    margin: 0;
+}
+
+.required {
+    color: #ff4444;
+    margin-left: 3px;
+}
+
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1249,6 +1488,19 @@ function closeScheduleModal() {
     document.getElementById('payment_reference_group').style.display = 'none';
 }
 
+// Auto-calculate 20% down payment when appointment type is selected
+document.getElementById('appointment_type').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    const downPayment = (price * 0.20).toFixed(2);
+    
+    // Set the payment amount to 20%
+    document.getElementById('payment_amount').value = downPayment;
+    
+    // Update placeholder with calculation info
+    document.getElementById('payment_amount').placeholder = `20% of $${price.toFixed(2)}`;
+});
+
 // Toggle payment reference field based on payment method
 function togglePaymentReference() {
     const paymentMethod = document.getElementById('payment_method').value;
@@ -1259,6 +1511,15 @@ function togglePaymentReference() {
     if (paymentMethod === 'card' || paymentMethod === 'bank_transfer' || paymentMethod === 'online') {
         referenceGroup.style.display = 'block';
         referenceInput.required = true;
+        
+        // Update placeholder based on payment method
+        if (paymentMethod === 'online') {
+            referenceInput.placeholder = 'Enter GCash reference number (13 digits)';
+        } else if (paymentMethod === 'bank_transfer') {
+            referenceInput.placeholder = 'Enter bank transaction reference';
+        } else {
+            referenceInput.placeholder = 'Enter transaction/reference number';
+        }
     } else {
         referenceGroup.style.display = 'none';
         referenceInput.required = false;
