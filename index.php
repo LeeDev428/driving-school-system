@@ -105,7 +105,7 @@ session_start();
         /* Hero Section */
         .hero {
             height: 100vh;
-            background: url('images/driving-background.jpg') no-repeat center center;
+            background: url('assets/images/dss_bg.png') no-repeat center center;
             background-size: cover;
             display: flex;
             flex-direction: column;
@@ -211,7 +211,7 @@ session_start();
     <header>
         <div class="nav-container">
             <div class="logo">
-                <img src="images/logo.png" alt="Success Driving Logo">
+                <img src="assets/images/dss_logo.png" alt="Success Driving Logo">
                 <h1>SUCCESS DRIVING</h1>
             </div>
             
@@ -238,20 +238,12 @@ session_start();
         <div class="hero-content">
             <h1>LEARN IN A SAFE AND CONTROLLED ENVIRONMENT</h1>
             <p>Success Driving's pioneering Training Centers are complete training grounds for student drivers away from the busy streets of the city.</p>
-            <a href="#" class="cta-button">Learn More</a>
+           
         </div>
         
-        <div class="slider-arrows">
-            <a href="#" class="prev"><i class="fas fa-chevron-left"></i></a>
-            <a href="#" class="next"><i class="fas fa-chevron-right"></i></a>
-        </div>
+  
         
-        <div class="slider-nav">
-            <a class="active"></a>
-            <a></a>
-            <a></a>
-            <a></a>
-        </div>
+      
     </section>
 </body>
 </html>
