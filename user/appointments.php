@@ -19,14 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
     
     $user_id = $_SESSION["id"];
     
+    // Get calendar events - updated for new structure
     if ($_POST['action'] == 'get_calendar_events') {
         $year = isset($_POST['year']) ? (int)$_POST['year'] : date('Y');
         $month = isset($_POST['month']) ? (int)$_POST['month'] : date('n');
         
         $events = [];
-        $sql = "SELECT a.*, at.name as type_name, at.color 
+        $sql = "SELECT a.*, a.course_selection, a.course_price, a.vehicle_type, a.vehicle_transmission,
+                       ts.session_date, ts.current_enrollments, ts.max_enrollments
                 FROM appointments a 
-                LEFT JOIN appointment_types at ON a.appointment_type_id = at.id
+                LEFT JOIN tdc_sessions ts ON a.tdc_session_id = ts.id
                 WHERE a.student_id = ? AND YEAR(a.appointment_date) = ? AND MONTH(a.appointment_date) = ?";
         
         if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -35,14 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $result = mysqli_stmt_get_result($stmt);
             
             while ($row = mysqli_fetch_assoc($result)) {
+                $eventLabel = $row['course_selection'];
+                if ($row['course_selection'] == 'PDC' && $row['vehicle_type']) {
+                    $eventLabel .= ' - ' . ucfirst($row['vehicle_type']);
+                }
+                
                 $events[] = [
                     'id' => $row['id'],
-                    'date' => $row['appointment_date'], // This should be YYYY-MM-DD format
+                    'date' => $row['appointment_date'],
                     'time' => date('g:i A', strtotime($row['start_time'])),
-                    'type' => $row['type_name'] ?: 'Appointment',
-                    'course_type' => strtoupper($row['course_type'] ?? 'PDC'), // Add course type
+                    'type' => $eventLabel,
+                    'course_selection' => $row['course_selection'],
                     'status' => $row['status'],
-                    'color' => $row['color'] ?: '#4CAF50'
+                    'color' => $row['course_selection'] == 'TDC' ? '#9c27b0' : '#ff9800'
                 ];
             }
             mysqli_stmt_close($stmt);
@@ -52,56 +59,146 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Get available TDC sessions
+    if ($_POST['action'] == 'get_tdc_sessions') {
+        $sessions = [];
+        $sql = "SELECT ts.*, u.full_name as instructor_name
+                FROM tdc_sessions ts
+                LEFT JOIN instructors i ON ts.instructor_id = i.id
+                LEFT JOIN users u ON i.user_id = u.id
+                WHERE ts.session_date >= CURDATE() AND ts.status = 'active'
+                ORDER BY ts.session_date, ts.start_time";
+        
+        $result = mysqli_query($conn, $sql);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $available_slots = $row['max_enrollments'] - $row['current_enrollments'];
+                $sessions[] = [
+                    'id' => $row['id'],
+                    'date' => $row['session_date'],
+                    'day' => $row['session_day'],
+                    'start_time' => date('g:i A', strtotime($row['start_time'])),
+                    'end_time' => date('g:i A', strtotime($row['end_time'])),
+                    'instructor' => $row['instructor_name'] ?: 'TBA',
+                    'current_enrollments' => $row['current_enrollments'],
+                    'max_enrollments' => $row['max_enrollments'],
+                    'available_slots' => $available_slots,
+                    'is_full' => $row['status'] == 'full'
+                ];
+            }
+        }
+        
+        echo json_encode($sessions);
+        exit;
+    }
+    
+    // Schedule appointment - updated for TDC/PDC system
     if ($_POST['action'] == 'schedule_appointment') {
-        $appointment_type_id = $_POST['appointment_type_id'];
-        $course_type = $_POST['course_type']; // Add course type
-        $appointment_date = $_POST['appointment_date'];
-        $start_time = $_POST['start_time'];
-        $preferred_instructor = !empty($_POST['preferred_instructor']) ? $_POST['preferred_instructor'] : null;
-        $preferred_vehicle = !empty($_POST['preferred_vehicle']) ? $_POST['preferred_vehicle'] : null;
+        $course_selection = $_POST['course_selection']; // TDC or PDC
         $notes = $_POST['notes'] ?? '';
         
         // Get payment fields
         $payment_amount = !empty($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0.00;
         $payment_method = !empty($_POST['payment_method']) ? $_POST['payment_method'] : null;
         $payment_reference = !empty($_POST['payment_reference']) ? trim($_POST['payment_reference']) : null;
-        $payment_status = isset($_POST['is_paid']) && $_POST['is_paid'] == '1' ? 'paid' : 'unpaid';
+        $payment_status = 'unpaid'; // Always start as unpaid, admin will confirm
         
-        // Get duration from appointment type
-        $duration = 60; // default
-        $duration_sql = "SELECT duration_minutes FROM appointment_types WHERE id = ?";
-        if ($stmt = mysqli_prepare($conn, $duration_sql)) {
-            mysqli_stmt_bind_param($stmt, "i", $appointment_type_id);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            if ($row = mysqli_fetch_assoc($result)) {
-                $duration = $row['duration_minutes'];
-            }
-            mysqli_stmt_close($stmt);
-        }
-        
-        $end_time = date('H:i:s', strtotime($start_time . " + $duration minutes"));
-        
-        // FIXED: Create variables for string literals
         $status = 'pending';
         
-        // Insert appointment with course_type and payment fields including reference
-        $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, appointment_type_id, course_type, appointment_date, start_time, end_time, status, student_notes, payment_amount, payment_method, payment_reference, payment_status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        if ($stmt = mysqli_prepare($conn, $sql)) {
-            // FIXED: Pass variables instead of string literals, including payment fields and reference
-            mysqli_stmt_bind_param($stmt, "iiiissssssdsss", $user_id, $preferred_instructor, $preferred_vehicle, $appointment_type_id, $course_type, $appointment_date, $start_time, $end_time, $status, $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
+        if ($course_selection == 'TDC') {
+            // TDC booking
+            $tdc_session_id = $_POST['tdc_session_id'];
+            $preferred_instructor = !empty($_POST['preferred_instructor']) ? $_POST['preferred_instructor'] : null;
+            $preferred_vehicle = !empty($_POST['preferred_vehicle']) ? $_POST['preferred_vehicle'] : null;
+            $course_price = 899.00;
             
-            if (mysqli_stmt_execute($stmt)) {
-                echo json_encode(['success' => true, 'message' => 'Appointment scheduled successfully!']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Error scheduling appointment: ' . mysqli_error($conn)]);
+            // Check if session is still available
+            $check_sql = "SELECT current_enrollments, max_enrollments, session_date, start_time, end_time 
+                         FROM tdc_sessions WHERE id = ? AND status = 'active'";
+            if ($stmt = mysqli_prepare($conn, $check_sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $tdc_session_id);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                $session = mysqli_fetch_assoc($result);
+                mysqli_stmt_close($stmt);
+                
+                if (!$session) {
+                    echo json_encode(['success' => false, 'message' => 'Session not available.']);
+                    exit;
+                }
+                
+                if ($session['current_enrollments'] >= $session['max_enrollments']) {
+                    echo json_encode(['success' => false, 'message' => 'Session is full. Please select another date.']);
+                    exit;
+                }
+                
+                $appointment_date = $session['session_date'];
+                $start_time = $session['start_time'];
+                $end_time = $session['end_time'];
+                
+                // Insert TDC appointment
+                $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, course_selection, tdc_session_id, 
+                        appointment_date, start_time, end_time, course_price, status, student_notes, 
+                        payment_amount, payment_method, payment_reference, payment_status) 
+                        VALUES (?, ?, ?, 'TDC', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+                if ($stmt = mysqli_prepare($conn, $sql)) {
+                    // Type string: i=integer, s=string, d=double
+                    // 4 integers (student_id, instructor_id, vehicle_id, tdc_session_id) + 7 strings + 1 double (course_price) + 2 strings
+                    mysqli_stmt_bind_param($stmt, "iiiisssdssdsss", 
+                        $user_id, $preferred_instructor, $preferred_vehicle, $tdc_session_id,
+                        $appointment_date, $start_time, $end_time, $course_price, $status, 
+                        $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
+                    
+                    if (mysqli_stmt_execute($stmt)) {
+                        echo json_encode(['success' => true, 'message' => 'TDC session booked successfully! Awaiting admin confirmation.']);
+                    } else {
+                        echo json_encode(['success' => false, 'message' => 'Error booking session: ' . mysqli_error($conn)]);
+                    }
+                    mysqli_stmt_close($stmt);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
+                }
             }
-            mysqli_stmt_close($stmt);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
+            
+        } else if ($course_selection == 'PDC') {
+            // PDC booking
+            $appointment_date = $_POST['appointment_date'];
+            $start_time = $_POST['start_time'];
+            $duration_days = (int)$_POST['duration_days']; // 2 or 4 days
+            $vehicle_type = $_POST['vehicle_type']; // motorcycle or car
+            $vehicle_transmission = $_POST['vehicle_transmission']; // automatic or manual
+            
+            // Set price based on vehicle type
+            $course_price = ($vehicle_type == 'motorcycle') ? 2000.00 : 4500.00;
+            
+            // Calculate end time (3 hours per session)
+            $end_time = date('H:i:s', strtotime($start_time . ' + 3 hours'));
+            
+            // Insert PDC appointment
+            $sql = "INSERT INTO appointments (student_id, course_selection, duration_days, vehicle_type, vehicle_transmission,
+                    appointment_date, start_time, end_time, course_price, status, student_notes, 
+                    payment_amount, payment_method, payment_reference, payment_status) 
+                    VALUES (?, 'PDC', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            if ($stmt = mysqli_prepare($conn, $sql)) {
+                // Type string: 2 integers + 5 strings + 1 double + 1 string + 1 double + 3 strings = 14 params
+                mysqli_stmt_bind_param($stmt, "iisssssdsdsss", 
+                    $user_id, $duration_days, $vehicle_type, $vehicle_transmission,
+                    $appointment_date, $start_time, $end_time, $course_price, $status, 
+                    $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
+                
+                if (mysqli_stmt_execute($stmt)) {
+                    echo json_encode(['success' => true, 'message' => 'PDC appointment scheduled successfully! Awaiting admin confirmation.']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Error scheduling appointment: ' . mysqli_error($conn)]);
+                }
+                mysqli_stmt_close($stmt);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Database error: ' . mysqli_error($conn)]);
+            }
         }
+        
         exit;
     }
     
@@ -117,16 +214,7 @@ $header_title = "Appointment Scheduling";
 $notification_count = 2;
 $user_id = $_SESSION["id"];
 
-// Get appointment types
-$appointment_types = [];
-$result = mysqli_query($conn, "SELECT * FROM appointment_types WHERE is_active = 1 ORDER BY name");
-if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        $appointment_types[] = $row;
-    }
-}
-
-// Get instructors
+// Get instructors (for TDC only)
 $available_instructors = [];
 $result = mysqli_query($conn, "SELECT i.id, u.full_name, i.specializations, i.hourly_rate 
                                FROM instructors i 
@@ -139,7 +227,7 @@ if ($result) {
     }
 }
 
-// Get vehicles
+// Get vehicles (for TDC only)
 $available_vehicles = [];
 $result = mysqli_query($conn, "SELECT id, make, model, license_plate, transmission_type 
                                FROM vehicles 
@@ -151,14 +239,16 @@ if ($result) {
     }
 }
 
-// Get upcoming appointments - UPDATED SQL
+// Get upcoming appointments - Updated for new structure
 $upcoming_appointments = [];
-$sql = "SELECT a.*, at.name as type_name, u.full_name as instructor_name, v.make, v.model, v.license_plate
+$sql = "SELECT a.*, a.course_selection, a.course_price, a.vehicle_type, a.vehicle_transmission, a.duration_days,
+               u.full_name as instructor_name, v.make, v.model, v.license_plate,
+               ts.session_day, ts.current_enrollments, ts.max_enrollments
         FROM appointments a 
-        LEFT JOIN appointment_types at ON a.appointment_type_id = at.id
         LEFT JOIN instructors i ON a.instructor_id = i.id
         LEFT JOIN users u ON i.user_id = u.id
         LEFT JOIN vehicles v ON a.vehicle_id = v.id
+        LEFT JOIN tdc_sessions ts ON a.tdc_session_id = ts.id
         WHERE a.student_id = ? AND a.appointment_date >= CURDATE() AND a.status IN ('pending', 'confirmed')
         ORDER BY a.appointment_date, a.start_time
         LIMIT 10";
@@ -173,14 +263,16 @@ if ($stmt = mysqli_prepare($conn, $sql)) {
     mysqli_stmt_close($stmt);
 }
 
-// Get appointment history - UPDATED SQL
+// Get appointment history - Updated for new structure
 $appointment_history = [];
-$sql_history = "SELECT a.*, at.name as type_name, u.full_name as instructor_name, v.make, v.model, v.license_plate
+$sql_history = "SELECT a.*, a.course_selection, a.course_price, a.vehicle_type, a.vehicle_transmission, a.duration_days,
+                       u.full_name as instructor_name, v.make, v.model, v.license_plate,
+                       ts.session_day
                 FROM appointments a 
-                LEFT JOIN appointment_types at ON a.appointment_type_id = at.id
                 LEFT JOIN instructors i ON a.instructor_id = i.id
                 LEFT JOIN users u ON i.user_id = u.id
                 LEFT JOIN vehicles v ON a.vehicle_id = v.id
+                LEFT JOIN tdc_sessions ts ON a.tdc_session_id = ts.id
                 WHERE a.student_id = ? AND a.appointment_date < CURDATE()
                 ORDER BY a.appointment_date DESC, a.start_time DESC
                 LIMIT 20";
@@ -285,28 +377,44 @@ ob_start();
                             <div class="appointment-card today">
                                 <div class="appointment-info">
                                     <div class="appointment-type">
-                                        <?php echo htmlspecialchars($appointment['type_name']); ?>
-                                        <?php if (!empty($appointment['course_type'])): ?>
-                                            <span class="course-badge <?php echo $appointment['course_type']; ?>">
-                                                <?php echo strtoupper($appointment['course_type']); ?>
-                                            </span>
+                                        <?php 
+                                        $courseLabel = $appointment['course_selection'];
+                                        if ($appointment['course_selection'] == 'PDC' && $appointment['vehicle_type']) {
+                                            $courseLabel .= ' - ' . ucfirst($appointment['vehicle_type']);
+                                            if ($appointment['vehicle_transmission']) {
+                                                $courseLabel .= ' (' . ucfirst($appointment['vehicle_transmission']) . ')';
+                                            }
+                                        }
+                                        echo htmlspecialchars($courseLabel);
+                                        ?>
+                                        <span class="course-badge <?php echo strtolower($appointment['course_selection']); ?>">
+                                            <?php echo $appointment['course_selection']; ?>
+                                        </span>
+                                        <?php if ($appointment['course_selection'] == 'PDC' && $appointment['duration_days']): ?>
+                                            <span class="duration-badge"><?php echo $appointment['duration_days']; ?> Days</span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="appointment-time">
                                         <i class="far fa-clock"></i>
                                         <?php echo date('g:i A', strtotime($appointment['start_time'])) . ' - ' . date('g:i A', strtotime($appointment['end_time'])); ?>
                                     </div>
-                                    <?php if ($appointment['instructor_name']): ?>
-                                        <div class="appointment-instructor">
-                                            <i class="fas fa-user"></i>
-                                            Instructor: <?php echo htmlspecialchars($appointment['instructor_name']); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php if ($appointment['make'] && $appointment['model']): ?>
-                                        <div class="appointment-vehicle">
-                                            <i class="fas fa-car"></i>
-                                            <?php echo htmlspecialchars($appointment['make'] . ' ' . $appointment['model'] . ' (' . $appointment['license_plate'] . ')'); ?>
-                                        </div>
+                                    <div class="appointment-price">
+                                        <i class="fas fa-tag"></i>
+                                        ₱<?php echo number_format($appointment['course_price'], 2); ?>
+                                    </div>
+                                    <?php if ($appointment['course_selection'] == 'TDC'): ?>
+                                        <?php if ($appointment['instructor_name']): ?>
+                                            <div class="appointment-instructor">
+                                                <i class="fas fa-user"></i>
+                                                Instructor: <?php echo htmlspecialchars($appointment['instructor_name']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($appointment['session_day']): ?>
+                                            <div class="appointment-day">
+                                                <i class="fas fa-calendar-day"></i>
+                                                <?php echo $appointment['session_day']; ?> Session
+                                            </div>
+                                        <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                                 <div class="appointment-status">
@@ -335,23 +443,28 @@ ob_start();
                             <div class="appointment-card">
                                 <div class="appointment-info">
                                     <div class="appointment-type">
-                                        <?php echo htmlspecialchars($appointment['type_name']); ?>
-                                        <?php if (!empty($appointment['course_type'])): ?>
-                                            <span class="course-badge <?php echo $appointment['course_type']; ?>">
-                                                <?php echo strtoupper($appointment['course_type']); ?>
-                                            </span>
-                                        <?php endif; ?>
+                                        <?php 
+                                        $courseLabel = $appointment['course_selection'];
+                                        if ($appointment['course_selection'] == 'PDC' && $appointment['vehicle_type']) {
+                                            $courseLabel .= ' - ' . ucfirst($appointment['vehicle_type']);
+                                            if ($appointment['vehicle_transmission']) {
+                                                $courseLabel .= ' (' . ucfirst($appointment['vehicle_transmission']) . ')';
+                                            }
+                                        }
+                                        echo htmlspecialchars($courseLabel);
+                                        ?>
+                                        <span class="course-badge <?php echo strtolower($appointment['course_selection']); ?>">
+                                            <?php echo $appointment['course_selection']; ?>
+                                        </span>
                                     </div>
                                     <div class="appointment-time">
                                         <i class="far fa-clock"></i>
                                         <?php echo date('M j, Y', strtotime($appointment['appointment_date'])) . ' at ' . date('g:i A', strtotime($appointment['start_time'])); ?>
                                     </div>
-                                    <?php if ($appointment['instructor_name']): ?>
-                                        <div class="appointment-instructor">
-                                            <i class="fas fa-user"></i>
-                                            Instructor: <?php echo htmlspecialchars($appointment['instructor_name']); ?>
-                                        </div>
-                                    <?php endif; ?>
+                                    <div class="appointment-price">
+                                        <i class="fas fa-tag"></i>
+                                        ₱<?php echo number_format($appointment['course_price'], 2); ?>
+                                    </div>
                                 </div>
                                 <div class="appointment-status">
                                     <span class="status-badge <?php echo $appointment['status']; ?>">
@@ -392,17 +505,23 @@ ob_start();
                         <tr onclick="viewAppointmentDetails(<?php echo $appointment['id']; ?>)" style="cursor: pointer;">
                             <td><?php echo date('M j, Y', strtotime($appointment['appointment_date'])); ?></td>
                             <td><?php echo htmlspecialchars($_SESSION['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($appointment['type_name']); ?></td>
                             <td>
-                                <?php if (!empty($appointment['course_type'])): ?>
-                                    <span class="course-badge <?php echo $appointment['course_type']; ?>">
-                                        <?php echo strtoupper($appointment['course_type']); ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="course-badge pdc">PDC</span>
-                                <?php endif; ?>
+                                <?php 
+                                $courseLabel = $appointment['course_selection'];
+                                if ($appointment['course_selection'] == 'PDC' && $appointment['vehicle_type']) {
+                                    $courseLabel .= ' - ' . ucfirst($appointment['vehicle_type']);
+                                }
+                                echo htmlspecialchars($courseLabel);
+                                ?>
                             </td>
-                            <td><?php echo htmlspecialchars($appointment['instructor_name'] ?? 'Not Assigned'); ?></td>
+                            <td>
+                                <span class="course-badge <?php echo strtolower($appointment['course_selection']); ?>">
+                                    <?php echo $appointment['course_selection']; ?>
+                                </span>
+                                <br>
+                                <small style="color: #8b8d93;">₱<?php echo number_format($appointment['course_price'], 2); ?></small>
+                            </td>
+                            <td><?php echo htmlspecialchars($appointment['instructor_name'] ?? ($appointment['course_selection'] == 'PDC' ? 'N/A' : 'Not Assigned')); ?></td>
                             <td>
                                 <span class="status-badge <?php echo $appointment['status']; ?>">
                                     <?php echo ucfirst($appointment['status']); ?>
@@ -424,79 +543,122 @@ ob_start();
             <span class="close-btn" onclick="closeScheduleModal()">&times;</span>
         </div>
         <form id="schedule-form">
+            <!-- Course Selection -->
             <div class="form-group">
-                <label for="appointment_type">Appointment Type</label>
-                <select id="appointment_type" name="appointment_type_id" required>
-                    <option value="">Select appointment type</option>
-                    <?php foreach ($appointment_types as $type): ?>
-                        <option value="<?php echo $type['id']; ?>" data-duration="<?php echo $type['duration_minutes']; ?>" data-price="<?php echo $type['price']; ?>">
-                            <?php echo htmlspecialchars($type['name']); ?> - $<?php echo number_format($type['price'], 2); ?>
-                        </option>
-                    <?php endforeach; ?>
+                <label for="course_selection">Select Course</label>
+                <select id="course_selection" name="course_selection" required onchange="toggleCourseFields()">
+                    <option value="">Choose a course</option>
+                    <option value="TDC" data-price="899">TDC - Theoretical Driving Course (₱899)</option>
+                    <option value="PDC">PDC - Practical Driving Course (₱2,000 - ₱4,500)</option>
                 </select>
             </div>
             
-            <!-- ADD COURSE TYPE SELECTION -->
-            <div class="form-group">
-                <label for="course_type">Course Type</label>
-                <select id="course_type" name="course_type" required>
-                    <option value="">Select Course Type</option>
-                    <option value="tpc">TPC - Theoretical Driving Course</option>
-                    <option value="pdc">PDC - Practical Driving Course</option>
-                    <option value="both">Both TPC & PDC</option>
-                </select>
+            <!-- TDC Fields (Hidden by default) -->
+            <div id="tdc-fields" style="display: none;">
+                <h4 class="section-title">📚 TDC Session Details</h4>
+                <div class="info-banner">
+                    <i class="fas fa-info-circle"></i>
+                    <p>TDC sessions are available every <strong>Friday and Saturday</strong>. Maximum <strong>10 students</strong> per session.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tdc_session">Select TDC Session <span class="required">*</span></label>
+                    <select id="tdc_session" name="tdc_session_id">
+                        <option value="">Loading sessions...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tdc_instructor">Preferred Instructor</label>
+                    <select id="tdc_instructor" name="preferred_instructor">
+                        <option value="">Any available instructor</option>
+                        <?php foreach ($available_instructors as $instructor): ?>
+                            <option value="<?php echo $instructor['id']; ?>">
+                                <?php echo htmlspecialchars($instructor['full_name']); ?>
+                                <?php if ($instructor['specializations']): ?>
+                                    - <?php echo htmlspecialchars($instructor['specializations']); ?>
+                                <?php endif; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tdc_vehicle">Preferred Vehicle</label>
+                    <select id="tdc_vehicle" name="preferred_vehicle">
+                        <option value="">Any available vehicle</option>
+                        <?php foreach ($available_vehicles as $vehicle): ?>
+                            <option value="<?php echo $vehicle['id']; ?>">
+                                <?php echo htmlspecialchars($vehicle['make'] . ' ' . $vehicle['model'] . ' (' . $vehicle['license_plate'] . ')'); ?>
+                                - <?php echo ucfirst($vehicle['transmission_type']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="appointment_date">Date</label>
-                <input type="date" id="appointment_date" name="appointment_date" min="<?php echo date('Y-m-d'); ?>" required>
+            <!-- PDC Fields (Hidden by default) -->
+            <div id="pdc-fields" style="display: none;">
+                <h4 class="section-title">🚗 PDC Session Details</h4>
+                
+                <div class="form-group">
+                    <label for="pdc_vehicle_type">Vehicle Type <span class="required">*</span></label>
+                    <div class="vehicle-options">
+                        <label class="radio-card">
+                            <input type="radio" name="vehicle_type" value="motorcycle" onchange="updatePDCPrice()">
+                            <div class="radio-content">
+                                <i class="fas fa-motorcycle"></i>
+                                <span class="radio-title">Motorcycle</span>
+                                <span class="radio-price">₱2,000</span>
+                            </div>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="vehicle_type" value="car" onchange="updatePDCPrice()">
+                            <div class="radio-content">
+                                <i class="fas fa-car"></i>
+                                <span class="radio-title">Car</span>
+                                <span class="radio-price">₱4,500</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pdc_transmission">Transmission Type <span class="required">*</span></label>
+                    <select id="pdc_transmission" name="vehicle_transmission">
+                        <option value="">Select transmission</option>
+                        <option value="automatic">Automatic</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pdc_duration">Course Duration <span class="required">*</span></label>
+                    <select id="pdc_duration" name="duration_days">
+                        <option value="">Select duration</option>
+                        <option value="2">2 Days</option>
+                        <option value="4">4 Days</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pdc_date">Start Date <span class="required">*</span></label>
+                    <input type="date" id="pdc_date" name="appointment_date" min="<?php echo date('Y-m-d'); ?>">
+                    <small class="form-help">Choose your preferred start date from available schedules</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pdc_time">Preferred Time <span class="required">*</span></label>
+                    <select id="pdc_time" name="start_time">
+                        <option value="">Select time</option>
+                        <option value="08:00">8:00 AM - 11:00 AM</option>
+                        <option value="11:00">11:00 AM - 2:00 PM</option>
+                        <option value="14:00">2:00 PM - 5:00 PM</option>
+                    </select>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label for="start_time">Time</label>
-                <select id="start_time" name="start_time" required>
-                    <option value="">Select time</option>
-                    <?php for ($hour = 8; $hour <= 17; $hour++): ?>
-                        <?php for ($minute = 0; $minute < 60; $minute += 30): ?>
-                            <?php 
-                            $time = sprintf('%02d:%02d', $hour, $minute);
-                            $display_time = date('g:i A', strtotime($time));
-                            ?>
-                            <option value="<?php echo $time; ?>"><?php echo $display_time; ?></option>
-                        <?php endfor; ?>
-                    <?php endfor; ?>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="preferred_instructor">Preferred Instructor (Optional)</label>
-                <select id="preferred_instructor" name="preferred_instructor">
-                    <option value="">Any available instructor</option>
-                    <?php foreach ($available_instructors as $instructor): ?>
-                        <option value="<?php echo $instructor['id']; ?>" data-rate="<?php echo $instructor['hourly_rate']; ?>">
-                            <?php echo htmlspecialchars($instructor['full_name']); ?>
-                            <?php if ($instructor['specializations']): ?>
-                                - <?php echo htmlspecialchars($instructor['specializations']); ?>
-                            <?php endif; ?>
-                            ($<?php echo number_format($instructor['hourly_rate'], 2); ?>/hr)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="preferred_vehicle">Preferred Vehicle (Optional)</label>
-                <select id="preferred_vehicle" name="preferred_vehicle">
-                    <option value="">Any available vehicle</option>
-                    <?php foreach ($available_vehicles as $vehicle): ?>
-                        <option value="<?php echo $vehicle['id']; ?>">
-                            <?php echo htmlspecialchars($vehicle['make'] . ' ' . $vehicle['model'] . ' (' . $vehicle['license_plate'] . ')'); ?>
-                            - <?php echo ucfirst($vehicle['transmission_type']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
+            <!-- Notes for both courses -->
             <div class="form-group">
                 <label for="notes">Notes (Optional)</label>
                 <textarea id="notes" name="notes" rows="3" placeholder="Any special requests or notes..."></textarea>
@@ -521,8 +683,8 @@ ob_start();
                 
                 <div class="form-group">
                     <label for="payment_amount">20% Down Payment Amount <span class="required">*</span></label>
-                    <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" placeholder="0.00" required>
-                    <small class="form-help">Enter 20% of the total appointment fee</small>
+                    <input type="number" id="payment_amount" name="payment_amount" step="0.01" min="0" placeholder="0.00" required readonly>
+                    <small class="form-help" id="payment_calculation_info">Select a course to see payment amount</small>
                 </div>
                 
                 <div class="form-group">
@@ -570,7 +732,7 @@ $extra_styles = <<<'EOT'
     margin-left: 8px;
 }
 
-.course-badge.tpc {
+.course-badge.tdc {
     background: rgba(156, 39, 176, 0.2);
     color: #9c27b0;
     border: 1px solid rgba(156, 39, 176, 0.3);
@@ -582,10 +744,26 @@ $extra_styles = <<<'EOT'
     border: 1px solid rgba(255, 152, 0, 0.3);
 }
 
-.course-badge.both {
-    background: rgba(63, 81, 181, 0.2);
-    color: #3f51b5;
-    border: 1px solid rgba(63, 81, 181, 0.3);
+.duration-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-left: 5px;
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196f3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.appointment-price,
+.appointment-day {
+    color: #8b8d93;
+    font-size: 13px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .appointment-container {
@@ -1143,6 +1321,109 @@ $extra_styles = <<<'EOT'
     display: block;
 }
 
+/* Section Styles */
+.section-title {
+    color: #ffcc00;
+    font-size: 18px;
+    margin: 20px 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3a3f48;
+}
+
+.info-banner {
+    background: rgba(255, 204, 0, 0.1);
+    border-left: 4px solid #ffcc00;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 4px;
+}
+
+.info-banner i {
+    color: #ffcc00;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.info-banner p {
+    color: #fff;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.info-banner strong {
+    color: #ffcc00;
+}
+
+/* Radio Card Styles for Vehicle Selection */
+.vehicle-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.radio-card {
+    position: relative;
+    cursor: pointer;
+    display: block;
+}
+
+.radio-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-content {
+    background: #1e2129;
+    border: 2px solid #3a3f48;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.radio-card:hover .radio-content {
+    border-color: #ffcc00;
+    background: rgba(255, 204, 0, 0.05);
+}
+
+.radio-card input[type="radio"]:checked + .radio-content {
+    border-color: #ffcc00;
+    background: rgba(255, 204, 0, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.1);
+}
+
+.radio-content i {
+    font-size: 32px;
+    color: #8b8d93;
+    transition: color 0.3s;
+}
+
+.radio-card input[type="radio"]:checked + .radio-content i {
+    color: #ffcc00;
+}
+
+.radio-title {
+    font-weight: 600;
+    color: #fff;
+    font-size: 16px;
+}
+
+.radio-price {
+    font-weight: 700;
+    color: #ffcc00;
+    font-size: 18px;
+}
+
 /* Payment Section Styles */
 .payment-section {
     background: #1e2129;
@@ -1488,18 +1769,94 @@ function closeScheduleModal() {
     document.getElementById('payment_reference_group').style.display = 'none';
 }
 
-// Auto-calculate 20% down payment when appointment type is selected
-document.getElementById('appointment_type').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
-    const downPayment = (price * 0.20).toFixed(2);
+// Toggle TDC/PDC fields based on course selection
+function toggleCourseFields() {
+    const courseSelection = document.getElementById('course_selection').value;
+    const tdcFields = document.getElementById('tdc-fields');
+    const pdcFields = document.getElementById('pdc-fields');
     
-    // Set the payment amount to 20%
-    document.getElementById('payment_amount').value = downPayment;
+    // Hide both sections
+    tdcFields.style.display = 'none';
+    pdcFields.style.display = 'none';
     
-    // Update placeholder with calculation info
-    document.getElementById('payment_amount').placeholder = '20% of \$' + price.toFixed(2);
-});
+    // Clear required attributes
+    document.querySelectorAll('#tdc-fields select, #tdc-fields input').forEach(el => {
+        el.removeAttribute('required');
+    });
+    document.querySelectorAll('#pdc-fields select, #pdc-fields input').forEach(el => {
+        el.removeAttribute('required');
+    });
+    
+    if (courseSelection === 'TDC') {
+        tdcFields.style.display = 'block';
+        document.getElementById('tdc_session').setAttribute('required', 'required');
+        
+        // Load TDC sessions
+        loadTDCSessions();
+        
+        // Calculate payment: TDC is ₱899
+        const price = 899;
+        const downPayment = (price * 0.20).toFixed(2);
+        document.getElementById('payment_amount').value = downPayment;
+        document.getElementById('payment_calculation_info').textContent = `20% of ₱${price} = ₱${downPayment}`;
+        
+    } else if (courseSelection === 'PDC') {
+        pdcFields.style.display = 'block';
+        document.querySelectorAll('input[name="vehicle_type"]').forEach(el => {
+            el.setAttribute('required', 'required');
+        });
+        document.getElementById('pdc_transmission').setAttribute('required', 'required');
+        document.getElementById('pdc_duration').setAttribute('required', 'required');
+        document.getElementById('pdc_date').setAttribute('required', 'required');
+        document.getElementById('pdc_time').setAttribute('required', 'required');
+        
+        // Payment will be calculated after vehicle type selection
+        document.getElementById('payment_amount').value = '';
+        document.getElementById('payment_calculation_info').textContent = 'Select vehicle type to calculate payment';
+    }
+}
+
+// Load available TDC sessions
+function loadTDCSessions() {
+    fetch('', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=get_tdc_sessions'
+    })
+    .then(response => response.json())
+    .then(sessions => {
+        const select = document.getElementById('tdc_session');
+        select.innerHTML = '<option value="">Select a session</option>';
+        
+        sessions.forEach(session => {
+            const option = document.createElement('option');
+            option.value = session.id;
+            option.textContent = `${session.day}, ${new Date(session.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})} - ${session.start_time} to ${session.end_time} (${session.available_slots}/${session.max_enrollments} slots available)`;
+            option.disabled = session.is_full;
+            if (session.is_full) {
+                option.textContent += ' - FULL';
+            }
+            select.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('Error loading TDC sessions:', error);
+        alert('Failed to load TDC sessions. Please refresh and try again.');
+    });
+}
+
+// Update PDC price based on vehicle selection
+function updatePDCPrice() {
+    const vehicleType = document.querySelector('input[name="vehicle_type"]:checked');
+    if (vehicleType) {
+        const price = vehicleType.value === 'motorcycle' ? 2000 : 4500;
+        const downPayment = (price * 0.20).toFixed(2);
+        document.getElementById('payment_amount').value = downPayment;
+        document.getElementById('payment_calculation_info').textContent = `20% of ₱${price} = ₱${downPayment}`;
+    }
+}
 
 // Toggle payment reference field based on payment method
 function togglePaymentReference() {
