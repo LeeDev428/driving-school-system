@@ -335,9 +335,7 @@ ob_start();
                     <label for="vehicle_type">Vehicle Type *</label>
                     <select id="vehicle_type" name="vehicle_type" required>
                         <option value="">Select type</option>
-                        <option value="sedan">Sedan</option>
-                        <option value="suv">SUV</option>
-                        <option value="truck">Truck</option>
+                        <option value="car">Car</option>
                         <option value="motorcycle">Motorcycle</option>
                     </select>
                 </div>
