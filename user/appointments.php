@@ -15,6 +15,10 @@ require_once "../config.php";
 
 // Handle AJAX requests FIRST - before any HTML output
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
+    error_log("=== AJAX Request Received ===");
+    error_log("POST Action: " . $_POST['action']);
+    error_log("All POST data: " . print_r($_POST, true));
+    
     header('Content-Type: application/json');
     
     $user_id = $_SESSION["id"];
@@ -92,6 +96,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         exit;
     }
     
+    // Get available PDC time slots for a specific date
+    if ($_POST['action'] == 'get_pdc_time_slots') {
+        error_log("=== PDC Time Slots Request ===");
+        error_log("Action: " . $_POST['action']);
+        error_log("Selected Date: " . ($_POST['selected_date'] ?? 'NOT SET'));
+        
+        $selected_date = $_POST['selected_date'];
+        $slots = [];
+        
+        $sql = "SELECT pts.*, 
+                       u.full_name as instructor_name,
+                       (pts.max_bookings - pts.current_bookings) as available_slots
+                FROM pdc_time_slots pts
+                LEFT JOIN users u ON pts.instructor_id = u.id
+                WHERE pts.slot_date = ? 
+                AND pts.is_available = 1
+                ORDER BY pts.slot_time_start";
+        
+        error_log("SQL Query prepared");
+        
+        if ($stmt = mysqli_prepare($conn, $sql)) {
+            mysqli_stmt_bind_param($stmt, "s", $selected_date);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            
+            $row_count = mysqli_num_rows($result);
+            error_log("Query executed. Rows returned: " . $row_count);
+            
+            while ($row = mysqli_fetch_assoc($result)) {
+                $is_full = $row['current_bookings'] >= $row['max_bookings'];
+                $slots[] = [
+                    'id' => $row['id'],
+                    'time_start' => $row['slot_time_start'],
+                    'time_end' => $row['slot_time_end'],
+                    'label' => $row['slot_label'],
+                    'instructor' => $row['instructor_name'] ?: 'Any Available',
+                    'current_bookings' => $row['current_bookings'],
+                    'max_bookings' => $row['max_bookings'],
+                    'available_slots' => $row['available_slots'],
+                    'is_full' => $is_full,
+                    'is_available' => !$is_full
+                ];
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            error_log("Failed to prepare SQL statement: " . mysqli_error($conn));
+        }
+        
+        error_log("Total slots found: " . count($slots));
+        error_log("JSON output: " . json_encode($slots));
+        
+        echo json_encode($slots);
+        exit;
+    }
+    
     // Schedule appointment - updated for TDC/PDC system
     if ($_POST['action'] == 'schedule_appointment') {
         $course_selection = $_POST['course_selection']; // TDC or PDC
@@ -99,9 +158,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         
         // Get payment fields
         $payment_amount = !empty($_POST['payment_amount']) ? floatval($_POST['payment_amount']) : 0.00;
-        $payment_method = !empty($_POST['payment_method']) ? $_POST['payment_method'] : null;
-        $payment_reference = !empty($_POST['payment_reference']) ? trim($_POST['payment_reference']) : null;
+        $payment_method = 'online'; // GCash payment (stored as 'online' in database)
+        $payment_proof = null; // Will store uploaded filename
         $payment_status = 'unpaid'; // Always start as unpaid, admin will confirm
+        
+        // Handle file upload for payment proof
+        if (isset($_FILES['payment_proof']) && $_FILES['payment_proof']['error'] == 0) {
+            $file = $_FILES['payment_proof'];
+            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png'];
+            $max_size = 5 * 1024 * 1024; // 5MB
+            
+            // Validate file type
+            if (!in_array($file['type'], $allowed_types)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, JPEG, and PNG are allowed.']);
+                exit;
+            }
+            
+            // Validate file size
+            if ($file['size'] > $max_size) {
+                echo json_encode(['success' => false, 'message' => 'File size too large. Maximum size is 5MB.']);
+                exit;
+            }
+            
+            // Create uploads directory if it doesn't exist
+            $upload_dir = '../uploads/payment_proofs/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
+            // Generate unique filename
+            $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $unique_filename = 'payment_' . $user_id . '_' . time() . '_' . uniqid() . '.' . $file_extension;
+            $upload_path = $upload_dir . $unique_filename;
+            
+            // Move uploaded file
+            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                $payment_proof = $unique_filename;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to upload payment proof. Please try again.']);
+                exit;
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Payment proof screenshot is required.']);
+            exit;
+        }
         
         $status = 'pending';
         
@@ -139,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                 // Insert TDC appointment
                 $sql = "INSERT INTO appointments (student_id, instructor_id, vehicle_id, course_selection, tdc_session_id, 
                         appointment_date, start_time, end_time, course_price, status, student_notes, 
-                        payment_amount, payment_method, payment_reference, payment_status) 
+                        payment_amount, payment_method, payment_proof, payment_status) 
                         VALUES (?, ?, ?, 'TDC', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
                 if ($stmt = mysqli_prepare($conn, $sql)) {
@@ -148,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
                     mysqli_stmt_bind_param($stmt, "iiiisssdssdsss", 
                         $user_id, $preferred_instructor, $preferred_vehicle, $tdc_session_id,
                         $appointment_date, $start_time, $end_time, $course_price, $status, 
-                        $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
+                        $notes, $payment_amount, $payment_method, $payment_proof, $payment_status);
                     
                     if (mysqli_stmt_execute($stmt)) {
                         echo json_encode(['success' => true, 'message' => 'TDC session booked successfully! Awaiting admin confirmation.']);
@@ -164,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         } else if ($course_selection == 'PDC') {
             // PDC booking
             $appointment_date = $_POST['appointment_date'];
-            $start_time = $_POST['start_time'];
+            $pdc_time_slot_id = !empty($_POST['pdc_time_slot_id']) ? (int)$_POST['pdc_time_slot_id'] : null;
             $duration_days = (int)$_POST['duration_days']; // 2 or 4 days
             $vehicle_type = $_POST['vehicle_type']; // motorcycle or car
             $vehicle_transmission = $_POST['vehicle_transmission']; // automatic or manual
@@ -172,24 +272,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             // Set price based on vehicle type
             $course_price = ($vehicle_type == 'motorcycle') ? 2000.00 : 4500.00;
             
-            // Calculate end time (3 hours per session)
-            $end_time = date('H:i:s', strtotime($start_time . ' + 3 hours'));
+            // Get time slot details if provided
+            if ($pdc_time_slot_id) {
+                $slot_check_sql = "SELECT slot_time_start, slot_time_end, current_bookings, max_bookings 
+                                  FROM pdc_time_slots WHERE id = ? AND is_available = 1";
+                if ($slot_stmt = mysqli_prepare($conn, $slot_check_sql)) {
+                    mysqli_stmt_bind_param($slot_stmt, "i", $pdc_time_slot_id);
+                    mysqli_stmt_execute($slot_stmt);
+                    $slot_result = mysqli_stmt_get_result($slot_stmt);
+                    $slot_data = mysqli_fetch_assoc($slot_result);
+                    mysqli_stmt_close($slot_stmt);
+                    
+                    if (!$slot_data) {
+                        echo json_encode(['success' => false, 'message' => 'Time slot not available.']);
+                        exit;
+                    }
+                    
+                    if ($slot_data['current_bookings'] >= $slot_data['max_bookings']) {
+                        echo json_encode(['success' => false, 'message' => 'Time slot is full. Please select another time.']);
+                        exit;
+                    }
+                    
+                    $start_time = $slot_data['slot_time_start'];
+                    $end_time = $slot_data['slot_time_end'];
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Database error checking time slot.']);
+                    exit;
+                }
+            } else {
+                // Fallback: use manual time input (for backward compatibility)
+                $start_time = $_POST['start_time'];
+                $end_time = date('H:i:s', strtotime($start_time . ' + 3 hours'));
+            }
             
             // Insert PDC appointment
             $sql = "INSERT INTO appointments (student_id, course_selection, duration_days, vehicle_type, vehicle_transmission,
-                    appointment_date, start_time, end_time, course_price, status, student_notes, 
-                    payment_amount, payment_method, payment_reference, payment_status) 
-                    VALUES (?, 'PDC', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    appointment_date, start_time, end_time, pdc_time_slot_id, course_price, status, student_notes, 
+                    payment_amount, payment_method, payment_proof, payment_status) 
+                    VALUES (?, 'PDC', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             if ($stmt = mysqli_prepare($conn, $sql)) {
-                // Type string: 2 integers + 5 strings + 1 double + 1 string + 1 double + 3 strings = 14 params
-                mysqli_stmt_bind_param($stmt, "iisssssdsdsss", 
+                // 15 params: i=student_id, i=duration_days, s=vehicle_type, s=vehicle_transmission, s=appointment_date, s=start_time, s=end_time, i=pdc_time_slot_id, d=course_price, s=status, s=student_notes, d=payment_amount, s=payment_method, s=payment_proof, s=payment_status
+                mysqli_stmt_bind_param($stmt, "iisssssidssdsss", 
                     $user_id, $duration_days, $vehicle_type, $vehicle_transmission,
-                    $appointment_date, $start_time, $end_time, $course_price, $status, 
-                    $notes, $payment_amount, $payment_method, $payment_reference, $payment_status);
+                    $appointment_date, $start_time, $end_time, $pdc_time_slot_id, $course_price, $status, 
+                    $notes, $payment_amount, $payment_method, $payment_proof, $payment_status);
                 
                 if (mysqli_stmt_execute($stmt)) {
-                    echo json_encode(['success' => true, 'message' => 'PDC appointment scheduled successfully! Awaiting admin confirmation.']);
+                    echo json_encode(['success' => true, 'message' => 'PDC appointment scheduled successfully! You will receive a reminder email 1 day before your session.']);
                 } else {
                     echo json_encode(['success' => false, 'message' => 'Error scheduling appointment: ' . mysqli_error($conn)]);
                 }
@@ -542,7 +672,7 @@ ob_start();
             <h3>Schedule New Appointment</h3>
             <span class="close-btn" onclick="closeScheduleModal()">&times;</span>
         </div>
-        <form id="schedule-form">
+        <form id="schedule-form" enctype="multipart/form-data">
             <!-- Course Selection -->
             <div class="form-group">
                 <label for="course_selection">Select Course</label>
@@ -563,9 +693,20 @@ ob_start();
                 
                 <div class="form-group">
                     <label for="tdc_session">Select TDC Session <span class="required">*</span></label>
-                    <select id="tdc_session" name="tdc_session_id">
+                    <select id="tdc_session" name="tdc_session_id" onchange="showTDCSessionCalendar()">
                         <option value="">Loading sessions...</option>
                     </select>
+                </div>
+                
+                <!-- TDC Session Calendar Display -->
+                <div id="tdc_session_calendar" style="display: none; margin: 20px 0; padding: 20px; background: rgba(156, 39, 176, 0.1); border-radius: 8px; border: 2px solid rgba(156, 39, 176, 0.3);">
+                    <div style="text-align: center;">
+                        <i class="fas fa-calendar-day" style="font-size: 48px; color: #9c27b0; margin-bottom: 15px;"></i>
+                        <h4 style="color: #9c27b0; margin-bottom: 10px;">📅 Your TDC Session Date</h4>
+                        <div id="tdc_calendar_date" style="font-size: 24px; font-weight: bold; color: #fff; margin: 10px 0;"></div>
+                        <div id="tdc_calendar_time" style="font-size: 16px; color: #8b8d93; margin: 5px 0;"></div>
+                        <div id="tdc_calendar_slots" style="font-size: 14px; color: #4caf50; margin-top: 10px;"></div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -643,18 +784,20 @@ ob_start();
                 
                 <div class="form-group">
                     <label for="pdc_date">Start Date <span class="required">*</span></label>
-                    <input type="date" id="pdc_date" name="appointment_date" min="<?php echo date('Y-m-d'); ?>">
-                    <small class="form-help">Choose your preferred start date from available schedules</small>
+                    <input type="date" id="pdc_date" name="appointment_date" min="<?php echo date('Y-m-d'); ?>" onchange="loadPDCTimeSlots()">
+                    <small class="form-help">Choose your preferred start date to see available time slots</small>
                 </div>
                 
                 <div class="form-group">
-                    <label for="pdc_time">Preferred Time <span class="required">*</span></label>
-                    <select id="pdc_time" name="start_time">
-                        <option value="">Select time</option>
-                        <option value="08:00">8:00 AM - 11:00 AM</option>
-                        <option value="11:00">11:00 AM - 2:00 PM</option>
-                        <option value="14:00">2:00 PM - 5:00 PM</option>
-                    </select>
+                    <label for="pdc_time_slot">Available Time Slots <span class="required">*</span></label>
+                    <div id="pdc_time_slot_container">
+                        <div class="info-banner" style="background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; padding: 10px; margin: 10px 0;">
+                            <i class="fas fa-info-circle" style="color: #ffc107;"></i>
+                            <span style="margin-left: 8px; color: #ffc107;">Select a date first to see available time slots</span>
+                        </div>
+                    </div>
+                    <input type="hidden" id="pdc_time_slot_id" name="pdc_time_slot_id">
+                    <input type="hidden" id="pdc_start_time" name="start_time">
                 </div>
             </div>
             
@@ -666,18 +809,20 @@ ob_start();
             
             <!-- Payment Information -->
             <div class="payment-section">
-                <h4 class="payment-title">💰 Payment Information</h4>
+                <h4 class="payment-title">💰 Payment Information - GCash Only</h4>
                 <div class="payment-notice">
                     <i class="fas fa-info-circle"></i>
-                    <p><strong>Required:</strong> 20% down payment to secure your appointment. Full access to Dashboard and E-Learning will be granted after admin approval.</p>
+                    <p><strong>Required:</strong> 20% down payment via GCash to secure your appointment. Upload your payment proof screenshot below.</p>
                 </div>
                 
                 <!-- GCash QR Code -->
                 <div class="gcash-section">
-                    <h5>Pay via GCash</h5>
+                    <h5 style="color: #fff; margin-bottom: 10px;">
+                        <i class="fab fa-google-pay" style="color: #00d395;"></i> Success Driving School GCash
+                    </h5>
                     <div class="gcash-qr-container">
-                        <img src="../assets/images/dss_gcash.png" alt="GCash QR Code" class="gcash-qr">
-                        <p class="gcash-instructions">Scan the QR code with your GCash app to pay the 20% down payment</p>
+                        <img src="../assets/images/dss_gcash.png" alt="Success Driving School GCash QR Code" class="gcash-qr">
+                        <p class="gcash-instructions">Scan this QR code with your GCash app to pay the 20% down payment</p>
                     </div>
                 </div>
                 
@@ -687,21 +832,27 @@ ob_start();
                     <small class="form-help" id="payment_calculation_info">Select a course to see payment amount</small>
                 </div>
                 
-                <div class="form-group">
-                    <label for="payment_method">Payment Method <span class="required">*</span></label>
-                    <select id="payment_method" name="payment_method" onchange="togglePaymentReference()" required>
-                        <option value="">Select payment method</option>
-                        <option value="online">GCash / Online Payment</option>
-                        <option value="bank_transfer">Bank Transfer</option>
-                        <option value="card">Credit/Debit Card</option>
-                        <option value="cash">Cash</option>
-                    </select>
-                </div>
+                <!-- Hidden field to always set GCash as payment method -->
+                <input type="hidden" id="payment_method" name="payment_method" value="online">
                 
-                <div class="form-group" id="payment_reference_group" style="display: none;">
-                    <label for="payment_reference">Payment Reference Number <span class="required">*</span></label>
-                    <input type="text" id="payment_reference" name="payment_reference" placeholder="Enter GCash reference number" required>
-                    <small class="form-help">Enter the 13-digit GCash reference number from your transaction receipt.</small>
+                <div class="form-group">
+                    <label for="payment_proof">Upload Payment Proof (Screenshot) <span class="required">*</span></label>
+                    <input type="file" id="payment_proof" name="payment_proof" accept="image/*" required onchange="previewPaymentProof(this)">
+                    <small class="form-help">
+                        <i class="fas fa-upload"></i> Upload a screenshot of your successful GCash transaction. 
+                        Accepted formats: JPG, PNG, JPEG (Max 5MB)
+                    </small>
+                    
+                    <!-- Image Preview -->
+                    <div id="payment_proof_preview" style="display: none; margin-top: 15px; padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 8px; border: 2px solid rgba(76, 175, 80, 0.3);">
+                        <p style="color: #4caf50; margin-bottom: 10px; font-weight: 600;">
+                            <i class="fas fa-check-circle"></i> Payment Proof Preview:
+                        </p>
+                        <img id="proof_preview_img" src="" alt="Payment Proof Preview" style="max-width: 100%; max-height: 300px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                        <p style="margin-top: 10px; font-size: 13px; color: #8b8d93;">
+                            <i class="fas fa-info-circle"></i> File: <span id="proof_filename"></span>
+                        </p>
+                    </div>
                 </div>
             </div>
             
@@ -1765,8 +1916,12 @@ function closeScheduleModal() {
     document.getElementById('schedule-modal').style.display = 'none';
     document.body.style.overflow = 'auto';
     document.getElementById('schedule-form').reset();
-    // Hide payment reference field when modal is closed
-    document.getElementById('payment_reference_group').style.display = 'none';
+    // Reset payment proof preview
+    const paymentProofPreview = document.getElementById('payment_proof_preview');
+    if (paymentProofPreview) {
+        paymentProofPreview.innerHTML = '';
+        paymentProofPreview.style.display = 'none';
+    }
 }
 
 // Toggle TDC/PDC fields based on course selection
@@ -1808,13 +1963,17 @@ function toggleCourseFields() {
         document.getElementById('pdc_transmission').setAttribute('required', 'required');
         document.getElementById('pdc_duration').setAttribute('required', 'required');
         document.getElementById('pdc_date').setAttribute('required', 'required');
-        document.getElementById('pdc_time').setAttribute('required', 'required');
+        // Time slot selection is required (hidden field will be validated)
+        document.getElementById('pdc_time_slot_id').setAttribute('required', 'required');
         
         // Payment will be calculated after vehicle type selection
         document.getElementById('payment_amount').value = '';
         document.getElementById('payment_calculation_info').textContent = 'Select vehicle type to calculate payment';
     }
 }
+
+// Store TDC sessions data globally
+let tdcSessionsData = [];
 
 // Load available TDC sessions
 function loadTDCSessions() {
@@ -1827,6 +1986,8 @@ function loadTDCSessions() {
     })
     .then(response => response.json())
     .then(sessions => {
+        tdcSessionsData = sessions; // Store for calendar display
+        
         const select = document.getElementById('tdc_session');
         select.innerHTML = '<option value="">Select a session</option>';
         
@@ -1847,6 +2008,38 @@ function loadTDCSessions() {
     });
 }
 
+// Show TDC session calendar display
+function showTDCSessionCalendar() {
+    const sessionId = document.getElementById('tdc_session').value;
+    const calendarDiv = document.getElementById('tdc_session_calendar');
+    
+    if (!sessionId) {
+        calendarDiv.style.display = 'none';
+        return;
+    }
+    
+    // Find the selected session from stored data
+    const session = tdcSessionsData.find(s => s.id == sessionId);
+    if (!session) return;
+    
+    // Format the date nicely
+    const date = new Date(session.date);
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en-US', dateOptions);
+    
+    // Update calendar display
+    document.getElementById('tdc_calendar_date').textContent = formattedDate;
+    document.getElementById('tdc_calendar_time').innerHTML = `
+        <i class="fas fa-clock"></i> ${session.start_time} - ${session.end_time}
+    `;
+    document.getElementById('tdc_calendar_slots').innerHTML = `
+        <i class="fas fa-users"></i> ${session.available_slots} slot${session.available_slots !== 1 ? 's' : ''} remaining out of ${session.max_enrollments}
+    `;
+    
+    // Show the calendar
+    calendarDiv.style.display = 'block';
+}
+
 // Update PDC price based on vehicle selection
 function updatePDCPrice() {
     const vehicleType = document.querySelector('input[name="vehicle_type"]:checked');
@@ -1858,29 +2051,170 @@ function updatePDCPrice() {
     }
 }
 
-// Toggle payment reference field based on payment method
-function togglePaymentReference() {
-    const paymentMethod = document.getElementById('payment_method').value;
-    const referenceGroup = document.getElementById('payment_reference_group');
-    const referenceInput = document.getElementById('payment_reference');
+// Load available PDC time slots for selected date
+function loadPDCTimeSlots() {
+    const selectedDate = document.getElementById('pdc_date').value;
+    const container = document.getElementById('pdc_time_slot_container');
     
-    // Show reference field for card, bank_transfer, and online payments
-    if (paymentMethod === 'card' || paymentMethod === 'bank_transfer' || paymentMethod === 'online') {
-        referenceGroup.style.display = 'block';
-        referenceInput.required = true;
+    if (!selectedDate) {
+        container.innerHTML = `
+            <div class="info-banner" style="background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; padding: 10px; margin: 10px 0;">
+                <i class="fas fa-info-circle" style="color: #ffc107;"></i>
+                <span style="margin-left: 8px; color: #ffc107;">Select a date first to see available time slots</span>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show loading
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #ffc107;"></i>
+            <p style="margin-top: 10px; color: #8b8d93;">Loading available time slots...</p>
+        </div>
+    `;
+    
+    // Fetch time slots
+    fetch('', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=get_pdc_time_slots&selected_date=${encodeURIComponent(selectedDate)}`
+    })
+    .then(response => response.json())
+    .then(slots => {
+        console.log('PDC Slots received:', slots); // Debug
+        console.log('Slots length:', slots.length); // Debug
         
-        // Update placeholder based on payment method
-        if (paymentMethod === 'online') {
-            referenceInput.placeholder = 'Enter GCash reference number (13 digits)';
-        } else if (paymentMethod === 'bank_transfer') {
-            referenceInput.placeholder = 'Enter bank transaction reference';
-        } else {
-            referenceInput.placeholder = 'Enter transaction/reference number';
+        if (!slots || slots.length === 0) {
+            container.innerHTML = `
+                <div class="info-banner" style="background: rgba(244, 67, 54, 0.1); border-left: 3px solid #f44336; padding: 10px; margin: 10px 0;">
+                    <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>
+                    <span style="margin-left: 8px; color: #f44336;">No available time slots for this date. Please select another date.</span>
+                </div>
+            `;
+            return;
         }
+        
+        // Create time slot cards
+        let html = '<div class="time-slot-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin: 15px 0;">';
+        
+        slots.forEach(slot => {
+            const isDisabled = !slot.is_available;
+            const statusClass = isDisabled ? 'slot-unavailable' : 'slot-available';
+            const statusText = isDisabled ? 'FULL' : `${slot.available_slots} slot${slot.available_slots !== 1 ? 's' : ''} left`;
+            const cursorStyle = isDisabled ? 'not-allowed' : 'pointer';
+            const opacity = isDisabled ? '0.5' : '1';
+            
+            html += `
+                <div class="time-slot-card ${statusClass}" 
+                     onclick="${isDisabled ? '' : `selectPDCTimeSlot(${slot.id}, '${slot.time_start}', '${slot.label}')`}"
+                     style="
+                         background: ${isDisabled ? '#2a2d35' : '#282c34'};
+                         border: 2px solid ${isDisabled ? '#3a3f48' : '#3a3f48'};
+                         border-radius: 8px;
+                         padding: 15px;
+                         cursor: ${cursorStyle};
+                         opacity: ${opacity};
+                         transition: all 0.3s;
+                     "
+                     onmouseover="if(!${isDisabled}) this.style.borderColor='#ffc107'"
+                     onmouseout="this.style.borderColor='#3a3f48'">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-clock" style="color: #ffc107; margin-right: 8px;"></i>
+                        <strong style="color: #fff; font-size: 16px;">${slot.label}</strong>
+                    </div>
+                    <div style="color: #8b8d93; font-size: 13px; margin-left: 24px;">
+                        <div style="margin-bottom: 4px;">
+                            <i class="fas fa-user-tie" style="width: 16px;"></i> ${slot.instructor}
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+                            <span style="color: ${isDisabled ? '#f44336' : '#4caf50'}; font-weight: 600;">
+                                ${statusText}
+                            </span>
+                            <span style="font-size: 11px;">${slot.current_bookings}/${slot.max_bookings} booked</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        html += '<div id="selected_slot_display" style="margin-top: 15px; padding: 12px; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4caf50; display: none;"></div>';
+        
+        container.innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Error loading PDC time slots:', error);
+        container.innerHTML = `
+            <div class="info-banner" style="background: rgba(244, 67, 54, 0.1); border-left: 3px solid #f44336; padding: 10px; margin: 10px 0;">
+                <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>
+                <span style="margin-left: 8px; color: #f44336;">Failed to load time slots. Please try again.</span>
+            </div>
+        `;
+    });
+}
+
+// Select PDC time slot
+function selectPDCTimeSlot(slotId, startTime, label) {
+    document.getElementById('pdc_time_slot_id').value = slotId;
+    document.getElementById('pdc_start_time').value = startTime;
+    
+    // Highlight selected slot
+    document.querySelectorAll('.time-slot-card').forEach(card => {
+        card.style.borderColor = '#3a3f48';
+        card.style.background = '#282c34';
+    });
+    event.target.closest('.time-slot-card').style.borderColor = '#4caf50';
+    event.target.closest('.time-slot-card').style.background = 'rgba(76, 175, 80, 0.1)';
+    
+    // Show selected slot confirmation
+    const display = document.getElementById('selected_slot_display');
+    display.style.display = 'block';
+    display.innerHTML = `
+        <i class="fas fa-check-circle" style="color: #4caf50; margin-right: 8px;"></i>
+        <strong style="color: #4caf50;">Selected:</strong> 
+        <span style="color: #fff;">${label}</span>
+    `;
+}
+
+// Preview payment proof screenshot
+function previewPaymentProof(input) {
+    const previewContainer = document.getElementById('payment_proof_preview');
+    const previewImg = document.getElementById('proof_preview_img');
+    const filenameSpan = document.getElementById('proof_filename');
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size too large! Maximum size is 5MB.');
+            input.value = '';
+            previewContainer.style.display = 'none';
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!validTypes.includes(file.type)) {
+            alert('Invalid file type! Please upload JPG, JPEG, or PNG image.');
+            input.value = '';
+            previewContainer.style.display = 'none';
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            filenameSpan.textContent = file.name;
+            previewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
     } else {
-        referenceGroup.style.display = 'none';
-        referenceInput.required = false;
-        referenceInput.value = ''; // Clear the field when hidden
+        previewContainer.style.display = 'none';
     }
 }
 
