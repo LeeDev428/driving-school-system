@@ -15,36 +15,36 @@ $page_title = "E-Learning Management";
 $header_title = "E-Learning Progress Tracking";
 $notification_count = 5;
 
-// Get users with their e-learning progress
+// Get ONLY STUDENTS with their Assessment & Quiz progress
 $users_sql = "SELECT u.id, u.full_name, u.email, u.user_type,
-                     COUNT(DISTINCT mp.module_id) as modules_enrolled,
-                     COUNT(DISTINCT CASE WHEN mp.completed = 1 THEN mp.module_id END) as modules_completed,
-                     ROUND(AVG(CASE WHEN mp.progress_percentage > 0 THEN mp.progress_percentage END), 1) as avg_progress,
-                     (SELECT COUNT(*) FROM elearning_modules WHERE status = 'Active') as total_modules,
-                     MAX(mp.started_at) as last_activity
+                     COUNT(DISTINCT uas.id) as assessment_attempts,
+                     MAX(CASE WHEN uas.passed = 1 THEN 1 ELSE 0 END) as assessment_passed,
+                     MAX(uas.score_percentage) as assessment_best_score,
+                     COUNT(DISTINCT uqs.id) as quiz_attempts,
+                     MAX(CASE WHEN uqs.passed = 1 THEN 1 ELSE 0 END) as quiz_passed,
+                     MAX(uqs.score_percentage) as quiz_best_score,
+                     GREATEST(
+                        COALESCE(MAX(uas.time_completed), '1970-01-01'),
+                        COALESCE(MAX(uqs.time_completed), '1970-01-01')
+                     ) as last_activity
               FROM users u
-              LEFT JOIN user_module_progress mp ON u.id = mp.user_id
-              WHERE u.user_type IN ('student', 'instructor')
+              LEFT JOIN user_assessment_sessions uas ON u.id = uas.user_id AND uas.status = 'completed'
+              LEFT JOIN user_quiz_sessions uqs ON u.id = uqs.user_id AND uqs.status = 'completed'
+              WHERE u.user_type = 'student'
               GROUP BY u.id, u.full_name, u.email, u.user_type
               ORDER BY u.full_name";
 
 $users = [];
 if ($result = mysqli_query($conn, $users_sql)) {
     while ($row = mysqli_fetch_assoc($result)) {
-        // Calculate overall completion percentage
-        $completion_rate = $row['total_modules'] > 0 ? 
-            round(($row['modules_completed'] / $row['total_modules']) * 100, 1) : 0;
-        
-        $row['completion_rate'] = $completion_rate;
-        
         // Determine status based on progress
-        if ($row['modules_enrolled'] == 0) {
+        if ($row['assessment_attempts'] == 0 && $row['quiz_attempts'] == 0) {
             $row['status'] = 'Not Started';
             $row['status_class'] = 'not-started';
-        } elseif ($completion_rate >= 100) {
+        } elseif ($row['assessment_passed'] == 1 && $row['quiz_passed'] == 1) {
             $row['status'] = 'Completed';
             $row['status_class'] = 'completed';
-        } elseif ($row['avg_progress'] > 0) {
+        } elseif ($row['assessment_attempts'] > 0 || $row['quiz_attempts'] > 0) {
             $row['status'] = 'In Progress';
             $row['status_class'] = 'in-progress';
         } else {
@@ -56,34 +56,70 @@ if ($result = mysqli_query($conn, $users_sql)) {
     }
 }
 
-// Get overall statistics
+// Get overall statistics (STUDENTS ONLY) - focus on assessments and quizzes
 $stats_sql = "SELECT 
-                (SELECT COUNT(*) FROM users WHERE user_type IN ('student', 'instructor')) as total_users,
-                (SELECT COUNT(*) FROM elearning_modules WHERE status = 'Active') as total_modules,
-                (SELECT COUNT(DISTINCT user_id) FROM user_module_progress) as active_learners,
-                (SELECT COUNT(*) FROM user_module_progress WHERE completed = 1) as total_completions";
+                (SELECT COUNT(*) FROM users WHERE user_type = 'student') as total_users,
+                (SELECT COUNT(DISTINCT user_id) FROM user_assessment_sessions WHERE status = 'completed') as assessment_takers,
+                (SELECT COUNT(DISTINCT user_id) FROM user_quiz_sessions WHERE status = 'completed') as quiz_takers,
+                (SELECT COUNT(*) FROM user_assessment_sessions WHERE status = 'completed' AND passed = 1) as assessment_passes";
 
 $stats = [];
 if ($result = mysqli_query($conn, $stats_sql)) {
     $stats = mysqli_fetch_assoc($result);
 }
 
-// Get module-wise progress
-$module_progress_sql = "SELECT m.title, m.id,
-                               COUNT(DISTINCT mp.user_id) as enrolled_users,
-                               COUNT(CASE WHEN mp.completed = 1 THEN 1 END) as completed_users,
-                               ROUND(AVG(mp.progress_percentage), 1) as avg_progress
-                        FROM elearning_modules m
-                        LEFT JOIN user_module_progress mp ON m.id = mp.module_id
-                        WHERE m.status = 'Active'
-                        GROUP BY m.id, m.title
-                        ORDER BY enrolled_users DESC";
+// Get Assessment Results (All Students)
+$assessment_results_sql = "SELECT u.id, u.full_name, u.email,
+                                  COUNT(uas.id) as total_attempts,
+                                  MAX(uas.score_percentage) as best_score,
+                                  AVG(uas.score_percentage) as avg_score,
+                                  SUM(CASE WHEN uas.passed = 1 THEN 1 ELSE 0 END) as passed_attempts,
+                                  MAX(uas.time_completed) as last_attempt
+                           FROM users u
+                           LEFT JOIN user_assessment_sessions uas ON u.id = uas.user_id AND uas.status = 'completed'
+                           WHERE u.user_type = 'student'
+                           GROUP BY u.id, u.full_name, u.email
+                           ORDER BY u.full_name";
 
-$module_progress = [];
-if ($result = mysqli_query($conn, $module_progress_sql)) {
+$assessment_results = [];
+if ($result = mysqli_query($conn, $assessment_results_sql)) {
     while ($row = mysqli_fetch_assoc($result)) {
-        $module_progress[] = $row;
+        $assessment_results[] = $row;
     }
+}
+
+// Get Quiz Results (All Students)
+$quiz_results_sql = "SELECT u.id, u.full_name, u.email,
+                            COUNT(uqs.id) as total_attempts,
+                            MAX(uqs.score_percentage) as best_score,
+                            AVG(uqs.score_percentage) as avg_score,
+                            SUM(CASE WHEN uqs.passed = 1 THEN 1 ELSE 0 END) as passed_attempts,
+                            MAX(uqs.time_completed) as last_attempt
+                     FROM users u
+                     LEFT JOIN user_quiz_sessions uqs ON u.id = uqs.user_id AND uqs.status = 'completed'
+                     WHERE u.user_type = 'student'
+                     GROUP BY u.id, u.full_name, u.email
+                     ORDER BY u.full_name";
+
+$quiz_results = [];
+if ($result = mysqli_query($conn, $quiz_results_sql)) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $quiz_results[] = $row;
+    }
+}
+
+// Get Assessment & Quiz Statistics
+$test_stats_sql = "SELECT 
+                    (SELECT COUNT(DISTINCT user_id) FROM user_assessment_sessions WHERE status = 'completed') as assessment_takers,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_assessment_sessions WHERE status = 'completed' AND passed = 1) as assessment_passers,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_quiz_sessions WHERE status = 'completed') as quiz_takers,
+                    (SELECT COUNT(DISTINCT user_id) FROM user_quiz_sessions WHERE status = 'completed' AND passed = 1) as quiz_passers,
+                    (SELECT ROUND(AVG(score_percentage), 1) FROM user_assessment_sessions WHERE status = 'completed') as avg_assessment_score,
+                    (SELECT ROUND(AVG(score_percentage), 1) FROM user_quiz_sessions WHERE status = 'completed') as avg_quiz_score";
+
+$test_stats = [];
+if ($result = mysqli_query($conn, $test_stats_sql)) {
+    $test_stats = mysqli_fetch_assoc($result);
 }
 
 ob_start();
@@ -98,27 +134,27 @@ ob_start();
             </div>
             <div class="stat-content">
                 <h3><?php echo $stats['total_users'] ?? 0; ?></h3>
-                <p>Total Users</p>
+                <p>Total Students</p>
             </div>
         </div>
         
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-clipboard-check"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo $stats['total_modules'] ?? 0; ?></h3>
-                <p>Active Modules</p>
+                <h3><?php echo $stats['assessment_takers'] ?? 0; ?></h3>
+                <p>Assessment Takers</p>
             </div>
         </div>
         
         <div class="stat-card">
             <div class="stat-icon">
-                <i class="fas fa-user-graduate"></i>
+                <i class="fas fa-book-open"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo $stats['active_learners'] ?? 0; ?></h3>
-                <p>Active Learners</p>
+                <h3><?php echo $stats['quiz_takers'] ?? 0; ?></h3>
+                <p>Quiz Takers</p>
             </div>
         </div>
         
@@ -127,8 +163,73 @@ ob_start();
                 <i class="fas fa-trophy"></i>
             </div>
             <div class="stat-content">
-                <h3><?php echo $stats['total_completions'] ?? 0; ?></h3>
-                <p>Total Completions</p>
+                <h3><?php echo $stats['assessment_passes'] ?? 0; ?></h3>
+                <p>Assessment Passes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment & Quiz Statistics -->
+    <div class="test-stats-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 30px 0;">
+        <div class="test-stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-clipboard-check" style="font-size: 30px;"></i>
+                Assessment Results
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['assessment_takers'] ?? 0; ?></div>
+                    <div style="opacity: 0.9;">Students Attempted</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['assessment_passers'] ?? 0; ?></div>
+                    <div style="opacity: 0.9;">Students Passed</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['avg_assessment_score'] ?? 0; ?>%</div>
+                    <div style="opacity: 0.9;">Average Score</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;">
+                        <?php 
+                        $pass_rate = ($test_stats['assessment_takers'] ?? 0) > 0 ? 
+                            round((($test_stats['assessment_passers'] ?? 0) / $test_stats['assessment_takers']) * 100, 1) : 0;
+                        echo $pass_rate;
+                        ?>%
+                    </div>
+                    <div style="opacity: 0.9;">Pass Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-book-open" style="font-size: 30px;"></i>
+                Quiz Results
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['quiz_takers'] ?? 0; ?></div>
+                    <div style="opacity: 0.9;">Students Attempted</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['quiz_passers'] ?? 0; ?></div>
+                    <div style="opacity: 0.9;">Students Passed</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;"><?php echo $test_stats['avg_quiz_score'] ?? 0; ?>%</div>
+                    <div style="opacity: 0.9;">Average Score</div>
+                </div>
+                <div>
+                    <div style="font-size: 32px; font-weight: bold;">
+                        <?php 
+                        $quiz_pass_rate = ($test_stats['quiz_takers'] ?? 0) > 0 ? 
+                            round((($test_stats['quiz_passers'] ?? 0) / $test_stats['quiz_takers']) * 100, 1) : 0;
+                        echo $quiz_pass_rate;
+                        ?>%
+                    </div>
+                    <div style="opacity: 0.9;">Pass Rate</div>
+                </div>
             </div>
         </div>
     </div>
@@ -136,19 +237,22 @@ ob_start();
     <!-- Tab Navigation -->
     <div class="admin-tabs">
         <button class="tab-btn active" onclick="switchTab('users')">
-            <i class="fas fa-users"></i> User Progress
+            <i class="fas fa-user-graduate"></i> Student Progress
         </button>
-        <button class="tab-btn" onclick="switchTab('modules')">
-            <i class="fas fa-chart-bar"></i> Module Analytics
+        <button class="tab-btn" onclick="switchTab('assessments')">
+            <i class="fas fa-clipboard-check"></i> Assessment Results
+        </button>
+        <button class="tab-btn" onclick="switchTab('quizzes')">
+            <i class="fas fa-book-open"></i> Quiz Results
         </button>
     </div>
 
     <!-- Users Progress Tab -->
     <div id="users-tab" class="tab-content active">
         <div class="section-header">
-            <h2>User Learning Progress</h2>
+            <h2>Student Learning Progress</h2>
             <div class="header-actions">
-                <input type="text" id="searchUsers" placeholder="Search users..." class="search-input">
+                <input type="text" id="searchUsers" placeholder="Search students..." class="search-input">
                 <select id="filterStatus" class="filter-select">
                     <option value="">All Status</option>
                     <option value="not-started">Not Started</option>
@@ -165,11 +269,11 @@ ob_start();
                     <tr>
                         <th>User</th>
                         <th>Role</th>
-                        <th>Modules Enrolled</th>
-                        <th>Modules Completed</th>
-                        <th>Completion Rate</th>
-                        <th>Avg Progress</th>
-                        <th>Status</th>
+                        <th>Assessment Status</th>
+                        <th>Assessment Score</th>
+                        <th>Quiz Status</th>
+                        <th>Quiz Score</th>
+                        <th>Overall Status</th>
                         <th>Last Activity</th>
                         <th>Actions</th>
                     </tr>
@@ -203,23 +307,46 @@ ob_start();
                                 </span>
                             </td>
                             <td>
-                                <span class="metric-value"><?php echo $user['modules_enrolled']; ?></span>
-                                <span class="metric-total">/ <?php echo $user['total_modules']; ?></span>
-                            </td>
-                            <td>
-                                <span class="metric-value completed"><?php echo $user['modules_completed']; ?></span>
-                                <span class="metric-total">/ <?php echo $user['total_modules']; ?></span>
-                            </td>
-                            <td>
-                                <div class="completion-cell">
-                                    <div class="completion-bar">
-                                        <div class="completion-fill" style="width: <?php echo $user['completion_rate']; ?>%"></div>
+                                <?php if ($user['assessment_attempts'] > 0): ?>
+                                    <span class="status-badge <?php echo $user['assessment_passed'] ? 'completed' : 'in-progress'; ?>">
+                                        <?php echo $user['assessment_passed'] ? '✓ Passed' : '✗ Not Passed'; ?>
+                                    </span>
+                                    <div style="font-size: 11px; color: #7f8c8d; margin-top: 3px;">
+                                        <?php echo $user['assessment_attempts']; ?> attempt(s)
                                     </div>
-                                    <span class="completion-text"><?php echo $user['completion_rate']; ?>%</span>
-                                </div>
+                                <?php else: ?>
+                                    <span class="status-badge not-started">Not Started</span>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <span class="progress-value"><?php echo $user['avg_progress'] ?? 0; ?>%</span>
+                                <?php if ($user['assessment_best_score']): ?>
+                                    <span class="score-badge <?php echo $user['assessment_best_score'] >= 70 ? 'pass' : 'fail'; ?>">
+                                        <?php echo number_format($user['assessment_best_score'], 1); ?>%
+                                    </span>
+                                <?php else: ?>
+                                    <span style="color: #7f8c8d;">N/A</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($user['quiz_attempts'] > 0): ?>
+                                    <span class="status-badge <?php echo $user['quiz_passed'] ? 'completed' : 'in-progress'; ?>">
+                                        <?php echo $user['quiz_passed'] ? '✓ Passed' : '✗ Not Passed'; ?>
+                                    </span>
+                                    <div style="font-size: 11px; color: #7f8c8d; margin-top: 3px;">
+                                        <?php echo $user['quiz_attempts']; ?> attempt(s)
+                                    </div>
+                                <?php else: ?>
+                                    <span class="status-badge not-started">Not Started</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($user['quiz_best_score']): ?>
+                                    <span class="score-badge <?php echo $user['quiz_best_score'] >= 70 ? 'pass' : 'fail'; ?>">
+                                        <?php echo number_format($user['quiz_best_score'], 1); ?>%
+                                    </span>
+                                <?php else: ?>
+                                    <span style="color: #7f8c8d;">N/A</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <span class="status-badge <?php echo $user['status_class']; ?>">
@@ -248,47 +375,155 @@ ob_start();
         </div>
     </div>
 
-    <!-- Module Analytics Tab -->
-    <div id="modules-tab" class="tab-content">
-        <div class="section-header">
-            <h2>Module Performance Analytics</h2>
+    <!-- Assessment Results Tab -->
+    <div id="assessments-tab" class="tab-content">
+        <h2 style="margin-bottom: 20px;">Assessment Results - All Students</h2>
+        <div class="results-table-container">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Email</th>
+                        <th>Total Attempts</th>
+                        <th>Passed Attempts</th>
+                        <th>Best Score</th>
+                        <th>Average Score</th>
+                        <th>Last Attempt</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($assessment_results)): ?>
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                                <i class="fas fa-clipboard" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                                No assessment results yet
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($assessment_results as $result): ?>
+                            <tr>
+                                <td><strong><?php echo htmlspecialchars($result['full_name']); ?></strong></td>
+                                <td><?php echo htmlspecialchars($result['email']); ?></td>
+                                <td><?php echo $result['total_attempts'] ?? 0; ?></td>
+                                <td><?php echo $result['passed_attempts'] ?? 0; ?></td>
+                                <td>
+                                    <?php if ($result['best_score']): ?>
+                                        <span class="score-badge <?php echo $result['best_score'] >= 70 ? 'pass' : 'fail'; ?>">
+                                            <?php echo number_format($result['best_score'], 1); ?>%
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: #7f8c8d;">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($result['avg_score']): ?>
+                                        <?php echo number_format($result['avg_score'], 1); ?>%
+                                    <?php else: ?>
+                                        <span style="color: #7f8c8d;">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    if ($result['last_attempt']) {
+                                        echo date('M d, Y g:i A', strtotime($result['last_attempt']));
+                                    } else {
+                                        echo '<span style="color: #7f8c8d;">Not attempted</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    if ($result['passed_attempts'] > 0) {
+                                        echo '<span class="status-badge passed">✓ Passed</span>';
+                                    } elseif ($result['total_attempts'] > 0) {
+                                        echo '<span class="status-badge failed">✗ Not Passed</span>';
+                                    } else {
+                                        echo '<span class="status-badge not-started">Not Started</span>';
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-        <div class="modules-analytics">
-            <?php foreach ($module_progress as $module): ?>
-                <div class="module-analytics-card">
-                    <h3><?php echo htmlspecialchars($module['title']); ?></h3>
-                    
-                    <div class="module-stats-grid">
-                        <div class="module-stat">
-                            <div class="stat-label">Enrolled Users</div>
-                            <div class="stat-value"><?php echo $module['enrolled_users']; ?></div>
-                        </div>
-                        <div class="module-stat">
-                            <div class="stat-label">Completed</div>
-                            <div class="stat-value completed"><?php echo $module['completed_users']; ?></div>
-                        </div>
-                        <div class="module-stat">
-                            <div class="stat-label">Completion Rate</div>
-                            <div class="stat-value">
-                                <?php 
-                                $completion_rate = $module['enrolled_users'] > 0 ? 
-                                    round(($module['completed_users'] / $module['enrolled_users']) * 100, 1) : 0;
-                                echo $completion_rate . '%';
-                                ?>
-                            </div>
-                        </div>
-                        <div class="module-stat">
-                            <div class="stat-label">Avg Progress</div>
-                            <div class="stat-value"><?php echo $module['avg_progress'] ?? 0; ?>%</div>
-                        </div>
-                    </div>
-                    
-                    <div class="module-progress-bar">
-                        <div class="module-progress-fill" style="width: <?php echo $completion_rate; ?>%"></div>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+    <!-- Quiz Results Tab -->
+    <div id="quizzes-tab" class="tab-content">
+        <h2 style="margin-bottom: 20px;">Quiz Results - All Students</h2>
+        <div class="results-table-container">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Email</th>
+                        <th>Total Attempts</th>
+                        <th>Passed Attempts</th>
+                        <th>Best Score</th>
+                        <th>Average Score</th>
+                        <th>Last Attempt</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($quiz_results)): ?>
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #7f8c8d;">
+                                <i class="fas fa-book" style="font-size: 48px; margin-bottom: 15px; display: block;"></i>
+                                No quiz results yet
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($quiz_results as $result): ?>
+                            <tr>
+                                <td><strong><?php echo htmlspecialchars($result['full_name']); ?></strong></td>
+                                <td><?php echo htmlspecialchars($result['email']); ?></td>
+                                <td><?php echo $result['total_attempts'] ?? 0; ?></td>
+                                <td><?php echo $result['passed_attempts'] ?? 0; ?></td>
+                                <td>
+                                    <?php if ($result['best_score']): ?>
+                                        <span class="score-badge <?php echo $result['best_score'] >= 70 ? 'pass' : 'fail'; ?>">
+                                            <?php echo number_format($result['best_score'], 1); ?>%
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: #7f8c8d;">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ($result['avg_score']): ?>
+                                        <?php echo number_format($result['avg_score'], 1); ?>%
+                                    <?php else: ?>
+                                        <span style="color: #7f8c8d;">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    if ($result['last_attempt']) {
+                                        echo date('M d, Y g:i A', strtotime($result['last_attempt']));
+                                    } else {
+                                        echo '<span style="color: #7f8c8d;">Not attempted</span>';
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php 
+                                    if ($result['passed_attempts'] > 0) {
+                                        echo '<span class="status-badge passed">✓ Passed</span>';
+                                    } elseif ($result['total_attempts'] > 0) {
+                                        echo '<span class="status-badge failed">✗ Not Passed</span>';
+                                    } else {
+                                        echo '<span class="status-badge not-started">Not Started</span>';
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -662,6 +897,88 @@ $extra_styles = <<<EOT
     .header-actions {
         flex-direction: column;
     }
+}
+
+/* Assessment & Quiz Results Styles */
+.results-table-container {
+    background: #1a1d24;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table th {
+    background: #1e2129;
+    color: #ffffff;
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #3a3f48;
+    font-size: 14px;
+}
+
+.results-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #3a3f48;
+    vertical-align: middle;
+    color: #e1e3e6;
+}
+
+.results-table tbody tr:hover {
+    background: #23262e;
+}
+
+.score-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.score-badge.pass {
+    background: #28a745;
+    color: white;
+}
+
+.score-badge.fail {
+    background: #dc3545;
+    color: white;
+}
+
+.status-badge.passed {
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.failed {
+    background: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.not-started {
+    background: #6c757d;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
 }
 </style>
 EOT;
