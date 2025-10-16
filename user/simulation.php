@@ -19,16 +19,17 @@ $user_id = $_SESSION["id"];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driving Simulation - Driving School System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/simulation.css">
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            background: #000;
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
             width: 100%;
-            height: 100%;
+            min-height: 100vh;
         }
         
         * {
@@ -458,17 +459,295 @@ $user_id = $_SESSION["id"];
         .instructions li {
             margin-bottom: 8px;
         }
+        /* Vehicle Selection Styles */
+        .vehicle-selection-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .vehicle-selection-container {
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .vehicle-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        
+        .vehicle-header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .vehicle-header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .vehicle-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .vehicle-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .vehicle-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .vehicle-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+        
+        .vehicle-card h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .vehicle-card p {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        
+        .vehicle-play-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 20px auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .vehicle-play-btn:hover {
+            background: #34495e;
+            transform: scale(1.1);
+        }
+        
+        /* Ready to Drive Screen Styles */
+        .ready-screen {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .ready-container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .ready-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .vehicle-icon-large {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .ready-header h1 {
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .ready-header p {
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .info-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box.green {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .info-box.yellow {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .info-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .info-box p {
+            color: #495057;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .ready-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .ready-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ready-btn.back {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .ready-btn.back:hover {
+            background: #dee2e6;
+        }
+        
+        .ready-btn.start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .ready-btn.start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .vehicle-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .vehicle-header h1 {
+                font-size: 32px;
+            }
+            
+            .ready-container {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Start Screen -->
-    <div id="startScreen" class="start-screen">
+    <!-- Vehicle Selection Screen -->
+    <div id="vehicleSelection" class="vehicle-selection-screen">
+        <div class="vehicle-selection-container">
+            <div class="vehicle-header">
+                <h1>Choose Your Vehicle</h1>
+                <p>Select a vehicle type to begin your driving simulation</p>
+            </div>
+            
+            <div class="vehicle-cards">
+                <!-- Car Card -->
+                <div class="vehicle-card" onclick="selectVehicle('car')">
+                    <div class="vehicle-icon">🚗</div>
+                    <h2>Car</h2>
+                    <p>Standard passenger vehicle</p>
+                    <div class="vehicle-play-btn">
+                        <i class="fas fa-car"></i>
+                    </div>
+                </div>
+                
+                <!-- Motorcycle Card -->
+                <div class="vehicle-card" onclick="selectVehicle('motorcycle')">
+                    <div class="vehicle-icon">🏍️</div>
+                    <h2>Motorcycle</h2>
+                    <p>Two-wheeled motor vehicle</p>
+                    <div class="vehicle-play-btn">
+                        <i class="fas fa-motorcycle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ready to Drive Screen -->
+    <div id="readyScreen" class="ready-screen">
+        <div class="ready-container">
+            <div class="ready-header">
+                <div class="vehicle-icon-large" id="selectedVehicleIcon">🚗</div>
+                <h1>Ready to Drive?</h1>
+                <p id="vehicleTypeText">You've selected a car. Let's review the simulation rules.</p>
+            </div>
+            
+            <div class="info-box green">
+                <h3>
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                    How it works
+                </h3>
+                <p>You will encounter various road scenarios with traffic signs and situations. Make the correct driving decision to continue safely.</p>
+            </div>
+            
+            <div class="info-box yellow">
+                <h3>
+                    <i class="fas fa-exclamation-triangle" style="color: #ffc107;"></i>
+                    Learning from mistakes
+                </h3>
+                <p>Wrong answers will show detailed feedback explaining the correct response. Use this as a learning opportunity to improve your road safety knowledge.</p>
+            </div>
+            
+            <div class="ready-actions">
+                <button class="ready-btn back" onclick="backToVehicleSelection()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="ready-btn start" onclick="startSimulation()">
+                    Start Simulation <i class="fas fa-play"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen (Original) -->
+    <div id="startScreen" class="start-screen" style="display: none;">
         <div class="start-content">
             <div class="start-title">🚗 Driving Simulation</div>
             <div class="start-description">
                 Welcome to the driving simulation training! Test your driving knowledge through 5 challenging scenarios.
             </div>
-            <button class="start-btn" onclick="startSimulation()">
+            <button class="start-btn" onclick="continueToGame()">
                 🎯 START SIMULATION
             </button>
             <div class="instructions">
@@ -601,6 +880,58 @@ $user_id = $_SESSION["id"];
                     console.error('❌ SimulationMain not available');
                 }
             }, 2000); // 2 second loading delay
+        }
+        
+        // Vehicle Selection Functions
+        let selectedVehicleType = null;
+        
+        function selectVehicle(vehicleType) {
+            selectedVehicleType = vehicleType;
+            
+            // Update ready screen with selected vehicle
+            const icon = vehicleType === 'car' ? '🚗' : '🏍️';
+            const name = vehicleType === 'car' ? 'car' : 'motorcycle';
+            
+            document.getElementById('selectedVehicleIcon').textContent = icon;
+            document.getElementById('vehicleTypeText').textContent = 
+                `You've selected a ${name}. Let's review the simulation rules.`;
+            
+            // Hide vehicle selection, show ready screen
+            document.getElementById('vehicleSelection').style.display = 'none';
+            document.getElementById('readyScreen').style.display = 'flex';
+        }
+        
+        function backToVehicleSelection() {
+            // Hide ready screen, show vehicle selection
+            document.getElementById('readyScreen').style.display = 'none';
+            document.getElementById('vehicleSelection').style.display = 'flex';
+        }
+        
+        function startSimulation() {
+            // Hide ready screen, show start screen (original simulation start)
+            document.getElementById('readyScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+        }
+        
+        function continueToGame() {
+            // This is the original startSimulation function
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.querySelector('.simulation-container').style.display = 'block';
+                
+                // Initialize the simulation (SINGLE POINT OF INITIALIZATION)
+                if (window.SimulationMain && !window.SimulationMain.initialized) {
+                    console.log('🎮 Starting Driving Simulation System...');
+                    window.SimulationMain.init();
+                } else if (window.SimulationMain && window.SimulationMain.initialized) {
+                    console.log('⚠️ Simulation already initialized, skipping duplicate init');
+                } else {
+                    console.error('❌ SimulationMain not available');
+                }
+            }, 2000);
         }
     </script>
 </body>
