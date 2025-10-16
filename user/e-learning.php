@@ -25,23 +25,17 @@ $header_title = "E-Learning Portal";
 $notification_count = 2;
 $user_id = $_SESSION["id"];
 
-// Get modules with user progress
-$modules_sql = "SELECT m.*, 
-                       COALESCE(p.progress_percentage, 0) as progress,
-                       COALESCE(p.completed, 0) as completed,
-                       (SELECT COUNT(*) FROM user_module_progress WHERE module_id = m.id) as enrolled_count
-                FROM elearning_modules m 
-                LEFT JOIN user_module_progress p ON m.id = p.module_id AND p.user_id = ?
-                WHERE m.status = 'Active'
-                ORDER BY m.created_at";
-
-$modules = [];
-if ($stmt = mysqli_prepare($conn, $modules_sql)) {
+// Check if user has passed assessment (to unlock quiz)
+$assessment_passed = false;
+$check_sql = "SELECT passed FROM user_assessment_sessions 
+              WHERE user_id = ? AND status = 'completed' AND passed = 1 
+              ORDER BY time_completed DESC LIMIT 1";
+if ($stmt = mysqli_prepare($conn, $check_sql)) {
     mysqli_stmt_bind_param($stmt, "i", $user_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
-    while ($row = mysqli_fetch_assoc($result)) {
-        $modules[] = $row;
+    if ($row = mysqli_fetch_assoc($result)) {
+        $assessment_passed = true;
     }
     mysqli_stmt_close($stmt);
 }
@@ -55,102 +49,94 @@ if ($result = mysqli_query($conn, $videos_sql)) {
     }
 }
 
-// Get quizzes
-$quizzes_sql = "SELECT * FROM elearning_quizzes WHERE status = 'Active' ORDER BY created_at";
-$quizzes = [];
-if ($result = mysqli_query($conn, $quizzes_sql)) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        $quizzes[] = $row;
-    }
-}
-
 ob_start();
 ?>
 
 <div class="elearning-container">
-    <!-- Tab Navigation -->
-    <div class="elearning-tabs">
-        <button class="tab-btn active" onclick="switchTab('modules')">
-            <i class="fas fa-book"></i> Modules
-        </button>
-        <button class="tab-btn" onclick="switchTab('videos')">
-            <i class="fas fa-video"></i> Video Tutorials
-        </button>
-        <button class="tab-btn" onclick="switchTab('quizzes')">
-            <i class="fas fa-question-circle"></i> Quizzes & Assessments
-        </button>
+    <!-- Main Course Selection -->
+    <div class="course-selection-header">
+        <h1 style="text-align: center; margin-bottom: 10px; color: #2c3e50;">Choose Your Learning Path</h1>
+        <p style="text-align: center; color: #7f8c8d; margin-bottom: 30px;">Select between theory-based learning or practical driving simulation</p>
     </div>
 
-    <!-- Modules Tab -->
-    <div id="modules-tab" class="tab-content active">
-        <div class="modules-header">
-            <h2>Road Safety Modules</h2>
+    <!-- Course Type Selection Cards -->
+    <div class="course-type-grid">
+        <!-- E-Learning (TDC) Card -->
+        <div class="course-type-card" id="elearning-card">
+            <div class="course-card-icon">
+                <i class="fas fa-book" style="font-size: 60px; color: #3498db;"></i>
+            </div>
+            <h2>E-Learning (TDC)</h2>
+            <p class="course-subtitle">Theoretical Driving Course</p>
+            <p class="course-description">Learn road safety rules, traffic signs, and driving theory through interactive modules, videos, and quizzes.</p>
+            <ul class="course-features">
+                <li><i class="fas fa-check-circle"></i> Video Tutorials</li>
+                <li><i class="fas fa-check-circle"></i> Quizzes & Assessments</li>
+                <li><i class="fas fa-check-circle"></i> Progress Tracking</li>
+            </ul>
+            <button class="course-select-btn" onclick="showELearningContent()">
+                <i class="fas fa-graduation-cap"></i> Start E-Learning
+            </button>
         </div>
-        
-        <div class="modules-grid">
-            <?php foreach ($modules as $module): ?>
-                <div class="module-card">
-                    <div class="module-icon">
-                        <i class="<?php echo $module['icon']; ?>"></i>
-                    </div>
-                    <h3><?php echo htmlspecialchars($module['title']); ?></h3>
-                    <div class="module-status">
-                        <span class="status-badge active">Active</span>
-                    </div>
-                    <p class="module-description">
-                        <?php echo htmlspecialchars($module['description']); ?>
-                    </p>
-                    
-                    <div class="module-stats">
-                        <div class="stat-item">
-                            <i class="far fa-clock"></i>
-                            <span>Duration: <?php echo $module['duration_minutes']; ?> minutes</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-users"></i>
-                            <span>Enrolled: <?php echo $module['enrolled_count']; ?> students</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-star"></i>
-                            <span>Rating: 4.8/5</span>
-                        </div>
-                    </div>
-                    
-                    <div class="progress-section">
-                        <div class="progress-label">Progress</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: <?php echo $module['progress']; ?>%"></div>
-                        </div>
-                        <div class="progress-text"><?php echo $module['progress']; ?>%</div>
-                    </div>
-                    
-                    <div class="module-actions">
-                        <button class="btn-primary" onclick="startModule(<?php echo $module['id']; ?>)">
-                            <?php echo $module['progress'] > 0 ? 'Continue' : 'Start'; ?>
-                        </button>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+
+        <!-- Simulation (PDC) Card -->
+        <div class="course-type-card" id="simulation-card">
+            <div class="course-card-icon">
+                <i class="fas fa-car" style="font-size: 60px; color: #e74c3c;"></i>
+            </div>
+            <h2>Simulation (PDC)</h2>
+            <p class="course-subtitle">Practical Driving Course</p>
+            <p class="course-description">Practice real-world driving scenarios in a safe virtual environment. Test your skills with interactive simulations.</p>
+            <ul class="course-features">
+                <li><i class="fas fa-check-circle"></i> Car Simulation</li>
+                <li><i class="fas fa-check-circle"></i> Motorcycle Simulation</li>
+                <li><i class="fas fa-check-circle"></i> Traffic Scenarios</li>
+                <li><i class="fas fa-check-circle"></i> Instant Feedback</li>
+            </ul>
+            <button class="course-select-btn" onclick="window.location.href='simulation.php'">
+                <i class="fas fa-gamepad"></i> Start Simulation
+            </button>
         </div>
     </div>
+
+    <!-- E-Learning Content (Hidden by default) -->
+    <div id="elearning-content" style="display: none;">
+        <div style="margin-bottom: 20px;">
+            <button class="back-btn" onclick="showCourseSelection()">
+                <i class="fas fa-arrow-left"></i> Back to Course Selection
+            </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="course-tabs" style="display: flex; justify-content: center; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0;">
+            <button class="tab-btn" onclick="switchTab('videos')" style="padding: 15px 40px; background: none; border: none; font-size: 16px; font-weight: 600; color: #7f8c8d; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                <i class="fas fa-video"></i> Video Tutorials
+            </button>
+            <button class="tab-btn active" onclick="switchTab('quizzes')" style="padding: 15px 40px; background: none; border: none; font-size: 16px; font-weight: 600; color: #2c3e50; cursor: pointer; border-bottom: 3px solid #667eea; transition: all 0.3s;">
+                <i class="fas fa-clipboard-check"></i> Quizzes & Assessments
+            </button>
+        </div>
 
     <!-- Video Tutorials Tab -->
-    <div id="videos-tab" class="tab-content">
-        <div class="videos-header">
-            <h2>Video Tutorials</h2>
+    <div id="videos-tab" class="tab-content" style="display: none;">
+        <div class="videos-header" style="text-align: center; margin-bottom: 30px;">
+            <h2 style="font-size: 32px; color: #2c3e50; margin-bottom: 10px;">🎥 Video Tutorials</h2>
+            <p style="color: #7f8c8d; font-size: 16px;">Learn through interactive video lessons</p>
         </div>
         
-        <div class="videos-grid">
+        <div class="videos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;">
             <?php foreach ($videos as $video): ?>
-                <div class="video-card">
-                    <div class="video-thumbnail">
-                        <i class="fas fa-play-circle play-icon"></i>
-                        <div class="video-duration"><?php echo $video['duration_minutes']; ?> min</div>
+                <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)';">
+                    <div class="video-thumbnail" style="position: relative; padding-top: 56.25%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-play-circle play-icon" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; color: white; opacity: 0.9;"></i>
+                        <div class="video-duration" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+                            <?php echo $video['duration_minutes']; ?> min
+                        </div>
                     </div>
-                    <div class="video-content">
-                        <h3><?php echo htmlspecialchars($video['title']); ?></h3>
-                        <p><?php echo htmlspecialchars($video['description']); ?></p>
-                        <button class="btn-primary" onclick="playVideo(<?php echo $video['id']; ?>)">
+                    <div class="video-content" style="padding: 20px;">
+                        <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;"><?php echo htmlspecialchars($video['title']); ?></h3>
+                        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;"><?php echo htmlspecialchars($video['description']); ?></p>
+                        <button class="btn-primary" onclick="playVideo(<?php echo $video['id']; ?>)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                             <i class="fas fa-play"></i> Watch Video
                         </button>
                     </div>
@@ -159,42 +145,79 @@ ob_start();
         </div>
     </div>
 
-    <!-- Quizzes Tab -->
-    <div id="quizzes-tab" class="tab-content">
-        <div class="quizzes-header">
-            <h2>Quizzes & Assessments</h2>
-        </div>
-        
-        <div class="quizzes-grid">
-            <?php foreach ($quizzes as $quiz): ?>
-                <div class="quiz-card">
-                    <div class="quiz-icon">
-                        <i class="fas fa-clipboard-check"></i>
+    <!-- Quizzes & Assessments Tab -->
+    <div id="quizzes-tab" class="tab-content active" style="display: block;">
+
+        <!-- Assessment & Quiz Cards -->
+        <div class="assessments-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; max-width: 900px; margin: 0 auto;">
+            <!-- Assessment Card -->
+            <div class="assessment-quiz-card" style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)';">
+                <div style="font-size: 60px; margin-bottom: 20px;">📝</div>
+                <h3 style="font-size: 24px; margin-bottom: 10px; color: #2c3e50;">Assessment</h3>
+                <p style="color: #7f8c8d; margin-bottom: 20px;">20 True or False Questions</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-check-circle" style="color: #28a745; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">20 Questions</span>
                     </div>
-                    <h3><?php echo htmlspecialchars($quiz['title']); ?></h3>
-                    <p><?php echo htmlspecialchars($quiz['description']); ?></p>
-                    
-                    <div class="quiz-info">
-                        <div class="info-item">
-                            <i class="far fa-clock"></i>
-                            <span>Time Limit: <?php echo $quiz['time_limit_minutes']; ?> minutes</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-percentage"></i>
-                            <span>Passing Score: <?php echo $quiz['passing_score']; ?>%</span>
-                        </div>
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-clock" style="color: #ffc107; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">No Time Limit</span>
                     </div>
-                    
-                    <div class="quiz-actions">
-                        <button class="btn-primary" onclick="startQuiz(<?php echo $quiz['id']; ?>)">
-                            <i class="fas fa-play"></i> Start Quiz
-                        </button>
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas fa-trophy" style="color: #667eea; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">Passing: 70%</span>
                     </div>
                 </div>
-            <?php endforeach; ?>
+                <button onclick="window.location.href='assessments.php'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <i class="fas fa-play"></i> Take Assessment
+                </button>
+                <div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 8px;">
+                    <small style="color: #1976d2; font-weight: bold;">✓ Must complete first</small>
+                </div>
+            </div>
+
+            <!-- Quiz Card -->
+            <div class="assessment-quiz-card" style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; transition: all 0.3s ease; <?php echo !$assessment_passed ? 'opacity: 0.7;' : ''; ?>" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)';">
+                <div style="font-size: 60px; margin-bottom: 20px;"><?php echo $assessment_passed ? '📚' : '🔒'; ?></div>
+                <h3 style="font-size: 24px; margin-bottom: 10px; color: #2c3e50;">Quiz</h3>
+                <p style="color: #7f8c8d; margin-bottom: 20px;">50 Multiple Choice Questions</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-check-circle" style="color: #28a745; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">50 Questions</span>
+                    </div>
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <i class="fas fa-clock" style="color: #ffc107; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">No Time Limit</span>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <i class="fas fa-trophy" style="color: #f5576c; margin-right: 8px;"></i>
+                        <span style="font-size: 14px; color: #2c3e50; font-weight: 600;">Passing: 70%</span>
+                    </div>
+                </div>
+                
+                <?php if ($assessment_passed): ?>
+                    <button onclick="window.location.href='quizzes.php'" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 12px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="fas fa-play"></i> Take Quiz
+                    </button>
+                    <div style="margin-top: 15px; padding: 10px; background: #d4edda; border-radius: 8px;">
+                        <small style="color: #155724; font-weight: bold;">✓ Unlocked - Assessment Passed!</small>
+                    </div>
+                <?php else: ?>
+                    <button disabled style="background: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: not-allowed; width: 100%; opacity: 0.6;">
+                        <i class="fas fa-lock"></i> Quiz Locked
+                    </button>
+                    <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 8px;">
+                        <small style="color: #856404; font-weight: bold;">⚠ Complete Assessment First</small>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
+    </div> <!-- End elearning-content -->
+    
+</div> <!-- End elearning-container -->
 
 <?php
 $content = ob_get_clean();
@@ -205,6 +228,127 @@ $extra_styles = <<<EOT
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* Course Type Selection Grid */
+.course-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin: 40px auto;
+    max-width: 1000px;
+}
+
+.course-type-card {
+    background: white;
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.course-type-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    border-color: #ffc107;
+}
+
+.course-card-icon {
+    margin-bottom: 20px;
+}
+
+.course-type-card h2 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.course-subtitle {
+    color: #7f8c8d;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.course-description {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 15px;
+}
+
+.course-features {
+    list-style: none;
+    padding: 0;
+    margin: 25px 0;
+    text-align: left;
+}
+
+.course-features li {
+    padding: 10px 0;
+    color: #555;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.course-features li:last-child {
+    border-bottom: none;
+}
+
+.course-features i {
+    color: #27ae60;
+    margin-right: 10px;
+}
+
+.course-select-btn {
+    width: 100%;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+#elearning-card .course-select-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+}
+
+#elearning-card .course-select-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: scale(1.05);
+}
+
+#simulation-card .course-select-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
+#simulation-card .course-select-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    transform: scale(1.05);
+}
+
+.back-btn {
+    padding: 10px 20px;
+    background: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.back-btn:hover {
+    background: #7f8c8d;
+}
+
+.back-btn i {
+    margin-right: 8px;
 }
 
 .elearning-tabs {
@@ -531,6 +675,16 @@ $extra_styles = <<<EOT
 
 /* Responsive */
 @media (max-width: 768px) {
+    .course-type-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin: 20px auto;
+    }
+    
+    .course-type-card {
+        padding: 30px 20px;
+    }
+    
     .elearning-tabs {
         flex-direction: column;
     }
@@ -548,49 +702,54 @@ EOT;
 
 $extra_scripts = <<<EOT
 <script>
+// Show/Hide Course Selection and E-Learning Content
+function showCourseSelection() {
+    document.querySelector('.course-type-grid').style.display = 'grid';
+    document.querySelector('.course-selection-header').style.display = 'block';
+    document.getElementById('elearning-content').style.display = 'none';
+}
+
+function showELearningContent() {
+    document.querySelector('.course-type-grid').style.display = 'none';
+    document.querySelector('.course-selection-header').style.display = 'none';
+    document.getElementById('elearning-content').style.display = 'block';
+}
+
 function switchTab(tabName) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
         tab.classList.remove('active');
     });
     
     // Remove active class from all buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
+        btn.style.color = '#7f8c8d';
+        btn.style.borderBottom = '3px solid transparent';
     });
     
     // Show selected tab
+    document.getElementById(tabName + '-tab').style.display = 'block';
     document.getElementById(tabName + '-tab').classList.add('active');
     
     // Add active class to clicked button
     event.target.classList.add('active');
-}
-
-function startModule(moduleId) {
-    // For now, just show an alert - you can implement the actual module viewer later
-    alert('Starting module ' + moduleId + '. Module viewer will be implemented next.');
-    
-    // You can redirect to a module viewer page:
-    // window.location.href = 'module-viewer.php?id=' + moduleId;
+    event.target.style.color = '#2c3e50';
+    event.target.style.borderBottom = '3px solid #667eea';
 }
 
 function playVideo(videoId) {
     alert('Playing video ' + videoId + '. Video player will be implemented next.');
-    
     // You can redirect to a video player page:
     // window.location.href = 'video-player.php?id=' + videoId;
-}
-
-function startQuiz(quizId) {
-    alert('Starting quiz ' + quizId + '. Quiz system will be implemented next.');
-    
-    // You can redirect to a quiz page:
-    // window.location.href = 'quiz.php?id=' + quizId;
 }
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     console.log('E-learning portal loaded');
+    // Show course selection by default
+    showCourseSelection();
 });
 </script>
 EOT;
