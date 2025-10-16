@@ -55,10 +55,10 @@ if ($user_type == 'admin') {
         <span>Appointments</span>
     </a>
 
-    <a href="../user/simulation.php" <?php if($current_page == "simulation.php") echo 'class="active"'; ?>>
+    <!-- <a href="../user/simulation.php" <?php if($current_page == "simulation.php") echo 'class="active"'; ?>>
         <i class="fas fa-car"></i>
         <span>Simulation</span>
-    </a>
+    </a> -->
 
     <a href="../user/simulation_result.php" <?php if($current_page == "simulation_result.php") echo 'class="active"'; ?>>
      <i class="fas fa-chart-bar"></i>
