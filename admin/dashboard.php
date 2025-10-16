@@ -58,16 +58,57 @@ try {
                       (SELECT COUNT(*) FROM appointments WHERE status = 'confirmed') as confirmed_appointments,
                       (SELECT COUNT(*) FROM users WHERE user_type = 'student' AND DATE(created_at) = CURDATE()) as new_students_today,
                       (SELECT COUNT(*) FROM users WHERE user_type = 'student') as total_students,
-                      (SELECT COUNT(DISTINCT session_id) FROM quiz_responses) as total_simulation_sessions";
+                      (SELECT COUNT(DISTINCT session_id) FROM quiz_responses) as total_simulation_sessions,
+                      (SELECT COUNT(DISTINCT user_id) FROM user_assessment_sessions WHERE status = 'completed' AND passed = 1) as assessment_passes,
+                      (SELECT COUNT(DISTINCT user_id) FROM user_quiz_sessions WHERE status = 'completed' AND passed = 1) as quiz_passes,
+                      (SELECT COUNT(*) FROM appointments WHERE DATE(appointment_date) = CURDATE()) as appointments_today";
     $stats_result = $conn->query($stats_query);
     $stats = $stats_result ? $stats_result->fetch_assoc() : [];
     
+    // Get recent instructors (5 most recently added)
+    $instructors_query = "SELECT inst.id, inst.license_number, inst.years_experience, inst.is_active, 
+                         inst.created_at, u.full_name, u.email, u.contact_number
+                         FROM instructors inst
+                         LEFT JOIN users u ON inst.user_id = u.id
+                         ORDER BY inst.created_at DESC LIMIT 5";
+    $instructors_result = $conn->query($instructors_query);
+    if (!$instructors_result) {
+        error_log("Instructors query error: " . $conn->error);
+        $recent_instructors = [];
+    } else {
+        $recent_instructors = $instructors_result->fetch_all(MYSQLI_ASSOC);
+    }
+    
+    // Get recent vehicles (5 most recently added)
+    $vehicles_query = "SELECT id, make, model, year, license_plate, transmission_type, 
+                      vehicle_type, color, is_available, created_at
+                      FROM vehicles 
+                      ORDER BY created_at DESC LIMIT 5";
+    $vehicles_result = $conn->query($vehicles_query);
+    if (!$vehicles_result) {
+        error_log("Vehicles query error: " . $conn->error);
+        $recent_vehicles = [];
+    } else {
+        $recent_vehicles = $vehicles_result->fetch_all(MYSQLI_ASSOC);
+    }
+    
 } catch (Exception $e) {
+    // Log the error
+    error_log("Dashboard error: " . $e->getMessage());
+    
     $recent_appointments = [];
     $new_applicants = [];
     $today_schedule = [];
     $notification_count = 0;
-    $stats = ['pending_appointments' => 0, 'confirmed_appointments' => 0, 'new_students_today' => 0, 'total_students' => 0, 'total_simulation_sessions' => 0];
+    $recent_instructors = [];
+    $recent_vehicles = [];
+    $stats = ['pending_appointments' => 0, 'confirmed_appointments' => 0, 'new_students_today' => 0, 'total_students' => 0, 'total_simulation_sessions' => 0, 'assessment_passes' => 0, 'quiz_passes' => 0, 'appointments_today' => 0];
+    
+    // Display error for debugging
+    echo "<div style='background: #f8d7da; color: #721c24; padding: 15px; margin: 20px; border-radius: 5px; border: 1px solid #f5c6cb;'>";
+    echo "<strong>Error loading dashboard data:</strong> " . htmlspecialchars($e->getMessage());
+    echo "<br><strong>SQL Error:</strong> " . htmlspecialchars($conn->error);
+    echo "</div>";
 }
 
 // Generate content
@@ -197,31 +238,22 @@ ob_start();
 </div>
 
 <!-- Stats Cards -->
-<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px;">
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+    <div class="card" style="text-align: center; padding: 15px;">
+        <div style="font-size: 24px; font-weight: 600; color: #2196F3; margin-bottom: 5px;">
+            <?php echo $stats['appointments_today'] ?? 0; ?>
+        </div>
+        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
+            Appointments Today
+        </div>
+    </div>
+    
     <div class="card" style="text-align: center; padding: 15px;">
         <div style="font-size: 24px; font-weight: 600; color: #ffcc00; margin-bottom: 5px;">
             <?php echo $stats['pending_appointments'] ?? 0; ?>
         </div>
         <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
             Pending Appointments
-        </div>
-    </div>
-    
-    <div class="card" style="text-align: center; padding: 15px;">
-        <div style="font-size: 24px; font-weight: 600; color: #4CAF50; margin-bottom: 5px;">
-            <?php echo $stats['confirmed_appointments'] ?? 0; ?>
-        </div>
-        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
-            Confirmed Appointments
-        </div>
-    </div>
-    
-    <div class="card" style="text-align: center; padding: 15px;">
-        <div style="font-size: 24px; font-weight: 600; color: #2196F3; margin-bottom: 5px;">
-            <?php echo $stats['new_students_today'] ?? 0; ?>
-        </div>
-        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
-            New Students Today
         </div>
     </div>
     
@@ -234,14 +266,53 @@ ob_start();
         </div>
     </div>
     
-    <div class="card" style="text-align: center; padding: 15px; cursor: pointer;" onclick="window.location.href='simulation_result.php'">
+    <div class="card" style="text-align: center; padding: 15px;">
+        <div style="font-size: 24px; font-weight: 600; color: #4CAF50; margin-bottom: 5px;">
+            <?php echo $stats['new_students_today'] ?? 0; ?>
+        </div>
+        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
+            New Students Today
+        </div>
+    </div>
+</div>
+
+<!-- E-Learning Stats Cards -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+    <div class="card" style="text-align: center; padding: 20px; cursor: pointer;" onclick="window.location.href='e-learning.php'">
+        <div style="font-size: 32px; margin-bottom: 10px;">📝</div>
+        <div style="font-size: 24px; font-weight: 600; color: #667eea; margin-bottom: 5px;">
+            <?php echo $stats['assessment_passes'] ?? 0; ?>
+        </div>
+        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
+            Assessment Passes
+        </div>
+        <div style="font-size: 10px; color: #667eea; margin-top: 5px;">
+            <i class="fas fa-eye"></i> View Details
+        </div>
+    </div>
+    
+    <div class="card" style="text-align: center; padding: 20px; cursor: pointer;" onclick="window.location.href='e-learning.php'">
+        <div style="font-size: 32px; margin-bottom: 10px;">📚</div>
+        <div style="font-size: 24px; font-weight: 600; color: #f5576c; margin-bottom: 5px;">
+            <?php echo $stats['quiz_passes'] ?? 0; ?>
+        </div>
+        <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
+            Quiz Passes
+        </div>
+        <div style="font-size: 10px; color: #f5576c; margin-top: 5px;">
+            <i class="fas fa-eye"></i> View Details
+        </div>
+    </div>
+    
+    <div class="card" style="text-align: center; padding: 20px; cursor: pointer;" onclick="window.location.href='simulation_result.php'">
+        <div style="font-size: 32px; margin-bottom: 10px;">🎮</div>
         <div style="font-size: 24px; font-weight: 600; color: #FF5722; margin-bottom: 5px;">
             <?php echo $stats['total_simulation_sessions'] ?? 0; ?>
         </div>
         <div style="font-size: 12px; color: #8b8d93; text-transform: uppercase;">
             Simulation Sessions
         </div>
-        <div style="font-size: 10px; color: #ffcc00; margin-top: 5px;">
+        <div style="font-size: 10px; color: #FF5722; margin-top: 5px;">
             <i class="fas fa-chart-bar"></i> View Results
         </div>
     </div>
@@ -322,6 +393,123 @@ ob_start();
             <div style="font-size: 12px;">The schedule is clear!</div>
         </div>
     <?php endif; ?>
+</div>
+
+<!-- Grid for Instructors and Vehicles -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+    <!-- Recent Instructors -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-chalkboard-teacher"></i> Recent Instructors</h3>
+            <a href="instructors.php" style="color: #ffcc00; text-decoration: none; font-size: 14px;">View All →</a>
+        </div>
+        
+        <?php if (!empty($recent_instructors)): ?>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #3a3f48; text-align: left;">
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Name</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">License</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Experience</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recent_instructors as $index => $instructor): ?>
+                        <tr style="<?php echo $index < count($recent_instructors) - 1 ? 'border-bottom: 1px solid #3a3f48;' : ''; ?>">
+                            <td style="padding: 15px; font-size: 14px;">
+                                <div style="font-weight: 500;"><?php echo htmlspecialchars($instructor['full_name'] ?? 'Unknown'); ?></div>
+                                <div style="font-size: 12px; color: #8b8d93;"><?php echo htmlspecialchars($instructor['email'] ?? ''); ?></div>
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <span style="font-family: monospace; color: #ffcc00;">
+                                    <?php echo htmlspecialchars($instructor['license_number'] ?? 'N/A'); ?>
+                                </span>
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <?php echo $instructor['years_experience'] ?? 0; ?> years
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <span class="badge badge-<?php echo $instructor['is_active'] ? 'success' : 'secondary'; ?>">
+                                    <?php echo $instructor['is_active'] ? 'Active' : 'Inactive'; ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div style="padding: 40px; text-align: center; color: #8b8d93;">
+                <i class="fas fa-user-slash" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <div style="font-size: 16px; margin-bottom: 5px;">No instructors found</div>
+                <div style="font-size: 12px;">
+                    <a href="instructors.php" style="color: #ffcc00;">Add an instructor</a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    
+    <!-- Recent Vehicles -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-car"></i> Recent Vehicles</h3>
+            <a href="vehicles.php" style="color: #ffcc00; text-decoration: none; font-size: 14px;">View All →</a>
+        </div>
+        
+        <?php if (!empty($recent_vehicles)): ?>
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #3a3f48; text-align: left;">
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Vehicle</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Plate</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Type</th>
+                        <th style="padding: 10px 15px; font-weight: 500; color: #8b8d93;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recent_vehicles as $index => $vehicle): ?>
+                        <tr style="<?php echo $index < count($recent_vehicles) - 1 ? 'border-bottom: 1px solid #3a3f48;' : ''; ?>">
+                            <td style="padding: 15px; font-size: 14px;">
+                                <div style="font-weight: 500;">
+                                    <?php echo htmlspecialchars($vehicle['make'] . ' ' . $vehicle['model']); ?>
+                                </div>
+                                <div style="font-size: 12px; color: #8b8d93;">
+                                    <?php echo htmlspecialchars($vehicle['year']); ?>
+                                    <?php if (!empty($vehicle['color'])): ?>
+                                        • <?php echo htmlspecialchars($vehicle['color']); ?>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <span style="font-family: monospace; background: rgba(255, 204, 0, 0.2); color: #ffcc00; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                    <?php echo htmlspecialchars($vehicle['license_plate'] ?? 'N/A'); ?>
+                                </span>
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <div><?php echo ucfirst($vehicle['transmission_type'] ?? 'N/A'); ?></div>
+                                <div style="font-size: 11px; color: #8b8d93;">
+                                    <?php echo ucfirst($vehicle['vehicle_type'] ?? 'N/A'); ?>
+                                </div>
+                            </td>
+                            <td style="padding: 15px; font-size: 14px;">
+                                <span class="badge badge-<?php echo $vehicle['is_available'] ? 'success' : 'secondary'; ?>">
+                                    <?php echo $vehicle['is_available'] ? 'Available' : 'In Use'; ?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <div style="padding: 40px; text-align: center; color: #8b8d93;">
+                <i class="fas fa-car-side" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                <div style="font-size: 16px; margin-bottom: 5px;">No vehicles found</div>
+                <div style="font-size: 12px;">
+                    <a href="vehicles.php" style="color: #ffcc00;">Add a vehicle</a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <?php
