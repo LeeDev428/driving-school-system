@@ -22,6 +22,13 @@ const GameEngine = {
     // Scenario triggering
     triggeredScenarios: new Set(),
     
+    // Time-based scenario triggering
+    scenarioTimer: 0,
+    nextScenarioTime: 3000, // First scenario at 3 seconds
+    minTriggerInterval: 3000, // Minimum 3 seconds between scenarios
+    maxTriggerInterval: 3000, // Maximum 3 seconds between scenarios
+    isScenarioActive: false, // Flag to prevent overlapping scenarios
+    
     /**
      * Initialize the game engine
      */
@@ -44,7 +51,7 @@ const GameEngine = {
     update(deltaTime) {
         this.updateCamera();
         this.checkCollisions();
-        this.checkScenarioTriggers();
+        this.checkTimeBasedScenarioTriggers(deltaTime);
     },
     
     /**
@@ -104,47 +111,86 @@ const GameEngine = {
     },
     
     /**
-     * Check for scenario triggers
+     * Check for time-based scenario triggers (NEW SYSTEM)
      */
-    checkScenarioTriggers() {
-        if (!window.CarModule || !window.WorldModule) return;
+    checkTimeBasedScenarioTriggers(deltaTime) {
+        // Don't trigger if scenario is already active or game is paused
+        if (this.isScenarioActive || this.isPaused) {
+            return;
+        }
         
-        const carPos = window.CarModule.getPosition();
-        const scenarioMarkers = window.WorldModule.getScenarioMarkers();
+        // Don't trigger if all scenarios completed
+        if (!window.ScenariosModule) {
+            console.warn('⚠️ ScenariosModule not available');
+            return;
+        }
         
-        scenarioMarkers.forEach(marker => {
-            if (!marker.active || this.triggeredScenarios.has(marker.id)) return;
-            
-            // Calculate distance to scenario marker
-            const distance = Math.sqrt(
-                Math.pow(carPos.x - marker.x, 2) + 
-                Math.pow(carPos.y - marker.y, 2)
-            );
-            
-            // Check if car is within trigger radius
-            if (distance <= marker.triggerRadius) {
-                this.triggerScenario(marker);
-            }
-        });
+        const completedCount = window.ScenariosModule.completedScenarios.size;
+        if (completedCount >= 5) {
+            return; // All 5 scenarios done
+        }
+        
+        // Increment timer (deltaTime is in SECONDS, convert to milliseconds)
+        this.scenarioTimer += deltaTime * 1000;
+        
+        // Debug logging every 1 second
+        if (Math.floor(this.scenarioTimer / 1000) !== Math.floor((this.scenarioTimer - (deltaTime * 1000)) / 1000)) {
+            console.log(`⏱️ Scenario timer: ${(this.scenarioTimer / 1000).toFixed(1)}s / ${(this.nextScenarioTime / 1000).toFixed(1)}s (Completed: ${completedCount}/5)`);
+        }
+        
+        // Check if it's time to trigger next scenario
+        if (this.scenarioTimer >= this.nextScenarioTime) {
+            this.triggerNextScenario();
+        }
     },
     
     /**
-     * Trigger a scenario
+     * Trigger the next available scenario
      */
-    triggerScenario(marker) {
-        console.log(`🎯 Scenario ${marker.id} triggered: ${marker.type}`);
-        
-        // Mark as triggered to prevent multiple triggers
-        this.triggeredScenarios.add(marker.id);
-        marker.active = false;
-        
-        // Get scenario details and trigger question
-        if (window.ScenariosModule) {
-            const scenario = window.ScenariosModule.getScenario(marker.id);
-            if (scenario) {
-                this.handleScenarioActivation(scenario);
-            }
+    triggerNextScenario() {
+        if (!window.ScenariosModule) {
+            console.error('❌ ScenariosModule not available');
+            return;
         }
+        
+        // Get next unasked scenario
+        const scenario = window.ScenariosModule.getNextScenario();
+        
+        if (!scenario) {
+            console.log('✅ All scenarios completed!');
+            return;
+        }
+        
+        console.log(`🎯 Time-based trigger: Scenario ${scenario.id} - ${scenario.title}`);
+        
+        // Mark scenario as active to prevent overlapping
+        this.isScenarioActive = true;
+        
+        // Trigger the scenario
+        this.handleScenarioActivation(scenario);
+        
+        // Set time until next scenario (3 seconds)
+        this.scenarioTimer = 0; // Reset timer
+        this.nextScenarioTime = 3000; // Next scenario in 3 seconds
+        
+        console.log(`⏱️ Next scenario in 3 seconds`);
+    },
+    
+    /**
+     * Resume scenario triggering after question is answered
+     */
+    resumeScenarioTriggering() {
+        this.isScenarioActive = false;
+        console.log('▶️ Scenario triggering resumed');
+    },
+    
+    /**
+     * Check for position-based scenario triggers (DEPRECATED - kept for compatibility)
+     */
+    checkScenarioTriggers() {
+        // This method is deprecated - scenarios now trigger by time, not position
+        // Kept for backward compatibility but does nothing
+        return;
     },
     
     /**
