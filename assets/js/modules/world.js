@@ -12,7 +12,6 @@ const WorldModule = {
     roads: [],
     buildings: [],
     trafficLights: [],
-    scenarioMarkers: [],
     decorations: [], // Trees, streetlights, etc.
     pedestrianLanes: [], // Pedestrian crossing lanes (zebra crossings)
     
@@ -83,7 +82,6 @@ const WorldModule = {
         this.createDetailedBuildings();
         this.createDecorations();
         this.createPedestrianLanes();
-        this.createScenarioMarkers();
     },
     
     /**
@@ -406,63 +404,6 @@ const WorldModule = {
     },
     
     /**
-     * Create scenario markers for the 5 questions
-     */
-    createScenarioMarkers() {
-        this.scenarioMarkers = [
-            // Scenario 1: Red Traffic Light
-            {
-                id: 1,
-                x: 280, y: 360,
-                type: 'RED_LIGHT',
-                triggerRadius: 80,
-                active: true,
-                icon: '🚦'
-            },
-            
-            // Scenario 2: Stop Sign
-            {
-                id: 2,
-                x: 500, y: 360,
-                type: 'STOP_SIGN',
-                triggerRadius: 60,
-                active: true,
-                icon: '🛑'
-            },
-            
-            // Scenario 3: Pedestrian Crossing
-            {
-                id: 3,
-                x: 700, y: 360,
-                type: 'PEDESTRIAN',
-                triggerRadius: 70,
-                active: true,
-                icon: '🚶'
-            },
-            
-            // Scenario 4: School Zone
-            {
-                id: 4,
-                x: 1000, y: 250,
-                type: 'SCHOOL_ZONE',
-                triggerRadius: 90,
-                active: true,
-                icon: '🏫'
-            },
-            
-            // Scenario 5: Busy Intersection
-            {
-                id: 5,
-                x: 640, y: 540,
-                type: 'INTERSECTION',
-                triggerRadius: 85,
-                active: true,
-                icon: '⚠️'
-            }
-        ];
-    },
-    
-    /**
      * Create pedestrian crossing lanes (zebra crossings)
      */
     createPedestrianLanes() {
@@ -588,9 +529,6 @@ const WorldModule = {
         
         // Render pedestrian crossing lanes
         this.renderPedestrianLanes(ctx, camera);
-        
-        // Render scenario markers
-        this.renderScenarioMarkers(ctx, camera);
     },
     
     /**
@@ -1245,40 +1183,8 @@ const WorldModule = {
             (B > 255 ? 255 : B < 0 ? 0 : B)).toString(16).slice(1);
     },
     renderScenarioMarkers(ctx, camera) {
-        this.scenarioMarkers.forEach(marker => {
-            if (!marker.active) return;
-            
-            const screenX = marker.x - camera.x;
-            const screenY = marker.y - camera.y;
-            
-            // Trigger zone (subtle)
-            ctx.strokeStyle = 'rgba(255, 255, 0, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, marker.triggerRadius, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            
-            // Marker icon background
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, 20, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(screenX, screenY, 20, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            // Marker icon
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#000';
-            ctx.fillText(marker.icon, screenX, screenY);
-        });
+        // REMOVED: No more visual scenario markers on the road
+        // Scenarios will now be triggered randomly by time, not by position
     },
     
     /**
@@ -1303,13 +1209,6 @@ const WorldModule = {
             );
             return distance < minDistance;
         });
-    },
-    
-    /**
-     * Get scenario markers for collision detection
-     */
-    getScenarioMarkers() {
-        return this.scenarioMarkers.filter(marker => marker.active);
     },
     
     /**
@@ -1360,11 +1259,6 @@ const WorldModule = {
         this.trafficLights.forEach((light, index) => {
             light.timer = index * 2000; // Stagger timing
             light.state = index % 3 === 0 ? 'RED' : (index % 3 === 1 ? 'GREEN' : 'YELLOW');
-        });
-        
-        // Reactivate all scenario markers
-        this.scenarioMarkers.forEach(marker => {
-            marker.active = true;
         });
         
         console.log('🔄 World reset complete');
