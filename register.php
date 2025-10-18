@@ -124,12 +124,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         body {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             background-color: #1e2129;
             color: white;
+            padding: 40px 20px;
+            overflow-y: auto;
         }
         
         .register-container {
@@ -137,9 +139,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            width: 450px;
+            width: 100%;
+            max-width: 450px;
             text-align: center;
             border: 1px solid #3a3f48;
+            margin: auto;
         }
         
         .logo {
@@ -147,7 +151,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         
         .logo img {
-            height: 80px;
+            height: 60px;
+            max-width: 200px;
+            object-fit: contain;
         }
         
         h2 {
@@ -236,7 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="register-container">
         <div class="logo">
-            <img src="images/logo.png" alt="Success Driving Logo">
+            <img src="assets/images/dss_logo.png" alt="Success Driving Logo">
         </div>
         
         <h2>Student Registration</h2>
