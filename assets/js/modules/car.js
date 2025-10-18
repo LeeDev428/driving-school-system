@@ -9,6 +9,9 @@ const CarModule = {
     y: 210,  // Center of first horizontal road (150 + streetWidth/2 = 150 + 60 = 210)
     angle: 0, // Rotation in radians
     
+    // Vehicle type (car or motorcycle)
+    vehicleType: 'car', // Will be set from config
+    
     // Car dimensions (realistic car size)
     width: 45,
     height: 25,
@@ -51,10 +54,38 @@ const CarModule = {
      * Initialize the car
      */
     init() {
-        console.log('🚗 Initializing Enhanced Player Vehicle...');
+        console.log('🔧 CarModule.init() called');
+        console.log('🔍 Checking SimulationConfig:', window.SimulationConfig);
+        
+        // Get vehicle type from config
+        if (window.SimulationConfig && window.SimulationConfig.vehicleType && window.SimulationConfig.vehicleType !== 'NONE') {
+            this.vehicleType = window.SimulationConfig.vehicleType;
+            console.log(`✅ Vehicle type set to: ${this.vehicleType}`);
+            
+            // Adjust dimensions for motorcycle
+            if (this.vehicleType === 'motorcycle') {
+                this.width = 30;  // Narrower
+                this.height = 15; // Shorter
+                this.maxSpeed = 180; // Slightly faster
+                this.acceleration = 180; // Quicker acceleration
+                this.turnSpeed = 3.5; // Better turning
+                console.log('🏍️ Motorcycle dimensions set: width=30, height=15');
+            } else {
+                console.log('🚗 Car dimensions set: width=45, height=25');
+            }
+        } else {
+            console.warn('⚠️ SimulationConfig or vehicleType not found, defaulting to car');
+            console.log('⚠️ SimulationConfig exists?', !!window.SimulationConfig);
+            if (window.SimulationConfig) {
+                console.log('⚠️ vehicleType value:', window.SimulationConfig.vehicleType);
+            }
+        }
+        
+        const icon = this.vehicleType === 'motorcycle' ? '🏍️' : '🚗';
+        console.log(`${icon} Initializing Enhanced Player Vehicle (Type: ${this.vehicleType})...`);
         this.setupControls();
         this.resetPosition();
-        console.log(`🔍 DEBUG: Car initialized at position (${this.x}, ${this.y})`);
+        console.log(`🔍 DEBUG: ${this.vehicleType} initialized at position (${this.x}, ${this.y}) with dimensions ${this.width}x${this.height}`);
         console.log('✅ Vehicle ready for driving - Press W or UP arrow to move!');
     },
     
@@ -615,113 +646,11 @@ const CarModule = {
         ctx.translate(screenX, screenY);
         ctx.rotate(this.angle);
         
-        // Enhanced shadow with better positioning
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-        ctx.beginPath();
-        ctx.ellipse(2, 3, this.width/2 + 2, this.height/2 + 1, 0, 0, 2 * Math.PI);
-        ctx.fill();
-        
-        // Main car body with gradient
-        const gradient = ctx.createLinearGradient(-this.width/2, -this.height/2, this.width/2, this.height/2);
-        gradient.addColorStop(0, this.color);
-        gradient.addColorStop(0.5, '#FF5722');
-        gradient.addColorStop(1, this.secondaryColor);
-        
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.roundRect(-this.width/2, -this.height/2, this.width, this.height, 4);
-        ctx.fill();
-        
-        // Car outline
-        ctx.strokeStyle = '#2C3E50';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-this.width/2, -this.height/2, this.width, this.height, 4);
-        ctx.stroke();
-        
-        // Enhanced windshield and windows
-        ctx.fillStyle = '#87CEEB';
-        ctx.fillRect(-this.width/2 + 4, -this.height/2 + 3, this.width - 8, this.height - 6);
-        
-        // Window frames
-        ctx.strokeStyle = '#34495E';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(-this.width/2 + 4, -this.height/2 + 3, this.width - 8, this.height - 6);
-        
-        // Front grille
-        ctx.fillStyle = '#2C3E50';
-        ctx.fillRect(this.width/2 - 4, -6, 4, 12);
-        
-        // Headlights
-        if (this.lights.headlights) {
-            ctx.fillStyle = '#FFFFE0';
-            ctx.beginPath();
-            ctx.ellipse(this.width/2 - 1, -8, 3, 2, 0, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(this.width/2 - 1, 8, 3, 2, 0, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-        
-        // Brake lights
-        if (this.lights.brake) {
-            ctx.fillStyle = '#FF0000';
-            ctx.beginPath();
-            ctx.ellipse(-this.width/2 + 1, -6, 2, 3, 0, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(-this.width/2 + 1, 6, 2, 3, 0, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-        
-        // Turn signals with blinking effect
-        const turnBlink = this.lights.turn.timer < 0.25;
-        
-        if (this.lights.turn.left && turnBlink) {
-            ctx.fillStyle = '#FFA500';
-            ctx.beginPath();
-            ctx.ellipse(-this.width/2 + 1, -10, 2, 2, 0, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-        
-        if (this.lights.turn.right && turnBlink) {
-            ctx.fillStyle = '#FFA500';
-            ctx.beginPath();
-            ctx.ellipse(-this.width/2 + 1, 10, 2, 2, 0, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-        
-        // Enhanced wheels
-        ctx.fillStyle = '#2C3E50';
-        const wheelSize = 5;
-        
-        // Front wheels
-        ctx.beginPath();
-        ctx.ellipse(this.width/2 - 8, -this.height/2 - 1, wheelSize, wheelSize/2, 0, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(this.width/2 - 8, this.height/2 + 1, wheelSize, wheelSize/2, 0, 0, 2 * Math.PI);
-        ctx.fill();
-        
-        // Rear wheels
-        ctx.beginPath();
-        ctx.ellipse(-this.width/2 + 8, -this.height/2 - 1, wheelSize, wheelSize/2, 0, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(-this.width/2 + 8, this.height/2 + 1, wheelSize, wheelSize/2, 0, 0, 2 * Math.PI);
-        ctx.fill();
-        
-        // Speed indicator arrow
-        if (Math.abs(this.speed) > 5) {
-            ctx.strokeStyle = '#FFD700';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(this.width/2 - 2, 0);
-            ctx.lineTo(this.width/2 + 8, 0);
-            ctx.moveTo(this.width/2 + 4, -3);
-            ctx.lineTo(this.width/2 + 8, 0);
-            ctx.lineTo(this.width/2 + 4, 3);
-            ctx.stroke();
+        // Render based on vehicle type
+        if (this.vehicleType === 'motorcycle') {
+            this.renderMotorcycle(ctx);
+        } else {
+            this.renderCar(ctx);
         }
         
         ctx.restore();
@@ -730,6 +659,324 @@ const CarModule = {
         if (window.SimulationConfig?.debug) {
             this.renderDebugInfo(ctx, screenX, screenY);
         }
+    },
+    
+    /**
+     * Render motorcycle - Simple iconic top-down view (like image 3)
+     */
+    renderMotorcycle(ctx) {
+        // Shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(1, 2, this.width/2, this.height/2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // BACK WHEEL (Black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.arc(-this.width/2 + 6, 0, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Back wheel rim
+        ctx.fillStyle = '#555';
+        ctx.beginPath();
+        ctx.arc(-this.width/2 + 6, 0, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // RIDER - Body (brown/tan jacket)
+        ctx.fillStyle = '#c4a57b';
+        ctx.beginPath();
+        ctx.ellipse(-2, 0, 6, 5, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#a08860';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // RIDER - Head/Helmet (Blue helmet like image 3)
+        ctx.fillStyle = '#4a90e2';
+        ctx.beginPath();
+        ctx.arc(3, 0, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Helmet highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.arc(2, -1, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Helmet visor (dark)
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.ellipse(4, 0, 1.5, 2, 0, -Math.PI/2, Math.PI/2);
+        ctx.fill();
+        
+        // ARMS/HANDLEBARS
+        ctx.strokeStyle = '#c4a57b';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        // Left arm
+        ctx.beginPath();
+        ctx.moveTo(1, -4);
+        ctx.lineTo(7, -2);
+        ctx.stroke();
+        // Right arm
+        ctx.beginPath();
+        ctx.moveTo(1, 4);
+        ctx.lineTo(7, 2);
+        ctx.stroke();
+        
+        // Handlebars (black)
+        ctx.strokeStyle = '#2d2d2d';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(7, -3);
+        ctx.lineTo(9, -2);
+        ctx.moveTo(7, 3);
+        ctx.lineTo(9, 2);
+        ctx.stroke();
+        
+        // MOTORCYCLE BODY/FRAME (blue to match helmet)
+        ctx.fillStyle = '#4a90e2';
+        ctx.beginPath();
+        ctx.ellipse(-5, 0, 7, 4, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.strokeStyle = '#2a5a9a';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        // Body shine/highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(-5, -1, 4, 2, 0, 0, Math.PI);
+        ctx.fill();
+        
+        // FRONT WHEEL (Black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.arc(this.width/2 - 6, 0, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Front wheel rim
+        ctx.fillStyle = '#555';
+        ctx.beginPath();
+        ctx.arc(this.width/2 - 6, 0, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // FRONT FENDER (small arc above front wheel)
+        ctx.strokeStyle = '#4a90e2';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(this.width/2 - 6, 0, 5, -Math.PI/3, Math.PI/3);
+        ctx.stroke();
+        
+        // HEADLIGHT (small white circle when moving)
+        if (Math.abs(this.speed) > 5) {
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(this.width/2 - 2, 0, 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        // TAIL LIGHT (red when braking)
+        if (this.lights.brake) {
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(-this.width/2 + 2, 0, 1.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+    },
+    
+    /**
+     * Render car - Simple iconic top-down view (like image 4)
+     */
+    renderCar(ctx) {
+        // Shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(1, 2, this.width/2 + 1, this.height/2 + 1, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // BACK LEFT WHEEL (black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.ellipse(-this.width/2 + 8, -this.height/2 - 1, 5, 3, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Back left rim
+        ctx.fillStyle = '#6a6a6a';
+        ctx.beginPath();
+        ctx.ellipse(-this.width/2 + 8, -this.height/2 - 1, 3, 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // BACK RIGHT WHEEL (black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.ellipse(-this.width/2 + 8, this.height/2 + 1, 5, 3, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Back right rim
+        ctx.fillStyle = '#6a6a6a';
+        ctx.beginPath();
+        ctx.ellipse(-this.width/2 + 8, this.height/2 + 1, 3, 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // MAIN CAR BODY (clean gray/silver like image 4)
+        const bodyGradient = ctx.createLinearGradient(-this.width/2, 0, this.width/2, 0);
+        bodyGradient.addColorStop(0, '#b0b0b0');
+        bodyGradient.addColorStop(0.5, '#d0d0d0');
+        bodyGradient.addColorStop(1, '#b0b0b0');
+        
+        ctx.fillStyle = bodyGradient;
+        ctx.beginPath();
+        ctx.roundRect(-this.width/2 + 5, -this.height/2, this.width - 10, this.height, 4);
+        ctx.fill();
+        
+        // Car body outline (darker gray)
+        ctx.strokeStyle = '#7a7a7a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(-this.width/2 + 5, -this.height/2, this.width - 10, this.height, 4);
+        ctx.stroke();
+        
+        // ROOF/CABIN (slightly darker gray rectangle)
+        ctx.fillStyle = '#9a9a9a';
+        ctx.beginPath();
+        ctx.roundRect(-8, -7, 20, 14, 3);
+        ctx.fill();
+        ctx.strokeStyle = '#7a7a7a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // WINDSHIELD (front - light blue tint)
+        ctx.fillStyle = 'rgba(150, 200, 230, 0.6)';
+        ctx.beginPath();
+        ctx.roundRect(this.width/2 - 12, -7, 7, 14, 2);
+        ctx.fill();
+        ctx.strokeStyle = '#5a5a5a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // REAR WINDOW (back - light blue tint)
+        ctx.fillStyle = 'rgba(150, 200, 230, 0.5)';
+        ctx.beginPath();
+        ctx.roundRect(-this.width/2 + 9, -6, 5, 12, 1.5);
+        ctx.fill();
+        ctx.strokeStyle = '#5a5a5a';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // SIDE WINDOWS (left and right)
+        ctx.fillStyle = 'rgba(150, 200, 230, 0.5)';
+        // Left window
+        ctx.fillRect(-6, -this.height/2 + 1, 12, 3);
+        // Right window
+        ctx.fillRect(-6, this.height/2 - 4, 12, 3);
+        
+        // SIDE MIRRORS (small rectangles)
+        ctx.fillStyle = '#7a7a7a';
+        // Left mirror
+        ctx.fillRect(-10, -this.height/2 - 2, 3, 2);
+        // Right mirror
+        ctx.fillRect(-10, this.height/2, 3, 2);
+        
+        // FRONT LEFT WHEEL (black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.ellipse(this.width/2 - 8, -this.height/2 - 1, 5, 3, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Front left rim
+        ctx.fillStyle = '#6a6a6a';
+        ctx.beginPath();
+        ctx.ellipse(this.width/2 - 8, -this.height/2 - 1, 3, 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // FRONT RIGHT WHEEL (black tire)
+        ctx.fillStyle = '#2d2d2d';
+        ctx.beginPath();
+        ctx.ellipse(this.width/2 - 8, this.height/2 + 1, 5, 3, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Front right rim
+        ctx.fillStyle = '#6a6a6a';
+        ctx.beginPath();
+        ctx.ellipse(this.width/2 - 8, this.height/2 + 1, 3, 2, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // HEADLIGHTS (white circles at front)
+        if (Math.abs(this.speed) > 5) {
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 8;
+        } else {
+            ctx.fillStyle = '#ffffcc';
+        }
+        // Left headlight
+        ctx.beginPath();
+        ctx.arc(this.width/2 - 2, -8, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        // Right headlight
+        ctx.beginPath();
+        ctx.arc(this.width/2 - 2, 8, 2, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // FRONT BUMPER/GRILLE (dark gray bar)
+        ctx.fillStyle = '#5a5a5a';
+        ctx.fillRect(this.width/2 - 5, -6, 3, 12);
+        
+        // TAIL LIGHTS (red at back)
+        if (this.lights.brake) {
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 6;
+        } else {
+            ctx.fillStyle = '#cc0000';
+        }
+        // Left tail light
+        ctx.beginPath();
+        ctx.arc(-this.width/2 + 6, -8, 1.5, 0, 2 * Math.PI);
+        ctx.fill();
+        // Right tail light
+        ctx.beginPath();
+        ctx.arc(-this.width/2 + 6, 8, 1.5, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // TURN SIGNALS
+        const turnBlink = this.lights.turn.timer < 0.25;
+        
+        if (this.lights.turn.left && turnBlink) {
+            ctx.fillStyle = '#ffa500';
+            ctx.shadowColor = '#ffa500';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(-this.width/2 + 6, -10, 1.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        if (this.lights.turn.right && turnBlink) {
+            ctx.fillStyle = '#ffa500';
+            ctx.shadowColor = '#ffa500';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(-this.width/2 + 6, 10, 1.5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        // ROOF HIGHLIGHT (white shine on top)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 8, 5, 0, 0, 2 * Math.PI);
+        ctx.fill();
     },
     
     /**
