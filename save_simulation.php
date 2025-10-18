@@ -51,6 +51,9 @@ try {
         }
     }
     
+    // Get vehicle_type from input (default to 'car' if not provided)
+    $vehicle_type = isset($input['vehicle_type']) ? $input['vehicle_type'] : 'car';
+    
     // Calculate score percentage
     $total_scenarios = intval($input['total_scenarios']);
     $correct_answers = intval($input['correct_answers']);
@@ -66,6 +69,7 @@ try {
     $sql = "INSERT INTO simulation_results (
         user_id, 
         simulation_type, 
+        vehicle_type,
         total_scenarios, 
         correct_answers, 
         wrong_answers, 
@@ -73,7 +77,7 @@ try {
         completion_time_seconds, 
         scenarios_data, 
         status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $pdo->prepare($sql);
     
@@ -81,6 +85,7 @@ try {
     $stmt->execute([
         $user_id,
         $input['simulation_type'],
+        $vehicle_type,
         $total_scenarios,
         $correct_answers,
         intval($input['wrong_answers']),
