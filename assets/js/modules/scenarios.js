@@ -1,10 +1,13 @@
 /**
- * Scenarios Module - 5 Realistic Traffic Scenarios with Questions
- * Handles scenario-based questions that match real driving situations
+ * Scenarios Module - LTO-Based Traffic Scenarios
+ * 10 Most Important Questions, randomly selects 5 for simulation
  */
 
 const ScenariosModule = {
-    // All 5 driving scenarios
+    // All available scenarios (10 most important)
+    allScenarios: [],
+    
+    // Selected 5 scenarios for current simulation
     scenarios: [],
     
     // Tracking completed scenarios
@@ -14,121 +17,195 @@ const ScenariosModule = {
      * Initialize scenarios
      */
     init() {
-        console.log('🎯 Loading 5 traffic scenarios...');
-        this.createTrafficScenarios();
-        console.log('✅ All driving scenarios loaded');
+        console.log('🎯 Loading LTO-based traffic scenarios...');
+        this.createAllScenarios();
+        this.selectRandomScenarios();
+        console.log('✅ 5 scenarios selected from 10 most important questions');
     },
     
     /**
-     * Create the 5 specific traffic scenarios
+     * Create all 10 most important scenarios
      */
-    createTrafficScenarios() {
-        this.scenarios = [
-            // Scenario 1: Red Traffic Light (Classic situation)
+    createAllScenarios() {
+        this.allScenarios = [
+            // 1. TRAFFIC LIGHT - Most fundamental rule
             {
                 id: 1,
-                title: "Red Traffic Light Ahead",
+                title: "Traffic Light Colors",
                 type: "RED_LIGHT",
-                position: { x: 280, y: 360 },
-                triggerRadius: 80,
-                question: "You are approaching an intersection and the traffic light turns RED. What should you do?",
+                question: "What do the colors of the traffic light mean?",
                 options: [
-                    "A) Come to a complete stop before the intersection and wait for green",
-                    "B) Slow down and proceed carefully if no other cars are visible",
-                    "C) Speed up to get through the intersection before the light changes",
-                    "D) Honk your horn to alert other drivers and continue through"
+                    "🔴 Red – Stop. Vehicles must come to a complete halt and cannot move forward.",
+                    "🟡 Yellow – Speed up quickly to avoid getting stuck at the light.",
+                    "🟢 Green – Stop and wait before moving."
                 ],
-                correctAnswer: 0, // Option A
-                explanation: "When a traffic light is red, you must come to a complete stop behind the stop line and wait until the light turns green. Running a red light is illegal and extremely dangerous.",
-                points: 20,
-                context: "Traffic lights are one of the most important traffic control devices. Always obey traffic signals.",
-                active: true
+                correctAnswer: 0,
+                explanation: "RED means STOP completely. YELLOW means prepare to stop (not speed up). GREEN means go when safe. Traffic lights are the most basic traffic control system.",
+                points: 20
             },
             
-            // Scenario 2: Stop Sign (Fundamental rule)
+            // 2. STOP SIGN - Critical safety rule
             {
                 id: 2,
-                title: "Stop Sign at Intersection",
+                title: "STOP Sign at Intersection",
                 type: "STOP_SIGN",
-                position: { x: 500, y: 360 },
-                triggerRadius: 60,
-                question: "You approach a STOP sign at an intersection. What is the correct procedure?",
+                question: "You are approaching an intersection with a STOP sign. The road looks clear, and no vehicles are coming from either side. What is the correct action to take?",
                 options: [
-                    "A) Come to a complete stop, check for traffic in all directions, then proceed when safe",
-                    "B) Slow down to a rolling stop and continue if no cars are immediately visible",
-                    "C) Stop only if you see other vehicles or pedestrians approaching",
-                    "D) Honk your horn to signal your presence and proceed with caution"
+                    "🛑 Make a complete full stop, then proceed when safe.",
+                    "🚗 Slow down only (rolling stop) and continue since the road looks clear.",
+                    "⏩ Ignore the STOP sign if there are no enforcers watching."
                 ],
-                correctAnswer: 0, // Option A
-                explanation: "At a stop sign, you must come to a complete stop regardless of traffic conditions. Look left, right, and left again before proceeding when it's safe.",
-                points: 20,
-                context: "Stop signs require a complete stop every time, even if the intersection appears clear.",
-                active: true
+                correctAnswer: 0,
+                explanation: "STOP signs require a COMPLETE STOP every time, regardless of traffic conditions. A rolling stop is illegal. Look left-right-left before proceeding.",
+                points: 20
             },
             
-            // Scenario 3: Pedestrian Crossing (Safety priority)
+            // 3. ZEBRA CROSSING - Pedestrian safety is #1 priority
             {
                 id: 3,
-                title: "Pedestrian at Crosswalk",
+                title: "Zebra Crossing (Pedestrian)",
                 type: "PEDESTRIAN",
-                position: { x: 700, y: 360 },
-                triggerRadius: 70,
-                question: "A pedestrian is waiting to cross at the crosswalk. What should you do?",
+                question: "As you approach a school area, you notice a Zebra Crossing sign ahead and see the white stripes painted across the road. Some pedestrians are waiting to cross. What should you do when you see this sign?",
                 options: [
-                    "A) Stop and allow the pedestrian to cross safely, even if they're just waiting",
-                    "B) Continue driving since the pedestrian hasn't started crossing yet",
-                    "C) Honk your horn to let the pedestrian know you're approaching",
-                    "D) Speed up to pass the crosswalk before the pedestrian starts crossing"
+                    "✅ Slow down and give way to pedestrians crossing at the zebra lines.",
+                    "🏎️ Speed up to pass before the pedestrians step onto the road.",
+                    "🚫 Ignore the sign and continue driving without stopping."
                 ],
-                correctAnswer: 0, // Option A
-                explanation: "Pedestrians have the right-of-way at crosswalks. You should stop and allow them to cross safely, showing courtesy and ensuring their safety.",
-                points: 20,
-                context: "Pedestrian safety is always the top priority. Always yield to pedestrians at crosswalks.",
-                active: true
+                correctAnswer: 0,
+                explanation: "Zebra crossings give pedestrians the RIGHT OF WAY. You MUST slow down and yield to anyone waiting or crossing. Pedestrian safety is always the top priority.",
+                points: 20
             },
             
-            // Scenario 4: School Zone (Special speed limits)
+            // 4. SCHOOL ZONE - Children's safety
             {
                 id: 4,
-                title: "School Zone During School Hours",
-                type: "SCHOOL_ZONE", 
-                position: { x: 1000, y: 250 },
-                triggerRadius: 90,
-                question: "You are entering a school zone during school hours. What should you do?",
+                title: "School Zone Ahead",
+                type: "SCHOOL_ZONE",
+                question: "While driving through a neighborhood, you see a School Ahead sign posted on the roadside. This means you are entering a school zone where children may be crossing. What should you do when you see this sign?",
                 options: [
-                    "A) Reduce speed to the posted school zone limit and watch carefully for children",
-                    "B) Maintain your normal driving speed if no children are immediately visible",
-                    "C) Honk your horn to alert children of your presence",
-                    "D) Drive faster to get through the zone quickly and reduce risk"
+                    "🏫 Slow down, stay alert, and follow the reduced speed limit to ensure children's safety.",
+                    "🏎️ Maintain your normal speed since children are unlikely to cross.",
+                    "🚫 Ignore the sign and drive without caution."
                 ],
-                correctAnswer: 0, // Option A
-                explanation: "School zones have reduced speed limits during school hours. Always slow down and be extra vigilant for children who may unexpectedly enter the roadway.",
-                points: 20,
-                context: "Children can be unpredictable. School zones require extra caution and reduced speed.",
-                active: true
+                correctAnswer: 0,
+                explanation: "School zones require REDUCED SPEED and EXTRA VIGILANCE. Children are unpredictable and may run into the road. Always slow down and stay alert near schools.",
+                points: 20
             },
             
-            // Scenario 5: Busy Intersection (Yielding right-of-way)
+            // 5. GREEN LIGHT WITH PEDESTRIAN - Right of way priority
             {
                 id: 5,
-                title: "Busy Intersection with Traffic",
+                title: "Green Light with Pedestrian",
                 type: "INTERSECTION",
-                position: { x: 640, y: 540 },
-                triggerRadius: 85,
-                question: "You approach a busy intersection with cross traffic. What do you do?",
+                question: "You are approaching an intersection with a green light. A pedestrian suddenly begins crossing the street. The LTO rule states: 'A driver should never insist on the right of way if it will endanger others.' What should you do in this situation?",
                 options: [
-                    "A) Yield to traffic that has the right-of-way and wait for a safe gap",
-                    "B) Proceed slowly into the intersection and merge with traffic",
-                    "C) Honk your horn and proceed with caution to claim your space",
-                    "D) Speed up to merge quickly and avoid blocking traffic"
+                    "🚦 Yield the right of way and stop for the pedestrian, even if you have the green light.",
+                    "🏎️ Continue driving since the green light gives you full right of way.",
+                    "📢 Honk repeatedly to force the pedestrian to hurry and clear the lane."
                 ],
-                correctAnswer: 0, // Option A
-                explanation: "Always yield to traffic that has the right-of-way. Wait for a safe gap before proceeding through the intersection.",
-                points: 20,
-                context: "Right-of-way rules prevent accidents. When in doubt, yield to other traffic.",
-                active: true
+                correctAnswer: 0,
+                explanation: "SAFETY FIRST! Even with a green light, you must yield to pedestrians. Never insist on right of way if it endangers anyone. Human life is more important than traffic rules.",
+                points: 20
+            },
+            
+            // 6. SEATBELT LAW - Back seat passengers (RA 8750)
+            {
+                id: 6,
+                title: "Seatbelt Law - Back Seat",
+                type: "SAFETY_RULE",
+                question: "You are traveling on a national highway, seated at the back seat of a car. The driver tells you it's fine not to wear a seatbelt since you're not in the front. What should you do?",
+                options: [
+                    "🚗 Wear your seatbelt, because it is mandatory even for back seat passengers under Republic Act 8750.",
+                    "😎 Ignore the seatbelt law if you're at the back since enforcers usually check only the driver.",
+                    "🛋️ Sit comfortably without a seatbelt because accidents rarely affect back seat passengers."
+                ],
+                correctAnswer: 0,
+                explanation: "Republic Act 8750 (Seatbelt Use Act) requires ALL passengers, including back seat passengers, to wear seatbelts on national highways. This law saves lives.",
+                points: 20
+            },
+            
+            // 7. MOBILE PHONE USE WHILE DRIVING - Anti-Distracted Driving Act
+            {
+                id: 7,
+                title: "Mobile Phone While Driving",
+                type: "DISTRACTED_DRIVING",
+                question: "You are driving along a busy road when your phone rings. You consider answering it quickly using loudspeaker mode while still holding the wheel. What is the correct action to take?",
+                options: [
+                    "📵 Do not use your phone at all while driving, since both texting and answering calls are prohibited under LTO A.O. 2017-013.",
+                    "☎️ Answer the call quickly on loudspeaker while steering with one hand to save time.",
+                    "😅 Text or call only at red lights since the car isn't moving."
+                ],
+                correctAnswer: 0,
+                explanation: "Anti-Distracted Driving Act (RA 10913) and LTO A.O. 2017-013 prohibit ALL mobile phone use while driving - even hands-free at red lights. Pull over safely if you need to use your phone.",
+                points: 20
+            },
+            
+            // 8. NO PARKING ZONE - Traffic rules
+            {
+                id: 8,
+                title: "No Parking Zone",
+                type: "PARKING_RULE",
+                question: "You stop your car in a 'No Parking' zone to wait for a friend, thinking it's fine since you'll only be there for a minute. What is the correct action according to LTO rules?",
+                options: [
+                    "🅿️ Do not park at all in prohibited zones, since even brief stops count as illegal parking.",
+                    "😎 It's fine to park for a short time as long as you stay inside the car.",
+                    "🤷 You can park if your hazard lights are on to signal it's temporary."
+                ],
+                correctAnswer: 0,
+                explanation: "No Parking means NO PARKING - not even for 'just a minute'. Brief stops still count as illegal parking and can result in fines or towing. Find a legal parking spot.",
+                points: 20
+            },
+            
+            // 9. ANTI-CORRUPTION - Refusing bribes
+            {
+                id: 9,
+                title: "Traffic Enforcer Bribe",
+                type: "CORRUPTION",
+                question: "A traffic enforcer stops you for a violation and asks for payment on the spot without issuing an official receipt. What is the correct action to take?",
+                options: [
+                    "📄 Refuse to pay immediately and settle the fine only at the office or through official payment channels.",
+                    "💸 Pay the enforcer on the spot even without a receipt to avoid hassle.",
+                    "🤝 Offer a smaller amount as a quick settlement."
+                ],
+                correctAnswer: 0,
+                explanation: "Paying 'on the spot' without receipt is BRIBERY and illegal. Always demand proper documentation and pay only through official channels. Report corrupt enforcers to authorities.",
+                points: 20
+            },
+            
+            // 10. PRE-TRIP INSPECTION - Vehicle safety check
+            {
+                id: 10,
+                title: "Pre-Trip Vehicle Inspection",
+                type: "SAFETY_CHECK",
+                question: "Before starting a long trip, a driver is about to leave immediately without checking the vehicle. What should the driver do first to ensure safety?",
+                options: [
+                    "🔧 Check brakes, lights, tires, mirrors, seatbelts, fuel, and documents before driving.",
+                    "🕒 Skip inspection to save time since the car seems fine.",
+                    "🎵 Just play music and start driving without checking anything."
+                ],
+                correctAnswer: 0,
+                explanation: "Pre-trip inspection is MANDATORY for safety. Check B.L.O.W.B.A.G.E.T: Brakes, Lights, Oil, Water, Battery, Air (tires), Gas, Engine, Tools, and documents. Prevention is better than accidents.",
+                points: 20
             }
         ];
+    },
+    
+    /**
+     * Randomly select 5 scenarios from the 10 available
+     */
+    selectRandomScenarios() {
+        // Shuffle the array
+        const shuffled = [...this.allScenarios].sort(() => 0.5 - Math.random());
+        
+        // Select first 5
+        this.scenarios = shuffled.slice(0, 5);
+        
+        // Reassign IDs 1-5 for the selected scenarios
+        this.scenarios.forEach((scenario, index) => {
+            scenario.id = index + 1;
+        });
+        
+        console.log('🎲 Randomly selected 5 scenarios:', this.scenarios.map(s => s.title));
     },
     
     /**
@@ -146,27 +223,28 @@ const ScenariosModule = {
     },
     
     /**
-     * Check if car triggers any scenarios
+     * Get next unasked scenario (for time-based random triggers)
+     */
+    getNextScenario() {
+        // Find scenarios that haven't been completed yet
+        const availableScenarios = this.scenarios.filter(scenario => 
+            !this.completedScenarios.has(scenario.id)
+        );
+        
+        if (availableScenarios.length === 0) {
+            return null; // All scenarios completed
+        }
+        
+        // Return the first available scenario (they're already randomized)
+        return availableScenarios[0];
+    },
+    
+    /**
+     * Check if car triggers any scenarios (DEPRECATED - kept for compatibility)
      */
     checkTriggers(carPosition) {
-        const triggeredScenarios = [];
-        
-        this.scenarios.forEach(scenario => {
-            if (!scenario.active || this.completedScenarios.has(scenario.id)) {
-                return;
-            }
-            
-            const distance = Math.sqrt(
-                Math.pow(carPosition.x - scenario.position.x, 2) + 
-                Math.pow(carPosition.y - scenario.position.y, 2)
-            );
-            
-            if (distance <= scenario.triggerRadius) {
-                triggeredScenarios.push(scenario);
-            }
-        });
-        
-        return triggeredScenarios;
+        // This method is now deprecated - scenarios are triggered by time, not position
+        return [];
     },
     
     /**
@@ -175,12 +253,7 @@ const ScenariosModule = {
     markCompleted(scenarioId) {
         this.completedScenarios.add(scenarioId);
         
-        const scenario = this.getScenario(scenarioId);
-        if (scenario) {
-            scenario.active = false;
-        }
-        
-        console.log(`✅ Scenario ${scenarioId} completed`);
+        console.log(`✅ Scenario ${scenarioId} completed (${this.completedScenarios.size}/5)`);
     },
     
     /**
@@ -231,15 +304,13 @@ const ScenariosModule = {
     },
     
     /**
-     * Get all scenario positions for minimap/overview
+     * Get all scenario positions for minimap/overview (DEPRECATED - no positions anymore)
      */
     getScenarioPositions() {
         return this.scenarios.map(scenario => ({
             id: scenario.id,
-            position: scenario.position,
             type: scenario.type,
-            completed: this.completedScenarios.has(scenario.id),
-            active: scenario.active
+            completed: this.completedScenarios.has(scenario.id)
         }));
     },
     
@@ -247,9 +318,17 @@ const ScenariosModule = {
      * Get next available scenario
      */
     getNextScenario() {
-        return this.scenarios.find(scenario => 
-            scenario.active && !this.completedScenarios.has(scenario.id)
+        // Find scenarios that haven't been completed yet
+        const availableScenarios = this.scenarios.filter(scenario => 
+            !this.completedScenarios.has(scenario.id)
         );
+        
+        if (availableScenarios.length === 0) {
+            return null; // All scenarios completed
+        }
+        
+        // Return the first available scenario (they're already randomized)
+        return availableScenarios[0];
     },
     
     /**
@@ -257,11 +336,6 @@ const ScenariosModule = {
      */
     reset() {
         this.completedScenarios.clear();
-        
-        this.scenarios.forEach(scenario => {
-            scenario.active = true;
-        });
-        
         console.log('🔄 All scenarios reset');
     },
     
