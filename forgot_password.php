@@ -220,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="container">
         <div class="logo">
-            <img src="images/logo.png" alt="Success Driving Logo">
+            <img src="assets/images/dss_logo.png" alt="Success Driving Logo">
         </div>
         
         <div class="icon-wrapper">
