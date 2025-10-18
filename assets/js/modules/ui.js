@@ -340,9 +340,10 @@ const UIModule = {
             );
         }
         
-        // Resume game engine
+        // Resume game engine and scenario triggering
         if (window.GameEngine) {
             window.GameEngine.resumeFromScenario(this.currentQuestion.id);
+            window.GameEngine.resumeScenarioTriggering(); // Resume time-based triggers
         }
     },
     
