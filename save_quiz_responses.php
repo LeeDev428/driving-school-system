@@ -206,28 +206,11 @@ function completeQuiz($pdo, $user_id, $input) {
     $score_percentage = ($correct_answers / 5) * 100;
     $status = $score_percentage >= 60 ? 'completed' : 'failed';
     
-    // Save to simulation_results
-    $sql = "INSERT INTO simulation_results (
-        user_id, simulation_type, total_scenarios, correct_answers, wrong_answers,
-        score_percentage, completion_time_seconds, scenarios_data, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // NOTE: simulation_results save is now handled by gameStats.js via save_simulation.php
+    // This prevents duplicate rows and ensures vehicle_type is captured correctly
+    // REMOVED DUPLICATE SAVE TO PREVENT 2 ROWS
     
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        $user_id,
-        'driving_scenarios',
-        5,
-        $correct_answers,
-        $wrong_answers,
-        $score_percentage,
-        $input['completion_time_seconds'] ?? 0,
-        json_encode($scenarios_data),
-        $status
-    ]);
-    
-    $simulation_id = $pdo->lastInsertId();
-    
-    // Mark session as completed
+    // Just mark session as completed (quiz_sessions table only)
     $sql = "UPDATE quiz_sessions SET 
             session_status = 'completed',
             questions_answered = 5,
@@ -249,14 +232,13 @@ function completeQuiz($pdo, $user_id, $input) {
     
     return [
         'success' => true,
-        'simulation_id' => $simulation_id,
         'session_id' => $session_id,
         'score_percentage' => round($score_percentage, 2),
         'correct_answers' => $correct_answers,
         'wrong_answers' => $wrong_answers,
         'total_points' => $total_points,
         'status' => $status,
-        'message' => 'Quiz completed and saved successfully'
+        'message' => 'Quiz completed - results will be saved by gameStats.js'
     ];
 }
 
