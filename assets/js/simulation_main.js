@@ -351,15 +351,8 @@ const SimulationMain = {
             this.handleSimulationComplete();
         }
         
-        // Check for scenario triggers
-        if (this.modules.ScenariosModule && this.modules.CarModule) {
-            const carPosition = this.modules.CarModule.getPosition();
-            const triggeredScenarios = this.modules.ScenariosModule.checkTriggers(carPosition);
-            
-            triggeredScenarios.forEach(scenario => {
-                this.handleScenarioTriggered(scenario);
-            });
-        }
+        // Scenarios are now triggered by time-based system in GameEngine
+        // No need for position-based checks here
     },
     
     /**
@@ -373,9 +366,7 @@ const SimulationMain = {
         
         // Show the question
         if (this.modules.UIModule) {
-            this.modules.UIModule.showQuestion(scenario, (answer, correct) => {
-                this.handleQuestionAnswered(scenario, answer, correct);
-            });
+            this.modules.UIModule.showScenarioQuestion(scenario);
         }
     },
     
