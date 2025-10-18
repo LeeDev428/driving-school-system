@@ -11,6 +11,26 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once "../config.php";
 
 $user_id = $_SESSION["id"];
+
+// Fetch user's license type from database
+$license_type = 'car'; // Default to car
+$sql = "SELECT license_type FROM users WHERE id = ?";
+if ($stmt = $conn->prepare($sql)) {
+    $stmt->bind_param("i", $user_id);
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $license_type = strtolower($row['license_type']);
+            // Normalize: motorcycle, motorbike, motor -> motorcycle; anything else -> car
+            if (in_array($license_type, ['motorcycle', 'motorbike', 'motor'])) {
+                $license_type = 'motorcycle';
+            } else {
+                $license_type = 'car';
+            }
+        }
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -826,6 +846,7 @@ $user_id = $_SESSION["id"];
         // Global configuration and state
         window.SimulationConfig = {
             userId: <?php echo $user_id; ?>,
+            vehicleType: 'NONE', // MUST be set by user selection - will error if not changed
             canvasWidth: window.innerWidth, // Use full window width
             canvasHeight: window.innerHeight, // Use full window height
             debug: false, // Set to true for debugging
@@ -835,10 +856,13 @@ $user_id = $_SESSION["id"];
             aspectRatio: window.innerWidth / window.innerHeight // Dynamic aspect ratio
         };
         
+        console.log('🔧 SimulationConfig initialized with vehicleType: NONE (awaiting user selection)');
+        
         // Note: Initialization now happens via startSimulation() function
         // when user clicks the START button, preventing duplicate initialization
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎮 Simulation page loaded - waiting for user to start...');
+            console.log('🔍 Config check - Vehicle Type: ' + window.SimulationConfig.vehicleType);
             
             // Initialize message system only
             if (window.MessageSystem) {
@@ -888,6 +912,11 @@ $user_id = $_SESSION["id"];
         function selectVehicle(vehicleType) {
             selectedVehicleType = vehicleType;
             
+            // CRITICAL: Set the vehicle type in SimulationConfig IMMEDIATELY
+            window.SimulationConfig.vehicleType = vehicleType;
+            console.log('✅ Vehicle selected: ' + vehicleType);
+            console.log('✅ SimulationConfig.vehicleType set to: ' + window.SimulationConfig.vehicleType);
+            
             // Update ready screen with selected vehicle
             const icon = vehicleType === 'car' ? '🚗' : '🏍️';
             const name = vehicleType === 'car' ? 'car' : 'motorcycle';
@@ -914,6 +943,19 @@ $user_id = $_SESSION["id"];
         }
         
         function continueToGame() {
+            console.log('🎮 continueToGame() called');
+            console.log('🚗 Selected Vehicle Type: ' + selectedVehicleType);
+            console.log('📋 SimulationConfig.vehicleType: ' + window.SimulationConfig.vehicleType);
+            
+            // CRITICAL VALIDATION: Ensure vehicle was actually selected
+            if (!selectedVehicleType || window.SimulationConfig.vehicleType === 'NONE') {
+                alert('❌ ERROR: No vehicle selected! Please refresh and select a vehicle.');
+                console.error('❌ CRITICAL: Vehicle not selected!');
+                console.error('selectedVehicleType:', selectedVehicleType);
+                console.error('SimulationConfig.vehicleType:', window.SimulationConfig.vehicleType);
+                return; // Don't continue without vehicle selection
+            }
+            
             // This is the original startSimulation function
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
@@ -922,9 +964,11 @@ $user_id = $_SESSION["id"];
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.querySelector('.simulation-container').style.display = 'block';
                 
+                console.log('🔍 Before init - SimulationConfig.vehicleType: ' + window.SimulationConfig.vehicleType);
+                
                 // Initialize the simulation (SINGLE POINT OF INITIALIZATION)
                 if (window.SimulationMain && !window.SimulationMain.initialized) {
-                    console.log('🎮 Starting Driving Simulation System...');
+                    console.log('🎮 Starting Driving Simulation System with vehicle: ' + window.SimulationConfig.vehicleType);
                     window.SimulationMain.init();
                 } else if (window.SimulationMain && window.SimulationMain.initialized) {
                     console.log('⚠️ Simulation already initialized, skipping duplicate init');
