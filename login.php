@@ -205,7 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="login-container">
         <div class="logo">
-            <img src="images/logo.png" alt="Success Driving Logo">
+            <img src="assets/images/dss_logo.png" alt="Success Driving Logo">
         </div>
         
         <h2 class="login-title">Sign In to Your Account</h2>
@@ -239,6 +239,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             <button type="submit" class="submit-btn">Login</button>
         </form>
+        
+        <div class="register-link" style="margin-top: 20px; color: #9a9a9a;">
+            Not yet registered? <a href="register.php" style="color: #ffc107; text-decoration: none;">Register here</a>
+        </div>
         
         <div class="copyright">
             © 2024 Success Driving School. All rights reserved.
