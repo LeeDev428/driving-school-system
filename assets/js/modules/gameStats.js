@@ -261,9 +261,52 @@ const GameStats = {
             
             const result = await response.json();
             
+            // Get vehicle type early for use in return statement
+            const vehicleType = window.SimulationConfig?.vehicleType || 'car';
+            console.log('🚗 Vehicle type from SimulationConfig:', vehicleType);
+            console.log('🔍 Full SimulationConfig:', window.SimulationConfig);
+            
             if (result.success) {
-                console.log(`🎉 Final results saved successfully!`);
+                console.log(`🎉 Quiz results saved successfully!`);
                 console.log(`📊 Results: ${result.correct_answers}/5 correct (${result.score_percentage}%), Status: ${result.status}`);
+                
+                // CRITICAL: Also save to simulation_results with vehicle_type
+                try {
+                    // DOUBLE-CHECK: Get the CURRENT vehicle type again to ensure it's fresh
+                    const currentVehicleType = window.SimulationConfig?.vehicleType || 
+                                              window.CarModule?.vehicleType || 
+                                              vehicleType || 
+                                              'car';
+                    
+                    console.log('🚗 Final vehicle type check before save:');
+                    console.log('  - SimulationConfig.vehicleType:', window.SimulationConfig?.vehicleType);
+                    console.log('  - CarModule.vehicleType:', window.CarModule?.vehicleType);
+                    console.log('  - vehicleType variable:', vehicleType);
+                    console.log('  - ✅ Using:', currentVehicleType);
+                    
+                    const simResponse = await fetch(this.endpoints.saveSimulation, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            simulation_type: 'driving_scenarios',
+                            vehicle_type: currentVehicleType,
+                            total_scenarios: 5,
+                            correct_answers: result.correct_answers,
+                            wrong_answers: result.wrong_answers,
+                            completion_time_seconds: completionTimeSeconds,
+                            scenarios_data: responses
+                        })
+                    });
+                    
+                    if (simResponse.ok) {
+                        const simResult = await simResponse.json();
+                        if (simResult.success) {
+                            console.log('✅ Simulation results saved with vehicle type!');
+                        }
+                    }
+                } catch (simError) {
+                    console.warn('⚠️ Failed to save simulation results:', simError);
+                }
                 
                 // Clear localStorage after successful save
                 this.clearLocalStorage();
@@ -276,7 +319,8 @@ const GameStats = {
                     correctAnswers: result.correct_answers,
                     wrongAnswers: result.wrong_answers,
                     totalPoints: result.total_points,
-                    status: result.status
+                    status: result.status,
+                    vehicleType: vehicleType
                 };
             } else {
                 console.error('❌ Failed to save final results:', result.error);
@@ -362,8 +406,12 @@ const GameStats = {
                 const correctAnswers = this.sessionData.scenarios.filter(s => s.isCorrect).length;
                 const wrongAnswers = this.sessionData.scenarios.length - correctAnswers;
                 
+                // Get vehicle type from config
+                const vehicleType = window.SimulationConfig?.vehicleType || 'car';
+                
                 requestData = {
                     simulation_type: 'driving_scenarios',
+                    vehicle_type: vehicleType,
                     total_scenarios: this.sessionData.scenarios.length,
                     correct_answers: correctAnswers,
                     wrong_answers: wrongAnswers,
