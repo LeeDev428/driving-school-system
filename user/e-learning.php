@@ -70,6 +70,7 @@ ob_start();
             <p class="course-subtitle">Theoretical Driving Course</p>
             <p class="course-description">Learn road safety rules, traffic signs, and driving theory through interactive modules, videos, and quizzes.</p>
             <ul class="course-features">
+                 <li><i class="fas fa-check-circle"></i> E-Modules</li>
                 <li><i class="fas fa-check-circle"></i> Video Tutorials</li>
                 <li><i class="fas fa-check-circle"></i> Quizzes & Assessments</li>
                 <li><i class="fas fa-check-circle"></i> Progress Tracking</li>
@@ -109,6 +110,9 @@ ob_start();
 
         <!-- Tab Navigation -->
         <div class="course-tabs" style="display: flex; justify-content: center; margin-bottom: 30px; border-bottom: 2px solid #e0e0e0;">
+            <button class="tab-btn" onclick="window.location.href='e-learning-module/module/index.html'" style="padding: 15px 40px; background: none; border: none; font-size: 16px; font-weight: 600; color: #2c3e50; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                <i class="fas fa-book-open"></i> E-Modules
+            </button>
             <button class="tab-btn" onclick="switchTab('videos')" style="padding: 15px 40px; background: none; border: none; font-size: 16px; font-weight: 600; color: #7f8c8d; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
                 <i class="fas fa-video"></i> Video Tutorials
             </button>
