@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: Road Signs</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: linear-gradient(180deg, beige 0%, beige 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="index.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 1: Regulatory Signs</h1>
+            <a href="lesson2.html" class="nav-btn">Next Lesson →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Progress: 25% Complete</span>
+                <span>1 of 3 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:25%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Purpose of Warning Signs</h2>
+            <p>Warning signs alert you to potential hazards or changes in road conditions ahead. They are
+            typically diamond-shaped with yellow backgrounds and black symbols or text.</p>
+
+            <h2 style="text-align: center;">Priority Signs</h2>
+
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stopp.jpg" alt="Stop Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Stop Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A red octagon indicating that drivers must come to a complete stop at the designated stop line.</p>
+                            <p>
+                                <br>
+                                
+                            Tagalog : Isang pulang octagon na nagpapahiwatig na ang mga driver ay dapat huminto sa itinalagang stop line.
+                        </p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../giveway.jpg" alt="Yield Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Give Way Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            With this sign, drivers are expected to yield to the vehicles on the right of the intersection. </p>
+                            <br>
+                            <br>
+                           <p>Tagalog : Sa sign na ito, inaasahang susuko ang mga driver sa mga sasakyan sa kanan ng intersection.</p>
+                            
+                       
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../leftt.png" alt="Left Turner Must Give Way" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Left Turner Must Give Way</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            When turning left at intersections, you only have the right of way if you use the left turn signal at least 30 meters before reaching the intersection.<br>
+                            If there are cars arriving or already too close to the intersection, yield, give allowance, or make a full stop and let them pass.
+                        </p>
+                        <p>
+                            <br>
+                            Tagalog : Kapag lumiko pakaliwa sa mga intersection, ikaw lamang ang may karapatan kung gagamitin mo ang left turn signal nang hindi bababa sa 30 metro bago maabot ang intersection.<br>
+                            Kung may mga sasakyan na paparating o masyadong malapit na sa intersection, mag-yield, magbigay ng allowance, o huminto nang buo at hayaang makaraan sila.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Direction Signs</h2>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../passside.jpg" alt="Pass Either Side Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Pass either side</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles may pass on either side.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan ay maaaring dumaan sa alinmang panig.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noturn.jpg" alt="No Turns Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Turns</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that turns are not allowed.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga liko ay hindi pinapayagan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../oneway.jpg" alt="One Way Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">One Way</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic flows only in the direction shown.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko ay dumadaloy lamang sa ipinakitang direksyon.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../kright.jpg" alt="Keep Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Keep Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that drivers should keep to the right side of the road.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga driver ay dapat manatili sa kanang bahagi ng kalsada.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../kleft.jpg" alt="Keep Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Keep Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that drivers should keep to the left side of the road.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga driver ay dapat manatili sa kaliwang bahagi ng kalsada.  
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../alltrafficright.jpg" alt="All Traffic Must Turn Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">All Traffic Must Turn Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that all traffic must turn right at the intersection.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang lahat ng trapiko ay dapat lumiko sa kanan sa intersection.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../mergingt.jpg" alt="Merging Traffic" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Merging Traffic</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic from different lanes must merge.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko mula sa iba't ibang mga lane ay dapat mag-merge.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../twoway.jpg" alt="Two Way Traffic" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Two Way Traffic</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road is open to traffic in both directions.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay bukas sa trapiko sa parehong direksyon.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../salubong.jpg" alt="Salubong Na Trapiko" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Salubong Na Trapiko</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic is merging from different directions.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko ay nagme-merge mula sa iba't ibang direksyon.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../rmust.jpg" alt="Right Lane Must Turn Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right Lane Must Turn Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must turn right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat lumiko sa kanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../lmust.jpg" alt="Left Lane Must Turn Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Left Lane Must Turn Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must turn left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat lumiko sa kaliwa.
+                    </div>
+                </li>
+            </ul>
+             <h2 style="text-align: center;">Prohibitive/Restrictive Signs</h2>
+             <br>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../novec.jpg" alt="No Entry for all vehicles Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for All Vehicles</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that all vehicles may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang lahat ng mga sasakyan ay hindi maaaring pumasok.
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nocars.jpg" alt="No Entry for cars Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Cars</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that cars may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga kotse ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nojeep.jpg" alt="No Entry for Jeep Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Jeep</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that jeeps may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga jeep ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nobus.jpg" alt="No Entry for bus Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Bus</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that buses may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga bus ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../notrucks.jpg" alt="No Entry for trucks Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Trucks</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that trucks may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga trak ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nobikes.jpg" alt="No Entry for bikes Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Bikes</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that bikes may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga bisikleta ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nomotor.jpg" alt="No Entry for Motor Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Motor vehicles</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that Motor vehicles may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga motor ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../notryc.jpg" alt="No Entry for Tricycles Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Tricycles</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that tricycles may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga traysikel ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../notrailer.jpg" alt="No Entry for Vehicle with Trailer Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Vehicles with Trailers</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles with trailers may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na may mga trailer ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nodrawn.jpg" alt="No Entry for Animal-Drawn Vehicles Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Animal-Drawn Vehicles</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that animal-drawn vehicles may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na hinihila ng hayop ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nopushc.jpg" alt="No Entry for Pushcarts Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Pushcarts</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that pushcarts may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga pushcart ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nopede.jpg" alt="No Entry for pedestrian-crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for Pedestrian-Crossing</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that pedestrian-crossing may not enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang pedestrian-crossing ay hindi maaaring pumasok.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../useover.jpg" alt="Use OverPass Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Use OverPass</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that pedestrians should use the overpass.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga pedestrian ay dapat gumamit ng overpass.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../usepedcross.jpg" alt="Pedestrian-Crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">pedestrians must use Pedestrian-Crossing</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that pedestrians must use the pedestrian-crossing.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga pedestrian ay dapat gumamit ng pedestrian-crossing.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../norightturn.jpg" alt="No Right Turn Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Right Turn</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that no right turn is allowed.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na walang pinapayagang liko sa kanan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noleftturn.jpg" alt="No Left Turn Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Left Turn</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that no left turn is allowed.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na walang pinapayagang liko sa kaliwa.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nouturn.jpg" alt="No U-Turn Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No U-Turn</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that U-turns are not allowed.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga U-turn ay hindi pinapayagan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noover.jpg" alt="No Overtaking other Cars Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Overtaking other Cars</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that overtaking other cars is not allowed.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang pag-overtake sa ibang mga kotse ay hindi pinapayagan.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Speed Signs</h2>
+                <br>    
+                <br>    
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../maximum.jpg" alt="Maximum Speed Limit Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Maximum Speed Limit</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the maximum speed limit allowed in an specific location.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng pinakamataas na limitasyon ng bilis na pinapayagan sa isang tiyak na lokasyon.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../endmax.jpg" alt="End of Maximum Speed Limit Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">End of Maximum Speed Limit</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the end of the maximum speed limit zone allowed in a specific location.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng pagtatapos ng maximum speed limit zone na pinapayagan sa isang tiyak na lokasyon.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../deres.jpg" alt="Speed Limit Derestriction Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Speed Limit Derestriction Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the Speed Limit Derestriction Sign.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng Speed Limit Derestriction Sign.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../min.png" alt="Minimum Speed Restriction Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Minimum Speed Restriction Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the minimum speed Restriction in a specific location.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng minimum speed Restriction sa isang tiyak na lokasyon.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Parking and Stopping Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../ampm.jpg" alt="Loading Zone XX:XX AM - XX:XX PM" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Loading Zone XX:XX AM - XX:XX PM</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the hours during which loading is permitted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng mga oras kung kailan pinapayagan ang paglo-load.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../2p.jpg" alt="2P Restricted Time Parking Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">2P Restricted Time Parking Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the hours during which parking is restricted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng mga oras kung kailan ang paradahan ay limitado.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../loading.jpg" alt="Loading and Unloading Zone Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Loading and Unloading Zone Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the hours during which loading and unloading is permitted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng mga oras kung kailan pinapayagan ang paglo-load at pag-unload.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nowaiting.jpg" alt="No Waiting Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Waiting Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that waiting is not permitted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paghihintay ay hindi pinapayagan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../donot.jpg" alt="Do not block the intersection Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Do Not Block the Intersection Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the intersection must remain clear.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang intersection ay dapat manatiling malinaw.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noparking.jpg" alt="No Parking Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Parking Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that parking is not permitted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paradahan ay hindi pinapayagan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noparkingtwo.jpg" alt="No Parking Two Way Zone Parking Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Parking Two Way Zone Parking Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that parking is not permitted in both directions, Parked vehicles will be towed away.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paradahan ay hindi pinapayagan sa parehong direksyon, ang mga naka-park na sasakyan ay itatanggal.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nopark.jpg" alt="No Parking Monday - Friday Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Parking Monday - Friday Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that parking is not permitted during the specified days.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paradahan ay hindi pinapayagan sa mga tinukoy na araw.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../noanytime.jpg" alt="No Stopping Anytime Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Stopping Anytime Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that stopping is not permitted at any time.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paghinto ay hindi pinapayagan anumang oras.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../bussto.jpg" alt="No Parking, public buses Stop zone Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Parking, Public Buses Stop Zone Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that parking is not permitted in the area designated for public buses to stop.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paradahan ay hindi pinapayagan sa lugar na itinalaga para sa mga pampublikong bus upang huminto.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../jeep.jpg" alt="No Parking, Public jeepney parking zone Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Parking, Public Jeepney Parking Zone Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that parking is not permitted in the area designated for public jeepneys.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang paradahan ay hindi pinapayagan sa lugar na itinalaga para sa mga pampublikong jeepney.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Miscellaneous Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../2witdh.jpg" alt="No Entry for vehicles with more than 2 meters width sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for vehicles with more than 2 meters width sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles exceeding 2 meters in width are not allowed to enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na lumalampas sa 2 metro ang lapad ay hindi pinapayagang pumasok.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../2height.jpg" alt="No Entry for vehicles with more than 2 meters height sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for vehicles with more than 2 meters height sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles exceeding 2 meters in height are not allowed to enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na lumalampas sa 2 metro ang taas ay hindi pinapayagang pumasok.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../10lenght.jpg" alt="No Entry for vehicles with more than 10 meters length sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for vehicles with more than 10 meters length sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles exceeding 10 meters in length are not allowed to enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na lumalampas sa 10 metro ang haba ay hindi pinapayagang pumasok.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../5tons.jpg" alt="No Entry for vehicles with more than 5 tons weight sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for vehicles with more than 5 tons weight sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles exceeding 5 tons in weight are not allowed to enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na lumalampas sa 5 tonelada ang timbang ay hindi pinapayagang pumasok.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../2tons.jpg" alt="No Entry for vehicles with gross axle load of more 2 tons weight sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Entry for vehicles with gross axle load of more 2 tons weight sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles exceeding 2 tons in gross axle load are not allowed to enter.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan na lumalampas sa 2 tonelada ang gross axle load ay hindi pinapayagang pumasok.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../seatbelt.jpg" alt="Seatbelt Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Use Seatbelt Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that wearing seatbelt use is mandatory.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang pagsusuot ng seatbelt ay sapilitan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nohorn.jpg" alt="No Blowing of Horn Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">No Blowing of Horn Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that blowing of horns is not permitted.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang pagtunog ng busina ay hindi pinapayagan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../bewarepedes.jpg" alt="Beware of Pedestrian-Crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Beware of Pedestrian-Crossing Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that drivers should be cautious of pedestrian crossings.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga driver ay dapat mag-ingat sa mga pedestrian crossing.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../childrencross.jpg" alt="Beware of Children Crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Beware of Children Crossing Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there may be children crossing the road.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na maaaring may mga batang tumatawid sa kalsada.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../bikelane.jpg" alt="Bike Lane Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Bike Lane Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the lane is designated for bicycle use.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang lane ay itinalaga para sa paggamit ng bisikleta.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../pwd.jpg" alt="Beware of Persons with Disabilities Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Beware of Persons with Disabilities Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there may be persons with disabilities in the area.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na maaaring may mga taong may kapansanan sa lugar.
+                    </div>
+                </li>
+                <br>
+                <br>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+            <a href="index.html" class="nav-btn">← Back to Module</a>
+            <a href="lesson2.html" class="nav-btn">Next Lesson: Warning Signs →</a>
+        </div>
+    </div>
+    
+    <script>
+        function openPractice() {
+            alert('Practice environment would open here! This could be a code editor or interactive console.');
+        }
+
+    </script>
+</body>
+</html>
+

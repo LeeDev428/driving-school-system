@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 2: Warning Signs</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="index.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 2: Warning Signs</h1>
+            <a href="lesson3.html" class="nav-btn">Next Lesson →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Progress: 50% Complete</span>
+                <span>2 of 3 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:50%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Purpose of Warning Signs</h2>
+            <p>Warning signs alert you to potential hazards or changes in road conditions ahead. They are
+            typically diamond-shaped with yellow backgrounds and black symbols or text.</p>
+
+            <h2 style="text-align: center;">Horizontal Signs</h2>
+
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../sharpturn.jpg" alt="Sharp Turn (right) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Sharp Turn (right) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A warning sign indicating a sharp turn to the right ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang babalang palatandaan na nagpapahiwatig ng matalim na liko sa kanan sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../sharpleft.jpg" alt="Sharp Turn (left) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Sharp Turn (left) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A warning sign indicating a sharp turn to the left ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang babalang palatandaan na nagpapahiwatig ng matalim na liko sa kaliwa sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../reverseright.jpg" alt="Reverse Turn Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Reverse Turn Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A warning sign indicating that vehicles must reverse to the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang babalang palatandaan na nagpapahiwatig na ang mga sasakyan ay dapat mag-reverse pakanan.
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../reverseleft.jpg" alt="Reverse Turn Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Reverse Turn Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles must reverse to the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan ay dapat mag-reverse pakaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../curveright.jpg" alt="Curve Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Curve Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating a rightward curve in the road ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay may kurba pakanan sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../curveleft.jpg" alt="Curve Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Curve Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating a leftward curve in the road ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay may kurba pakaliwa sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../revcurright.jpg" alt="Reverse Curve Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Reverse Curve Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles must reverse to the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan ay dapat mag-reverse pakanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../revcurleft.jpg" alt="Reverse Curve Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Reverse Curve Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles must reverse to the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan ay dapat mag-reverse pakaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../windright.jpg" alt="Winding Road Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Winding Road Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road winds to the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay paikot-ikot pakanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../windleft.jpg" alt="Winding Road Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Winding Road Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road winds to the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay paikot-ikot pakaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../hairright.jpg" alt="Hairpin Turn Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Hairpin Turn Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating a sharp right turn ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang matalim na liko sa kanan ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../hairleft.jpg" alt="Hairpin Turn Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Hairpin Turn Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating a sharp left turn ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang matalim na liko sa kaliwa ay nasa unahan.
+                    </div>
+                </li>
+
+                <h2 style="text-align: center;">Intersection Signs</h2>
+                <br>    
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../intersection.jpg" alt="Intersection Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Intersection Ahead Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            sign indicating that there's an upcoming intersection.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Palatandaan na nagpapahiwatig na may paparating na intersection.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stagge.jpg" alt="Staggered Intersection Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Staggered Intersection Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must turn right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../staggleft.jpg" alt="Staggered Intersection Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Staggered Intersection Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must turn left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../skewedright.jpg" alt="Skewed Intersection Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Skewed Intersection Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must turn right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../skewedleft.jpg" alt="Skewed Intersection Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Skewed Intersection Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must turn left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../Tjunc.jpg" alt="T-Junction Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">T-Junction Ahead Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a T-junction is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang T-junction ay nasa unahan.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../yjunc.jpg" alt="Y-Junction Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Y-Junction Ahead Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a Y-junction is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang Y-junction ay nasa unahan.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../halfyri.jpg" alt="Half-Y Junction Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Half-Y Junction Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a half-Y junction is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang half-Y junction ay nasa unahan.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../halfyl.jpg" alt="Half-Y Junction Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Half-Y Junction Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a half-Y junction is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang half-Y junction ay nasa unahan.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../behindr.jpg" alt="Half-Y Junction Behind Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Half-Y Junction Behind Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a half-Y junction is behind.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang half-Y junction ay nasa likod.
+                    </div>
+                </li>
+            </ul>
+
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../behindl.jpg" alt="Half-Y Junction Behind Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Half-Y Junction Behind Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a half-Y junction is behind.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang half-Y junction ay nasa likod.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../sider.jpg" alt="Side Road Junction Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Side Road Junction Right Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must turn right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../sidel.jpg" alt="Side Road Junction Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Side Road Junction Left Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must turn left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../roundaboutahead.jpg" alt="Roundabout Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Roundabout Ahead Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a roundabout is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang roundabout ay nasa unahan.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../approachtointer.jpg" alt="Approach to Intersection" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Approach to Intersection</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic is approaching an intersection.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko ay papalapit sa isang intersection.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../approachsider.jpg" alt="Approach To Intersection Side Right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Approach To Intersection Side Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must turn right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../approachsidel.jpg" alt="Approach To Intersection Side Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Approach To Intersection Side Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must turn left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat kumaliwa.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../mergingr.jpg" alt="Approach To Intersection merging right" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Approach To Intersection Merging Right</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the right lane must merge.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kanang lane ay dapat mag-merge.
+                    </div>
+                </li>
+            </ul>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../mergingl.jpg" alt="Approach To Intersection Merging Left" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Approach To Intersection Merging Left</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that traffic in the left lane must merge.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang trapiko sa kaliwang lane ay dapat mag-merge.
+                    </div>
+                </li>
+            </ul>
+            <h2 style="text-align: center;">Advance Warning/Traffic Control Device Signs</h2>
+            <br>
+            <br>
+             <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../trafficlightahead.jpg" alt="Traffic Light Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Traffic Light Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a traffic light is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang traffic light ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stopahead.jpg" alt="Stop Sign Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Stop Sign Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a stop sign is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang stop sign ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../givewayahead.jpg" alt="Give Way Sign Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Give Way Sign Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a give way sign is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang give way sign ay nasa unahan.
+                    </div>
+                </li>
+                 <h2 style="text-align: center;">Road width Signs</h2>
+                 <br>
+                 <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../roadnarrow.jpg" alt="Road Narrow Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Road Narrow Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road narrows ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay lumiit sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../narrowbridge.jpg" alt="Narrow Bridge Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Narrow Bridge Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a narrow bridge is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang makitid na tulay ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../startdivided.jpg" alt="Start of Divided Traffic Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Start of Divided Traffic Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the start of road divides is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang simula ng paghahati ng kalsada ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../enddivided.jpg" alt="End of Divided of 2 Way Traffic Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">End of Divided of 2 Way Traffic Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the end of road divides is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang katapusan ng paghahati ng kalsada ay nasa unahan.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Road Obstacle Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../openingbridge.jpg" alt="Opening Bridge Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Opening Bridge Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a bridge is opening.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang tulay ay nagbubukas.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../unevenroad.jpg" alt="Uneven Road Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Uneven Road Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road is uneven.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay hindi pantay.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../hump.jpg" alt="Hump Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Hump Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that a hump is ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang bukol ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../steepright.jpg" alt="Steep Descent Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Steep Descent Right Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a steep descent to the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may matarik na pagbaba sa kanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../steepl.jpg" alt="Steep Descent Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Steep Descent Left Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a steep descent to the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may matarik na pagbaba sa kaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../climbr.jpg" alt="Steep Climb Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Steep Climb Right Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a steep climb to the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may matarik na pag-akyat sa kanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../climbl.jpg" alt="Steep Climb Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Steep Climb Left Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a steep climb to the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may matarik na pag-akyat sa kaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../spillway.jpg" alt="Spillway Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Spillway Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a spillway ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may spillway sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../floodprone.jpg" alt="Flood Prone Area Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Flood Prone Area Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a flood prone area ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may flood prone area sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../fallingr.jpg" alt="Falling Debris Right Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Falling Debris Right Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a risk of falling debris from the right.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may panganib ng pagbagsak ng debris mula sa kanan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../fallingl.jpg" alt="Falling Debris Left Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Falling Debris Left Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a risk of falling debris from the left.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may panganib ng pagbagsak ng debris mula sa kaliwa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../slippery.jpg" alt="Slippery When Wet Road Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Slippery When Wet Road Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that the road is slippery when wet.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang kalsada ay madulas kapag basa.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../animalcross.jpg" alt="Animal Crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Animal Crossing Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a risk of animals crossing the road.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may panganib ng mga hayop na tumatawid sa kalsada.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../lowfly.jpg" alt="Low Flying Aircraft Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Low Flying Aircraft Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a risk of low flying aircraft in the area.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na may panganib ng mga mababang lumilipad na sasakyang panghimpapawid sa lugar.
+                    </div>
+                </li>
+                 <h2 style="text-align: center;">Pedestrians Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../slowpedest.jpg" alt="Slowdown Pedestrian Crossing Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Slowdown Pedestrian Crossing Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a pedestrian crossing ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang pedestrian crossing ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../pedcross.jpg" alt="Pedestrian Crossing Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Pedestrian Crossing Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a pedestrian crossing ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang pedestrian crossing ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../chilcross.jpg" alt="Children pedestrians Crossing Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Children Pedestrians Crossing Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a Children Pedestrians crossing ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang Children Pedestrians crossing ay nasa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../adviceped.jpg" alt="Advice to Pedestrians to Cross at designated Areas Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Advice to Pedestrians to Cross at Designated Areas Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs advising pedestrians to use designated crossing areas.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nag-aabiso sa mga pedestrian na gumamit ng mga itinalagang lugar ng pagtawid.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../bikelane1.jpg" alt="Beware and Slowdown on Bicycle Lane Ahead Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Beware and Slowdown on Bicycle Lane Ahead Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a bicycle lane ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang bicycle lane ay nasa unahan.
+                    </div>
+                </li>
+                  <h2 style="text-align: center;">RailWay Level Crossing Signs</h2>
+                  <br>  
+                  <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../railway.jpg" alt="Railway Crossing Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Railway Crossing Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that vehicles must stop or give the right way.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang mga sasakyan ay dapat huminto o magbigay ng karapatan sa daan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../railwaysignal.jpg" alt="Railway Crossing Advance Warning Signaled Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Railway Crossing Advance Warning Signal Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a railway crossing ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang railway crossing ay nasa unahan.
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../railwayunsignal.jpg" alt="Railway Crossing Advance Warning Unsignaled Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                            <strong style="font-size: 20px;">Railway Crossing Advance Warning Unsignaled Sign</strong>
+                            <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating that there is a railway crossing ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig na ang isang railway crossing ay nasa unahan.
+                    </div>
+                </li>
+                <br>
+                <br>
+        <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+            <a href="index.html" class="nav-btn">← Back to Module</a>
+            <a href="lesson3.html" class="nav-btn">Next Lesson: Guide/Informative Signs →</a>
+        </div>
+    </div>
+    
+    <script>
+        function openPractice() {
+            alert('Practice environment would open here! This could be a code editor or interactive console.');
+        }
+
+    </script>
+</body>
+</html>

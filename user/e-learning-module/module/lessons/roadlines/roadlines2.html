@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 2: Other Lines</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="roadlines.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 2: Road Work Signs</h1>
+            <a href="roadlines3.html" class="nav-btn">Next Modules →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Progress: 50% Complete</span>
+                <span>2 of 3 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:50%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2> Other Lines</h2>
+            <p>Other lines that provides essential information to drivers, helping them navigate the roadways safely and efficiently. They come in various shapes and colors, each conveying specific messages.</p>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../parkingbay.png" alt="Parking Bay Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Parking Bay Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating designated parking areas.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng mga itinalagang lugar para sa paradahan.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../loadunload.png" alt="Loading and Unloading Bay Line Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Loading and Unloading Bay Line Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating areas for loading and unloading goods.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng mga lugar para sa paglo-load at pag-unload ng mga kalakal.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../donotblock.png" alt="Do Not Block Intersection lines Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Do Not Block Intersection lines Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating that vehicles should not block the intersection.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig na ang mga sasakyan ay hindi dapat humarang sa intersection.</p>
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../turnline.png" alt="Turn Lane Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Turn Lane Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating a designated turn lane.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng itinalagang lane para sa pagliko.</p>
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Object markings</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../objectsroadway.png" alt="Objects Within the Roadway" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Objects Within the Roadway</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating the presence of objects within the roadway.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng presensya ng mga bagay sa loob ng kalsada.</p>
+                    </div>
+                </li>
+                     <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../markingcurb.png" alt="Marking On Curbs" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Marking On Curbs</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating the presence of objects on curbs.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng presensya ng mga bagay sa mga curb
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../objectad.png" alt="Object Adjacent to the Roadway" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Object Adjacent to the Roadway</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating the presence of objects adjacent to the roadway.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng presensya ng mga bagay sa tabi ng kalsada.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../signalized.jpg" alt="Pedestrian Intersection Signalized Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Pedestrian Intersection Signalized Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating where pedestrians may cross at an intersection with a signal.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig kung saan maaaring tumawid ang mga pedestrian sa isang intersection na may signal.</p>
+                    </div>
+                </li>
+                <br>
+                <br>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="roadlines1.html" class="nav-btn">← Previous Lesson</a>
+            <a href="roadlines3.html" class="nav-btn">Next Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>

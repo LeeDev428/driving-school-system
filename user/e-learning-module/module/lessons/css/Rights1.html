@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: Road Lines</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="DriverRights.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 1: Driver's Rights When Apprehended</h1>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span></span>
+                <span>1 of 1 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Driver's Right When Apprehended</h2>
+            <p>The legal protections and entitlements that a driver has when stopped or caught by a traffic enforcer for a possible violation.</p>
+            <br>
+
+            <h2 style="text-align: center;">Right to be Informed of the Violation</h2>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttoask.png" alt="Right to ask for the traffic enforcers ID and name" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to ask for the traffic enforcers ID and name</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            Before giving any document, you have the right to request the valid ID or name of the apprehending officer.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Bago magbigay ng anumang dokumento, may karapatan kang hilingin ang valid ID o pangalan ng nag-aapprehend na opisyal.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttoknowexactviolation.png" alt="Right to know the exact violation being charged" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to know the exact violation being charged</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            Allows the driver to defend themselves properly if they believe they did not commit the violation.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Pinapayagan ang driver na ipagtanggol ang kanilang sarili nang maayos kung naniniwala silang hindi nila ginawa ang paglabag.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../orderofbattle.png" alt="Right to see the order of battle or mission order" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to see the order of battle or mission order</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            The enforcer must carry a mission order for that day. You may request to see it.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Dapat magdala ang enforcer ng mission order para sa araw na iyon. Maaari mong hilingin na makita ito.</p>
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttorefuse.png" alt="Right to refuse on-the-spot payment" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to refuse on-the-spot payment</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           You are not obligated to pay immediately if there is no official receipt. All payments should be made at the office or through official payment channels only.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Hindi ka obligado na magbayad agad kung walang official receipt. Ang lahat ng bayad ay dapat gawin sa opisina o sa pamamagitan lamang ng mga opisyal na channel ng pagbabayad.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttorefuseanoffi.png" alt="Right to request an official traffic citation ticket" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to request an official traffic citation ticket</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                              If a ticket is issued, it must be official and contain a control number. You have the right to receive a copy.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Kung maglalabas ng ticket, dapat itong opisyal at maglaman ng control number. May karapatan kang makatanggap ng kopya.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../mixedcenterline.png" alt="Broken And Solid Yellow Lines (Mixed Center line) Markings" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Broken And Solid Yellow Lines (Mixed Center line) Markings</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           A marking indicating the separation of traffic lanes.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng paghihiwalay ng mga lane ng trapiko.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../nothaveyourlicenseconfi.png" alt="Right not to have your license confiscated if it is not part of the penalty" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right not to have your license confiscated if it is not part of the penalty</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Not all violations require license confiscation. </p>
+                         <p>Example: Beating the red light – the officer may issue a ticket, but they should not immediately take your license unless explicitly stated.</p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Hindi lahat ng paglabag ay nangangailangan ng pagkumpiska ng lisensya. Halimbawa: Paglampas sa pulang ilaw - maaaring mag-isyu ang opisyal ng ticket, ngunit hindi nila dapat agad kunin ang iyong lisensya maliban kung tahasang nakasaad.</p>
+                        
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttoaskquestion.png" alt="Right to ask questions or request clarification" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to ask questions or request clarification</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            You may politely ask about the process and where to pay or file an appeal.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Maaari kang magtanong nang magalang tungkol sa proseso at kung saan magbabayad o maghain ng apela.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../righttorecord.png" alt="Right to record (video/photo) the encounter" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to record (video/photo) the encounter</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                             As long as it is not obstructive or disrespectful, you are allowed to document the process as proof.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Hangga't hindi ito nakahahadlang o walang galang, pinapayagan kang idokumento ang proseso bilang patunay.</p>
+                    </div>
+                </li>
+                     <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../refusetobribe.png" alt="Right to refuse any form of bribe or illegal payment" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Right to refuse any form of bribe or illegal payment</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Asking for bribes is against the law. You have the right to refuse and report it to the proper anti-corruption authorities.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang paghingi ng suhol ay labag sa batas. May karapatan kang tumanggi at iulat ito sa mga tamang awtoridad laban sa korapsyon.</p>   
+                    </div>
+                </li>
+                <br>
+                <br>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="DriverRights.html" class="nav-btn">← Return Module</a>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>

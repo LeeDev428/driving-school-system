@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: Road Lines</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="roadlines.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 1: Road Work Signs</h1>
+            <a href="roadlines2.html" class="nav-btn">Next Modules →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Progress: 100% Complete</span>
+                <span>1 of 3 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:25%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Purpose of Pavement Markings</h2>
+            <p>Pavement markings provide essential information to drivers, helping them navigate the roadways safely and efficiently. They come in various shapes and colors, each conveying specific messages.</p>
+
+            <h2 style="text-align: center;">Longitudinal Markings</h2>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../centerline.png" alt="Center Line (Separation Line) Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Center Line (Separation Line) Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating the separation of opposing traffic lanes.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng paghihiwalay ng magkasalungat na mga daanan ng trapiko. </p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../laneline.png" alt="Lane Line (Broken white center line or Lane Divider) Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Lane Line (Broken white center line or Lane Divider) Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating the separation of lanes in the same direction.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng paghihiwalay ng mga lane sa parehong direksyon.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../barrierline.png" alt="Barrier Line Solid Double Yellow lines Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Barrier Line Solid Double Yellow lines Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A marking indicating the presence of a physical barrier or no-passing zone.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng presensya ng isang pisikal na hadlang o lugar na hindi maaaring lampasan.</p>
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../brokenline.png" alt="Broken Yellow Line Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Broken Yellow Line Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating a no-passing zone.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng lugar na hindi maaaring lampasan.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../singlesolid.png" alt="Single Solid Yellow Line Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Single Solid Yellow Line Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating no-passing zones.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng mga lugar na hindi maaaring lampasan.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../brokensolid.png" alt="Broken And Solid Yellow Lines (Mixed Center line) Markings" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Broken And Solid Yellow Lines (Mixed Center line) Markings</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           A marking indicating the separation of traffic lanes.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng paghihiwalay ng mga daanan ng trapiko.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../trafficdirection.png" alt="Solid yellow Lane On Left of Traffic Direction Markings" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Solid yellow Lane On Left of Traffic Direction Markings</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating the direction of traffic flow.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng direksyon ng daloy ng trapiko.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../continuity.png" alt="Continuity Line markings" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Continuity Line Markings</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating the continuation of a lane.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng pagpapatuloy ng isang lane.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../transition.jpg" alt="Transition Line Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Transition Line Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating a change in the type of lane or road.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig ng pagbabago sa uri ng lane o kalsada.</p>
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Traverse Lines</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stoplines.png" alt="Stop Line Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Stop Line Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating where vehicles must stop before the white line at an intersection.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig kung saan dapat huminto ang mga sasakyan bago ang puting linya sa isang intersection.</p>
+                    </div>
+                </li>
+                     <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../holdinglines.png" alt="Give Way Or Holding Lines Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Give Way Or Holding Lines Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating where vehicles must give way or hold their position at an intersection.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig kung saan dapat magbigay-daan o huminto ang mga sasakyan sa isang intersection.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../pedestriannonsignal.jpg" alt="Pedestrian Intersection Non Signalized Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Pedestrian Intersection Non Signalized Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating where pedestrians may cross at an intersection without a signal.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig kung saan maaaring tumawid ang mga pedestrian sa isang intersection na walang signal.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../signalized.jpg" alt="Pedestrian Intersection Signalized Marking" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Pedestrian Intersection Signalized Marking</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            A marking indicating where pedestrians may cross at an intersection with a signal.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Isang pagmamarka na nagpapahiwatig kung saan maaaring tumawid ang mga pedestrian sa isang intersection na may signal.</p>
+                    </div>
+                </li>
+                <br>
+                <br>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="roadlines.html" class="nav-btn">← Return Module</a>
+            <a href="roadlines2.html" class="nav-btn">Next Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>

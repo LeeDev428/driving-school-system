@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: Protocols</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="roadsafety.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 1: Road Safety Rules</h1>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span></span>
+                <span>1 of 1 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Road Safety Rules</h2>
+            <p>The set of guidelines and regulations designed to ensure the safety of drivers, passengers, pedestrians, and other road users</p>
+            <br>
+
+            <h2 style="text-align: center;">Safety Guides</h2>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Obey All Traffic Signals and Signs</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Follow stoplights, road markings, and LTO-approved traffic signs.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Sundin ang mga stoplight, road markings, at LTO-approved traffic signs.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Don’t Drink and Drive</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Driving under the influence of alcohol or drugs is punishable under RA 10586.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang pagmamaneho sa ilalim ng impluwensya ng alak o droga ay parurusahan sa ilalim ng RA 10586.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Avoid Distracted Driving</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Texting, calling, or using gadgets while driving is prohibited under RA 10913 (Anti-Distracted Driving Act).
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang pagte-text, pagtawag, o paggamit ng gadgets habang nagmamaneho ay ipinagbabawal sa ilalim ng RA 10913 (Anti-Distracted Driving Act).</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Follow Speed Limits</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           As mandated by RA 4136, speeding is a top cause of accidents. Always check speed limit signs.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ayon sa mandato ng RA 4136, ang overspeeding ay isa sa mga pangunahing sanhi ng aksidente. Laging tingnan ang mga speed limit signs.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Use Headlights Properly</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Switch on headlights from sunset to sunrise or during bad weather. Always dim high beams when another vehicle is approaching.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Buksan ang headlights mula sa paglubog ng araw hanggang sa pagsikat ng araw o sa panahon ng masamang panahon. Laging i-dim ang high beams kapag may paparating na ibang sasakyan.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Drive Safely in Bad Weather</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Reduce speed, keep distance, and turn on headlights and wipers.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Bawasan ang bilis, panatilihin ang distansya, at buksan ang headlights at wipers.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Overtake Only When Safe</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Overtaking is not allowed at intersections, pedestrian lanes, bridges, blind curves, or when road markings prohibit it.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang pag-overtake ay hindi pinapayagan sa mga intersection, pedestrian lanes, bridges, blind curves, o kapag ipinagbabawal ito ng mga road markings.</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Give Way to Pedestrians</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Pedestrians have right of way at pedestrian crossings (marked or unmarked).
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang mga pedestrian ay may karapatan sa pedestrian crossings (marked o unmarked).</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Maintain Safe Distance (2-Second Rule)</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Keep at least a 2-second gap between you and the car in front (longer if raining or slippery).
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Panatilihin ang hindi bababa sa 2-segundong agwat sa pagitan mo at ng kotse sa harap (mas mahaba kung umuulan o madulas).</p>
+                    </div>
+                </li>
+                <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Check Vehicle Before Driving (BLOWBAGETS)</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                           Brakes, Lights, Oil, Water, Battery, Air, Gas, Engine, Tires, Self.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Preno, Ilaw, Langis, Tubig, Baterya, Hangin, Gas, Makina, Gulong, Sarili.</p>
+                    </div>
+                </li>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="roadsafety1.html" class="nav-btn">← Return Module</a>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>

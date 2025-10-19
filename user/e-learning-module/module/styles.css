@@ -1,0 +1,398 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1e3a8a;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+    z-index: -1;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+    margin-bottom: 50px;
+    font-size: 3rem;
+    font-weight: 400;
+    text-shadow: 0 6px 12px rgba(0,0,0,0.7);
+    letter-spacing: 2px;
+    position: relative;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.module-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    overflow: hidden;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.module-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+
+.module-card.opened {
+    transform: scale(1.02);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 30px 25px;
+    position: relative;
+    border-radius: 25px 25px 0 0;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.card-header h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.module-number {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.card-image {
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.5s ease;
+    filter: brightness(0.95) contrast(1.15) saturate(1.1);
+    transform: scale(1.01);
+    position: relative;
+    z-index: 0;
+}
+
+.module-card:hover .card-image img {
+    transform: scale(1.1);
+    filter: brightness(1.15) contrast(1.25) saturate(1.2);
+}
+
+.card-content {
+    padding: 25px;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    opacity: 0;
+}
+
+.module-card.opened .card-content {
+    max-height: 500px;
+    opacity: 1;
+}
+
+.description {
+    color: #e2e8f0;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.module-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.label {
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.value {
+    color: #94a3b8;
+}
+
+.value.beginner {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.value.intermediate {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.value.advanced {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.lesson-links {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lesson-links h4 {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.lesson-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.lesson-link {
+    display: block;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lesson-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.card-footer {
+    padding: 25px 30px;
+    background: rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.open-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.start-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.open-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.open-btn:active {
+    transform: translateY(0);
+}
+
+.start-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.5);
+}
+
+.start-btn:active {
+    transform: translateY(0);
+}
+
+.arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.module-card.opened .arrow {
+    transform: rotate(180deg);
+}
+
+.btn-text {
+    transition: all 0.3s ease;
+}
+
+.module-card.opened .btn-text {
+    content: "Close Module";
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .module-card {
+        margin: 0 10px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .card-header {
+        padding: 20px;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .card-footer {
+        padding: 15px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .card-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .description {
+        font-size: 0.95rem;
+    }
+}
+
+/* Animation for card opening */
+@keyframes slideDown {
+    from {
+        max-height: 0;
+        opacity: 0;
+    }
+    to {
+        max-height: 500px;
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        max-height: 500px;
+        opacity: 1;
+    }
+    to {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+

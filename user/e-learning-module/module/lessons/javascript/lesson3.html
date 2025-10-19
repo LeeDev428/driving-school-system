@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 2: Warning Signs</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="index.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 3: Guide/Informative Signs</h1>
+           <a href="../../index.html" class="nav-btn">Finish Module →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Progress: 100% Complete</span>
+                <span>3 of 3 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:100%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Purpose of Guide/Informative Signs</h2>
+            <p>Guide/informative signs provide essential information to drivers, helping them navigate the roadways safely and efficiently. They come in various shapes and colors, each conveying specific messages.</p>
+
+            <h2 style="text-align: center;">Advance Direction Signs</h2>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stackdirect.jpg" alt="Stack Direction (Multiple Destinations) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Stack Direction (Multiple) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A guide sign indicating multiple directions ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang gabay na palatandaan na nagpapahiwatig ng maraming direksyon sa unahan. 
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stacksingle.png" alt="Stack Direction (Single Destinations) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Stack Direction (Single) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A guide sign indicating a single direction ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang gabay na palatandaan na nagpapahiwatig ng isang direksyon sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../stacksign.jpg" alt="Stack Direction (with road name/street name) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Stack Direction (with road name/street name) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            A guide sign indicating the direction of a specific road or street.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Isang gabay na palatandaan na nagpapahiwatig ng direksyon ng isang partikular na kalsada o kalye.
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../diagrammatic.jpg" alt="Diagrammatic Direction Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Diagrammatic Direction Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs providing a diagrammatic representation of the road layout.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagbibigay ng diagrammatic na representasyon ng layout ng kalsada.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../diagrammatic.jpg" alt="Diagrammatic Direction (roundabout junctions) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Diagrammatic Direction (roundabout junctions) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs providing a diagrammatic representation of roundabout road layout junctions.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagbibigay ng diagrammatic na representasyon ng layout ng kalsada ng mga junction ng roundabout.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Intersection Direction Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../facingright.png" alt="Intersection Direction (Facing Right) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Intersection Direction (Facing Right) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the direction of the intersection ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng direksyon ng intersection sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../facingright.png" alt="Intersection Direction (Facing Right) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Intersection Direction (Facing Right) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the direction of the intersection ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng direksyon ng intersection sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../leftright.png" alt="Intersection Direction (Left and Right) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Intersection Direction (Left and Right) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the direction of the intersection ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng direksyon ng intersection sa unahan.
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../numrou.jpg" alt="Intersection Direction (Number Route) Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Intersection Direction (Number Route) Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Signs indicating the direction of the intersection ahead.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Mga palatandaan na nagpapahiwatig ng direksyon ng intersection sa unahan.
+                    </div>
+                </li>
+                <h2 style="text-align: center;">Reassurance Direction Signs</h2>
+                <br>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../reassurance.jpg" alt="Reassurance Direction with Route Number Sign" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Reassurance Direction with Route number Sign</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Sign indicating that the driver is on the correct route and how far till the destination.
+                        </p>
+                        <p>
+                            <br>
+                            <br>
+                            Tagalog : Palatandaan na nagpapahiwatig na ang driver ay nasa tamang ruta at kung gaano kalayo hanggang sa destinasyon.
+                    </div>
+                </li>
+                <br>
+                <br>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="lesson2.html" class="nav-btn">← Previous Lesson</a>
+            <a href="../../index.html" class="nav-btn">Return to Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>

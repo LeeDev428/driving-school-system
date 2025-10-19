@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: Protocols</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <style>
+        .lesson-content {
+            background: beige;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .lesson-progress {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .code-example .keyword {
+            color: #ff6b6b;
+        }
+        
+        .code-example .string {
+            color: #51cf66;
+        }
+        
+        .code-example .number {
+            color: #74c0fc;
+        }
+        
+        .code-example .comment {
+            color: #868e96;
+        }
+        
+        .practice-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .practice-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .practice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <div class="lesson-nav">
+            <a href="Protocols.html" class="nav-btn">← Back to Module</a>
+            <h1>Lesson 1: Officials Authorized to Use Protocol Plates</h1>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+
+        <div class="lesson-progress">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span></span>
+                <span>1 of 1 Lessons</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="lesson-content">
+            <h2>Officials Authorized to Use Protocol Plates</h2>
+            <p>The Authorized Officials that can use the protocols plates.</p>
+            <br>
+
+            <h2 style="text-align: center;">Government Official Authorized</h2>
+        <br>
+        <br>    
+            <ul style="list-style: none; padding: 0; font-size: 18px;">
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate1.png" alt="President of the Philippines" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">President of the Philippines</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            For instant recognition and security, since the President is the head of state.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Para sa agarang pagkilala at seguridad, dahil ang Pangulo ang pinuno ng estado.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate2.png" alt=" Vice President of the Philippines" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Vice President of the Philippines</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            To easily identify the second-highest official in government for protocol and protection.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Upang madaling makilala ang pangalawang pinakamataas na opisyal sa gobyerno para sa protokol at proteksyon.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate3.png" alt="Senate President" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Senate President</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.7; font-size: 20px; font-family: 'Segoe UI', Arial, sans-serif;">
+                            To highlight their role as head of the Senate and part of the top leadership.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Upang i-highlight ang kanilang papel bilang pinuno ng Senado at bahagi ng pinakamataas na pamunuan.</p>
+                    </div>
+                </li>
+                <br>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate4.png" alt="Speaker of the House of Representatives" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Speaker of the House of Representatives</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           As the head of the House of Representatives, their vehicle must be identifiable.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Bilang pinuno ng House of Representatives, ang kanilang sasakyan ay dapat makilala.</p> 
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate5.png" alt="Chief Justice of the Supreme Court" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Chief Justice of the Supreme Court</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                              For recognition of the highest judicial authority in the country.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Para sa pagkilala sa pinakamataas na awtoridad ng hudikatura sa bansa.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate6.png" alt="Cabinet Secretaries" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Cabinet Secretaries</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           As heads of their respective departments, they require proper identification.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Bilang mga pinuno ng kanilang mga kaukulang departamento, kailangan nila ng tamang pagkakakilanlan.</p>
+
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate7.png" alt="Senators" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Senators</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           To identify legislators who are part of the upper chamber of Congress. 
+                        </p>
+                        <br>
+                        <br>    
+                        <p>Tagalog: Upang makilala ang mga mambabatas na bahagi ng upper chamber ng Kongreso.</p>
+                        
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate8.png" alt="Congressmen" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Congressmen</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           To mark vehicles of members of the House of Representatives, ensuring recognition in official duties.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Upang markahan ang mga sasakyan ng mga miyembro ng House of Representatives, na tinitiyak ang pagkilala sa opisyal na tungkulin.</p>
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate9.png" alt="Associate Justices" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Associate Justices</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            For clear recognition of justices in higher courts, supporting security and protocol.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Para sa malinaw na pagkilala sa mga hukom sa mas mataas na korte, na sumusuporta sa seguridad at protokol.</p>
+
+                    </div>
+                </li>
+                <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <img src="../../plate10.png" alt="Presiding Justice of the Court of Appeals (CA), Court of Tax Appeals (CTA), Sandiganbayan; and the Solicitor General" style="width:200px; height:200px; object-fit:cover; border-radius:20px; margin-right:24px; border:1px solid #ddd;">
+                    <div>
+                        <strong style="font-size: 20px;">Presiding Justice of the Court of Appeals (CA), Court of Tax Appeals (CTA), Sandiganbayan; and the Solicitor General</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                             To identify vehicles of judges of lower courts, aiding in judicial protocol.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Upang makilala ang mga sasakyan ng mga hukom ng mas mababang korte, na tumutulong sa judicial protocol.</p>
+                    </div>
+                </li>
+                <br>
+                <h2 style="text-align: center;">Important Notes (EO 56 Guidelines)</h2>
+                <br>
+                <br>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Numbers 12, 16, 17</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Numbers 12, 16, and 17 were abolished under EO 56 to avoid redundancy, remove non-top officials, and limit privileges—streamlining protocol plates only for the highest government officials.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang mga Numero 12, 16, at 17 ay inalis sa ilalim ng EO 56 upang maiwasan ang pagiging redundant, alisin ang mga opisyal na hindi nangunguna, at limitahan ang mga pribilehiyo—pinapadali ang mga protocol plate para lamang sa pinakamataas na opisyal ng gobyerno.</p>
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Plates are valid during incumbency</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                           Once the official retires, transfers, or leaves office, the plates must be surrendered back to the LTO.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Kapag ang opisyal ay nagretiro, lumipat, o umalis sa opisina, ang mga plate ay dapat isuko pabalik sa LTO.</p>
+                    </div>
+                </li>
+                 <li style="margin-bottom: 32px; display: flex; align-items: flex-start;">
+                    <div>
+                        <strong style="font-size: 20px;">Strict regulation</strong>
+                        <p style="margin: 8px 0 0 0; line-height: 1.6;">
+                            Plates cannot be used by family members, staff, or for private purposes. Misuse is punishable.
+                        </p>
+                        <br>
+                        <br>
+                        <p>Tagalog: Ang mga plate ay hindi maaaring gamitin ng mga miyembro ng pamilya, kawani, o para sa pribadong layunin. Ang maling paggamit ay pinarurusahan.</p>
+                    </div>
+                </li>
+
+        <div style="display:flex; justify-content:space-between; margin-top:40px;">
+            <a href="DriverRights.html" class="nav-btn">← Return Module</a>
+            <a href="../../index.html" class="nav-btn">Finish Modules →</a>
+        </div>
+    </div>
+
+    <script>
+        function answers(){
+            alert('Answers:\n1) Green=guide, Blue=services, Brown=recreation.\n2) They show position/distance for navigation and emergencies.\n3) They announce exits and required lanes ahead of time.');
+        }
+    </script>
+</body>
+</html>
