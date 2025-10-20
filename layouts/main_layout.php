@@ -15,7 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?> - Success Driving</title>
+    <title><?php echo $page_title; ?> - Drive Ease</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -160,6 +160,16 @@ $current_page = basename($_SERVER['PHP_SELF']);
             display: flex;
             align-items: center;
             gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .user-profile:hover {
+            background-color: #282c34;
         }
 
         .user-profile img {
@@ -168,6 +178,26 @@ $current_page = basename($_SERVER['PHP_SELF']);
             border-radius: 50%;
             object-fit: cover;
             background-color: #ffcc00;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffcc00;
+            color: #1a1d24;
+            font-weight: bold;
+            font-size: 16px;
+            overflow: hidden;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         /* Card Styles */
@@ -292,8 +322,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <div class="sidebar">
         <div class="sidebar-brand">
             <!-- Fallback logo if image doesn't exist -->
-            <div style="width: 35px; height: 35px; background-color: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">S</div>
-            <h2>Success Driving</h2>
+            <img src="../assets/images/dss_logo.png" alt="Drive Ease Logo" style="background-color: white;">
+            <h2>Drive Ease</h2>
         </div>
         
         <div class="sidebar-menu">
@@ -314,20 +344,41 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <h2><?php echo isset($header_title) ? $header_title : $page_title; ?></h2>
             
             <div class="user-info">
-                <div class="notifications">
+                <!-- <div class="notifications">
                     <i class="far fa-bell"></i>
                     <?php if (isset($notification_count) && $notification_count > 0): ?>
                     <div class="badge"><?php echo $notification_count; ?></div>
                     <?php endif; ?>
-                </div>
+                </div> -->
                 
-                <div class="user-profile">
-                    <!-- Fallback for user avatar image -->
-                    <div style="width: 35px; height: 35px; background-color: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a1d24; font-weight: bold;">
-                        <?php echo substr($_SESSION['full_name'], 0, 1); ?>
+                <?php
+                // Get user's profile image
+                $profile_image_query = "SELECT profile_image FROM users WHERE id = ?";
+                $profile_image = null;
+                if ($profile_stmt = mysqli_prepare($conn, $profile_image_query)) {
+                    mysqli_stmt_bind_param($profile_stmt, "i", $_SESSION['id']);
+                    mysqli_stmt_execute($profile_stmt);
+                    $profile_result = mysqli_stmt_get_result($profile_stmt);
+                    if ($profile_row = mysqli_fetch_assoc($profile_result)) {
+                        $profile_image = $profile_row['profile_image'];
+                    }
+                    mysqli_stmt_close($profile_stmt);
+                }
+                
+                // Determine profile link based on user type
+                $profile_link = $_SESSION['user_type'] == 'admin' ? '../admin/profile.php' : '../user/profile.php';
+                ?>
+                
+                <a href="<?php echo $profile_link; ?>" class="user-profile" title="Edit Profile">
+                    <div class="user-avatar">
+                        <?php if (!empty($profile_image) && file_exists('../uploads/profiles/' . $profile_image)): ?>
+                            <img src="../uploads/profiles/<?php echo htmlspecialchars($profile_image); ?>" alt="Profile">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
+                        <?php endif; ?>
                     </div>
                     <span><?php echo $_SESSION['user_type'] == 'admin' ? 'Admin User' : $_SESSION['full_name']; ?></span>
-                </div>
+                </a>
             </div>
         </div>
         
