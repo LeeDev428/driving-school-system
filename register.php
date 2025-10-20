@@ -270,7 +270,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="contact_number">Contact Number</label>
                 <input type="tel" class="form-control" id="contact_number" name="contact_number" value="<?php echo $contact_number; ?>">
             </div>
-            
+<!--             
             <div class="form-group">
                 <label for="license_type">License Type</label>
                 <select class="form-control" id="license_type" name="license_type">
@@ -279,7 +279,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <option value="Class B" <?php if($license_type == "Class B") echo "selected"; ?>>Class B</option>
                     <option value="Class C" <?php if($license_type == "Class C") echo "selected"; ?>>Class C</option>
                 </select>
-            </div>
+            </div> -->
             
             <div class="form-group">
                 <label for="password">Password</label>
