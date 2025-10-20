@@ -267,7 +267,7 @@ CREATE TABLE IF NOT EXISTS `quiz_responses` (
   KEY `session_id` (`session_id`),
   KEY `scenario_id` (`scenario_id`),
   CONSTRAINT `quiz_responses_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -292,7 +292,7 @@ CREATE TABLE IF NOT EXISTS `quiz_sessions` (
   UNIQUE KEY `session_id` (`session_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `quiz_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -301,6 +301,7 @@ CREATE TABLE IF NOT EXISTS `simulation_results` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
   `simulation_type` varchar(50) NOT NULL DEFAULT 'basic_driving',
+  `vehicle_type` varchar(20) NOT NULL DEFAULT 'car',
   `total_scenarios` int NOT NULL DEFAULT '0',
   `correct_answers` int NOT NULL DEFAULT '0',
   `wrong_answers` int NOT NULL DEFAULT '0',
@@ -312,7 +313,7 @@ CREATE TABLE IF NOT EXISTS `simulation_results` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `simulation_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
@@ -372,7 +373,7 @@ CREATE TABLE IF NOT EXISTS `user_assessment_responses` (
   KEY `idx_question_id` (`question_id`),
   CONSTRAINT `fk_assessment_response_question` FOREIGN KEY (`question_id`) REFERENCES `assessments` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_assessment_response_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User answers to assessment questions';
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User answers to assessment questions';
 
 -- Data exporting was unselected.
 
@@ -396,7 +397,7 @@ CREATE TABLE IF NOT EXISTS `user_assessment_sessions` (
   KEY `idx_session_id` (`session_id`),
   KEY `idx_status` (`status`),
   CONSTRAINT `fk_assessment_session_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User assessment sessions/attempts';
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='User assessment sessions/attempts';
 
 -- Data exporting was unselected.
 
@@ -498,7 +499,7 @@ CREATE TABLE IF NOT EXISTS `violation_logs` (
   KEY `user_id` (`user_id`),
   KEY `session_id` (`session_id`),
   KEY `violation_timestamp` (`violation_timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Data exporting was unselected.
 
