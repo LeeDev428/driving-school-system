@@ -709,7 +709,7 @@ ob_start();
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="tdc_instructor">Preferred Instructor</label>
                     <select id="tdc_instructor" name="preferred_instructor">
                         <option value="">Any available instructor</option>
@@ -735,7 +735,7 @@ ob_start();
                             </option>
                         <?php endforeach; ?>
                     </select>
-                </div>
+                </div> -->
             </div>
             
             <!-- PDC Fields (Hidden by default) -->
