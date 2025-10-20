@@ -226,10 +226,10 @@ session_start();
             
             <div class="user-actions">
                 <a href="login.php">Log In/Register</a>
-                <a href="#" class="cart-icon">
+                <!-- <a href="#" class="cart-icon">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-count">0</span>
-                </a>
+                </a> -->
             </div>
         </div>
     </header>
