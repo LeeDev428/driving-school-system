@@ -77,6 +77,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             echo json_encode($events);
             exit;
             
+        case 'confirm_payment':
+            $appointment_id = $_POST['appointment_id'];
+            $admin_id = $_SESSION['id'];
+            
+            // Confirm payment AND set status to confirmed (both required for access)
+            $sql = "UPDATE appointments 
+                    SET payment_status = 'paid', 
+                        status = 'confirmed', 
+                        updated_at = CURRENT_TIMESTAMP 
+                    WHERE id = ?";
+            
+            if ($stmt = mysqli_prepare($conn, $sql)) {
+                mysqli_stmt_bind_param($stmt, "i", $appointment_id);
+                
+                if (mysqli_stmt_execute($stmt)) {
+                    echo json_encode(['success' => true, 'message' => 'Payment confirmed! Student now has access.']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Error confirming payment.']);
+                }
+                mysqli_stmt_close($stmt);
+            }
+            exit;
+        
         case 'update_appointment_status':
             $appointment_id = $_POST['appointment_id'];
             $new_status = $_POST['status'];
@@ -156,7 +179,7 @@ if ($result = mysqli_query($conn, $pending_sql)) {
     }
 }
 
-// Get appointment history for admin view
+// Get appointment history for admin view - Show ALL appointments
 $history_sql = "SELECT a.*, at.name as type_name, 
                        u_student.full_name as student_name,
                        u_instructor.full_name as instructor_name
@@ -165,9 +188,8 @@ $history_sql = "SELECT a.*, at.name as type_name,
                 LEFT JOIN users u_student ON a.student_id = u_student.id
                 LEFT JOIN instructors i ON a.instructor_id = i.id
                 LEFT JOIN users u_instructor ON i.user_id = u_instructor.id
-                WHERE a.status IN ('completed', 'cancelled', 'no_show')
                 ORDER BY a.appointment_date DESC, a.start_time DESC
-                LIMIT 50";
+                LIMIT 100";
 
 $appointment_history = [];
 if ($result = mysqli_query($conn, $history_sql)) {
@@ -215,9 +237,7 @@ ob_start();
                 <span class="tab-badge"><?php echo count($pending_appointments); ?></span>
             <?php endif; ?>
         </button>
-        <button class="tab-btn" onclick="switchTab('today')">
-            <i class="fas fa-calendar-day"></i> Today's Schedule
-        </button>
+   
         <button class="tab-btn" onclick="switchTab('history')">
             <i class="fas fa-history"></i> Appointment History
         </button>
@@ -329,6 +349,12 @@ ob_start();
                                         - <span class="payment-status <?php echo ($appointment['payment_status'] == 'paid') ? 'paid' : 'unpaid'; ?>">
                                             <?php echo strtoupper($appointment['payment_status']); ?>
                                         </span>
+                                        <?php if (!empty($appointment['payment_proof'])): ?>
+                                            <br>
+                                            <button class="view-proof-btn" onclick="viewPaymentProof('<?php echo htmlspecialchars($appointment['payment_proof']); ?>')">
+                                                <i class="fas fa-image"></i> View Proof
+                                            </button>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="payment-status unpaid">No payment recorded</span>
                                     <?php endif; ?>
@@ -336,12 +362,15 @@ ob_start();
                             </div>
                         </div>
                         <div class="appointment-actions">
+                          
                             <button class="action-btn approve" onclick="assignInstructor(<?php echo $appointment['id']; ?>)">
                                 <i class="fas fa-user-plus"></i> Assign Instructor
                             </button>
-                            <button class="action-btn confirm" onclick="updateStatus(<?php echo $appointment['id']; ?>, 'confirmed')">
-                                <i class="fas fa-check"></i> Confirm
-                            </button>
+                              <?php if ($appointment['payment_status'] == 'unpaid' && !empty($appointment['payment_proof'])): ?>
+                                <button class="action-btn confirm-payment" onclick="confirmPayment(<?php echo $appointment['id']; ?>)">
+                                    <i class="fas fa-check-circle"></i> Confirm Payment & Grant Access
+                                </button>
+                            <?php endif; ?>
                             <button class="action-btn cancel" onclick="updateStatus(<?php echo $appointment['id']; ?>, 'cancelled')">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
@@ -465,12 +494,12 @@ ob_start();
                     <tr>
                         <th>Date</th>
                         <th>Student</th>
-                        <th>Type</th>
+                        <!-- <th>Type</th> -->
                         <th>Course</th>
                         <th>Instructor</th>
                         <th>Payment</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <!-- <th>Actions</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -478,7 +507,7 @@ ob_start();
                         <tr>
                             <td><?php echo date('M j, Y', strtotime($appointment['appointment_date'])); ?></td>
                             <td><?php echo htmlspecialchars($appointment['student_name']); ?></td>
-                            <td><?php echo htmlspecialchars($appointment['type_name']); ?></td>
+                            <!-- <td><?php echo htmlspecialchars($appointment['type_name']); ?></td> -->
                             <td>
                                 <span class="course-badge <?php echo $appointment['course_type']; ?>">
                                     <?php echo strtoupper($appointment['course_type']); ?>
@@ -488,7 +517,7 @@ ob_start();
                             <td class="payment-cell">
                                 <?php if ($appointment['payment_amount'] > 0): ?>
                                     <div class="payment-info-compact">
-                                        <span class="amount">$<?php echo number_format($appointment['payment_amount'], 2); ?></span>
+                                        <span class="amount">₱<?php echo number_format($appointment['payment_amount'], 2); ?></span>
                                         <?php if ($appointment['payment_method']): ?>
                                             <span class="method"><?php echo ucfirst(str_replace('_', ' ', $appointment['payment_method'])); ?></span>
                                         <?php endif; ?>
@@ -508,11 +537,11 @@ ob_start();
                                     <?php echo ucfirst($appointment['status']); ?>
                                 </span>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <button class="details-btn" onclick="viewAppointmentDetails(<?php echo $appointment['id']; ?>)">
                                     <i class="fas fa-eye"></i> View
                                 </button>
-                            </td>
+                            </td> -->
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -867,9 +896,42 @@ $extra_styles = <<<EOT
     color: white;
 }
 
+.action-btn.confirm-payment {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+}
+
 .action-btn.cancel {
     background: #f44336;
     color: white;
+}
+
+.view-proof-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.view-proof-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .action-btn:hover {
@@ -1525,11 +1587,74 @@ function viewAppointmentDetails(appointmentId) {
     alert('Appointment details for ID: ' + appointmentId);
 }
 
+// Confirm payment function - Sets payment_status='paid' AND status='confirmed'
+function confirmPayment(appointmentId) {
+    if (confirm('Confirm this payment? This will:\\n- Mark payment as PAID\\n- Set status to CONFIRMED\\n- Grant student access to Dashboard, E-Learning, and Simulation')) {
+        fetch('', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'action=confirm_payment&appointment_id=' + appointmentId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    }
+}
+
+// View payment proof function
+function viewPaymentProof(filename) {
+    const modal = document.createElement('div');
+    modal.id = 'payment-proof-modal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Payment Proof Screenshot</h3>
+                <span class="close-btn" onclick="closePaymentProofModal()">&times;</span>
+            </div>
+            <div style="text-align: center; padding: 20px;">
+                <img src="../uploads/payment_proofs/\${filename}" 
+                     style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
+                     alt="Payment Proof"
+                     onerror="this.parentElement.innerHTML='<p style=color:#f44336>Error loading image. File may not exist.</p>'">
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+function closePaymentProofModal() {
+    const modal = document.getElementById('payment-proof-modal');
+    if (modal) {
+        modal.remove();
+    }
+    document.body.style.overflow = 'auto';
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
     const assignModal = document.getElementById('assign-modal');
     if (event.target === assignModal) {
         closeAssignModal();
+    }
+    
+    const paymentModal = document.getElementById('payment-proof-modal');
+    if (event.target === paymentModal) {
+        closePaymentProofModal();
     }
 }
 
