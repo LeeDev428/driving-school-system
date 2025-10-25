@@ -745,10 +745,14 @@ session_start();
                     // Reset form
                     form.reset();
                 } else {
-                    // Show error message
+                    // Show error message with debug info if available
+                    let errorMsg = data.message;
+                    if (data.debug) {
+                        errorMsg += '<br><small><strong>Debug:</strong> ' + data.debug + '</small>';
+                    }
                     alertContainer.innerHTML = `
                         <div class="alert-message alert-error" style="display: block;">
-                            <i class="fas fa-exclamation-circle"></i> ${data.message}
+                            <i class="fas fa-exclamation-circle"></i> ${errorMsg}
                         </div>
                     `;
                 }
