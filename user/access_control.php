@@ -77,14 +77,13 @@ function checkUserAccess($user_id, $conn) {
         mysqli_stmt_close($stmt);
     }
     
-    // Check if user has at least one appointment with payment submitted
-    // UPDATED: Grant access if payment info is submitted (payment_amount > 0 and payment_method provided)
-    // No need to wait for admin confirmation anymore
+    // Check if user has at least one appointment with CONFIRMED status
+    // UPDATED: Require status = 'confirmed' for access (admin must confirm payment)
     $access_sql = "SELECT id, appointment_date, payment_amount, payment_method, payment_status, status 
                    FROM appointments 
                    WHERE student_id = ? 
-                   AND payment_amount > 0 
-                   AND payment_method IS NOT NULL
+                   AND payment_status = 'paid'
+                   AND status = 'confirmed'
                    LIMIT 1";
     
     if ($stmt = mysqli_prepare($conn, $access_sql)) {
@@ -93,14 +92,14 @@ function checkUserAccess($user_id, $conn) {
         $access_result = mysqli_stmt_get_result($stmt);
         
         if (mysqli_num_rows($access_result) > 0) {
-            // User has submitted payment info - GRANT ACCESS IMMEDIATELY
+            // User has confirmed appointment - GRANT ACCESS
             $result['has_access'] = true;
             $result['message'] = 'Access granted';
             $result['details']['has_payment'] = true;
             $result['details']['is_confirmed'] = true;
         } else {
-            // No appointment with payment info found
-            $result['message'] = 'Please schedule an appointment and complete the 20% down payment.';
+            // No confirmed appointment found
+            $result['message'] = 'Please schedule an appointment and wait for admin confirmation.';
         }
         
         mysqli_stmt_close($stmt);
@@ -178,19 +177,26 @@ function getAccessStatusHTML($user_id, $conn) {
     
     $html .= '<div class="checklist-item ' . ($access['details']['has_payment'] ? 'completed' : 'pending') . '">';
     $html .= '<i class="fas ' . ($access['details']['has_payment'] ? 'fa-check-circle' : 'fa-circle') . '"></i>';
-    $html .= '<span>Step 2: Submit 20% Down Payment Info</span>';
-    if ($access['details']['has_payment']) {
-        $html .= '<small style="color: #4caf50; display: block; margin-left: 32px;">✓ Payment submitted - Access granted!</small>';
+    $html .= '<span>Step 2: Submit 20% Down Payment</span>';
+    $html .= '</div>';
+    
+    $html .= '<div class="checklist-item ' . ($access['details']['is_confirmed'] ? 'completed' : 'pending') . '">';
+    $html .= '<i class="fas ' . ($access['details']['is_confirmed'] ? 'fa-check-circle' : 'fa-circle') . '"></i>';
+    $html .= '<span>Step 3: Wait for Admin Confirmation</span>';
+    if ($access['details']['is_confirmed']) {
+        $html .= '<small style="color: #4caf50; display: block; margin-left: 32px;">✓ Confirmed - Access granted!</small>';
+    } elseif ($access['details']['has_payment'] && $access['details']['awaiting_approval'] > 0) {
+        $html .= '<small style="color: #ffcc00; display: block; margin-left: 32px;">⏳ Awaiting admin approval...</small>';
     }
     $html .= '</div>';
     
     $html .= '</div>'; // access-checklist
     
     // Add note about admin verification
-    if ($access['details']['has_appointment'] && !$access['details']['has_payment']) {
+    if ($access['details']['has_appointment'] && !$access['details']['is_confirmed']) {
         $html .= '<p style="margin-top: 15px; padding: 10px; background: rgba(255, 204, 0, 0.1); border-radius: 5px; font-size: 13px;">';
         $html .= '<i class="fas fa-info-circle" style="color: #ffcc00;"></i> ';
-        $html .= '<strong>Note:</strong> Once you submit your payment information, you\'ll get instant access to Dashboard and E-Learning! Admin will verify your payment later.';
+        $html .= '<strong>Note:</strong> After submitting your payment, please wait for admin to verify and confirm your appointment. You\'ll get access once confirmed!';
         $html .= '</p>';
     }
     
