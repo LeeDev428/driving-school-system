@@ -50,6 +50,11 @@ if ($user_type == 'admin') {
      <i class="fas fa-chart-bar"></i>
      <span>Simulation Result</span>
     </a>
+    
+    <a href="<?php echo $base_path; ?>certificates/index.php" <?php if($current_page == "index.php" && strpos($_SERVER['PHP_SELF'], 'certificates') !== false) echo 'class="active"'; ?>>
+     <i class="fas fa-certificate"></i>
+     <span>Certificates</span>
+    </a>
     <?php
 } else {
     // User/Student menu 
@@ -67,19 +72,14 @@ if ($user_type == 'admin') {
         <span>Appointments</span>
     </a>
 
-    <!-- <a href="<?php echo $base_path; ?>simulation.php" <?php if($current_page == "simulation.php") echo 'class="active"'; ?>>
+    <a href="<?php echo $base_path; ?>simulation.php" <?php if($current_page == "simulation.php") echo 'class="active"'; ?>>
         <i class="fas fa-car"></i>
         <span>Simulation</span>
-    </a> -->
+    </a>
 
     <a href="<?php echo $base_path; ?>simulation_result.php" <?php if($current_page == "simulation_result.php") echo 'class="active"'; ?>>
      <i class="fas fa-chart-bar"></i>
      <span>Simulation Result</span>
-    </a>
-
-     <a href="<?php echo $base_path; ?>certificates/index.php" <?php if($current_page == "index.php" && strpos($_SERVER['PHP_SELF'], 'certificates') !== false) echo 'class="active"'; ?>>
-     <i class="fas fa-certificate"></i>
-     <span>My Certificates</span>
     </a>
     <?php
 }
