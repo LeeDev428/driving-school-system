@@ -75,13 +75,42 @@ session_start();
         .user-actions {
             display: flex;
             align-items: center;
+            gap: 15px;
         }
         
-        .user-actions a {
-            color: white;
+        .btn-login,
+        .btn-register {
             text-decoration: none;
-            margin-left: 20px;
-            font-size: 16px;
+            padding: 10px 28px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+        
+        .btn-login {
+            background-color: white;
+            color: black;
+            border-color: white;
+        }
+        
+        .btn-login:hover {
+            background-color: transparent;
+            color: white;
+            border-color: white;
+        }
+        
+        .btn-register {
+            background-color: black;
+            color: white;
+            border-color: white;
+        }
+        
+        .btn-register:hover {
+            background-color: white;
+            color: black;
+            border-color: white;
         }
         
         .cart-icon {
@@ -219,17 +248,12 @@ session_start();
                 <li><a href="index.php">Home</a></li>
                 <li><a href="#">About</a></li>
                 <li><a href="#">Courses</a></li>
-                <li><a href="#">Corporate Program</a></li>
-                <li><a href="#">FAQs</a></li>
                 <li><a href="#">Contact Us</a></li>
             </ul>
             
             <div class="user-actions">
-                <a href="login.php">Log In/Register</a>
-                <!-- <a href="#" class="cart-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count">0</span>
-                </a> -->
+                <a href="login.php" class="btn-login">Log In</a>
+                <a href="register.php" class="btn-register">Register</a>
             </div>
         </div>
     </header>
