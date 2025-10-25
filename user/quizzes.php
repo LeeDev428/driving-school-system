@@ -562,7 +562,7 @@ ob_start();
                 </div>
                 <div class="info-item">
                     <i class="fas fa-clock"></i>
-                    <span><strong>No Time Limit</strong> - Take your time</span>
+                    <span><strong>10 Seconds Per Question</strong> - Timer auto-submits if no answer</span>
                 </div>
                 <div class="info-item">
                     <i class="fas fa-check-circle"></i>
@@ -622,6 +622,9 @@ ob_start();
 let currentSessionId = null;
 let questions = [];
 let userAnswers = {};
+let currentQuestionIndex = 0;
+let timer = null;
+let timeLeft = 10;
 
 async function startQuiz() {
     try {
@@ -657,80 +660,106 @@ async function loadQuestions() {
         
         if (data.success) {
             questions = data.questions;
-            displayQuestions();
+            currentQuestionIndex = 0;
+            userAnswers = {};
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('quizContainer').style.display = 'block';
+            showQuestion();
         }
     } catch (error) {
         console.error('Error loading questions:', error);
     }
 }
 
-function displayQuestions() {
+function showQuestion() {
+    if (currentQuestionIndex >= questions.length) {
+        submitQuiz();
+        return;
+    }
+    
+    const q = questions[currentQuestionIndex];
     const container = document.getElementById('quizContainer');
     
-    let html = `
+    const html = `
         <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+            <div class="progress-bar-fill" id="progressBar" style="width: ${((currentQuestionIndex + 1) / questions.length) * 100}%"></div>
         </div>
-    `;
-    
-    questions.forEach((q) => {
-        html += `
-            <div class="question-card">
-                <div class="question-header">
-                    <div class="question-number">Question ${q.question_number}/50</div>
-                    <div class="question-category">${q.category}</div>
-                </div>
-                <div class="question-text">${q.question_text}</div>
-                <div class="answer-options">
-                    <button class="answer-btn" onclick="selectAnswer(${q.id}, 'a', this)">
-                        <strong>A)</strong> ${q.option_a}
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(${q.id}, 'b', this)">
-                        <strong>B)</strong> ${q.option_b}
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(${q.id}, 'c', this)">
-                        <strong>C)</strong> ${q.option_c}
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(${q.id}, 'd', this)">
-                        <strong>D)</strong> ${q.option_d}
-                    </button>
-                </div>
+        
+        <div class="question-card">
+            <div class="question-header">
+                <div class="question-number">Question ${q.question_number}/50</div>
+                <div class="question-category">${q.category}</div>
             </div>
-        `;
-    });
-    
-    html += `
-        <div class="submit-section">
-            <button class="submit-btn" id="submitBtn" onclick="submitQuiz()" disabled>
-                <i class="fas fa-paper-plane"></i> Submit Quiz
-            </button>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; font-weight: bold; color: #f5576c;" id="timerDisplay">10</div>
+                <div style="font-size: 14px; color: #6c757d;">seconds remaining</div>
+            </div>
+            
+            <div class="question-text">${q.question_text}</div>
+            <div class="answer-options">
+                <button class="answer-btn" onclick="selectAnswer(${q.id}, 'a')">
+                    <strong>A)</strong> ${q.option_a}
+                </button>
+                <button class="answer-btn" onclick="selectAnswer(${q.id}, 'b')">
+                    <strong>B)</strong> ${q.option_b}
+                </button>
+                <button class="answer-btn" onclick="selectAnswer(${q.id}, 'c')">
+                    <strong>C)</strong> ${q.option_c}
+                </button>
+                <button class="answer-btn" onclick="selectAnswer(${q.id}, 'd')">
+                    <strong>D)</strong> ${q.option_d}
+                </button>
+            </div>
         </div>
     `;
     
     container.innerHTML = html;
+    startTimer();
 }
 
-function selectAnswer(questionId, answer, button) {
-    const card = button.closest('.question-card');
-    card.querySelectorAll('.answer-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
+function startTimer() {
+    timeLeft = 10;
+    clearInterval(timer);
     
-    button.classList.add('selected');
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timerDisplay').textContent = timeLeft;
+        
+        if (timeLeft <= 3) {
+            document.getElementById('timerDisplay').style.color = '#dc3545';
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            // Mark as wrong (no answer)
+            const q = questions[currentQuestionIndex];
+            userAnswers[q.id] = null; // No answer = wrong
+            currentQuestionIndex++;
+            showQuestion();
+        }
+    }, 1000);
+}
+
+function selectAnswer(questionId, answer) {
+    clearInterval(timer);
+    
+    // Highlight selected answer
+    const buttons = document.querySelectorAll('.answer-btn');
+    buttons.forEach(btn => btn.classList.remove('selected'));
+    event.target.closest('.answer-btn').classList.add('selected');
+    
     userAnswers[questionId] = answer;
     
-    const progress = (Object.keys(userAnswers).length / questions.length) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    
-    document.getElementById('submitBtn').disabled = Object.keys(userAnswers).length !== questions.length;
+    // Wait 500ms then move to next question
+    setTimeout(() => {
+        currentQuestionIndex++;
+        showQuestion();
+    }, 500);
 }
 
 async function submitQuiz() {
-    if (!confirm('Are you sure you want to submit? You cannot change your answers after submission.')) {
-        return;
-    }
+    clearInterval(timer);
     
     try {
         const response = await fetch('quizzes.php', {
