@@ -336,6 +336,71 @@ CREATE TABLE IF NOT EXISTS `tdc_sessions` (
   CONSTRAINT `tdc_sessions_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+-- Host:                         127.0.0.1
+-- Server version:               8.4.3 - MySQL Community Server - GPL
+-- Server OS:                    Win64
+-- HeidiSQL Version:             12.8.0.6908
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+-- Dumping database structure for driving_school
+CREATE DATABASE IF NOT EXISTS `driving_school` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `driving_school`;
+
+-- Dumping structure for table driving_school.tdc_sessions
+CREATE TABLE IF NOT EXISTS `tdc_sessions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `session_date` date NOT NULL,
+  `session_day` enum('Friday','Saturday') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `max_enrollments` int DEFAULT '10',
+  `current_enrollments` int DEFAULT '0',
+  `instructor_id` int DEFAULT NULL,
+  `status` enum('active','full','cancelled') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_session_date` (`session_date`),
+  KEY `idx_status` (`status`),
+  KEY `instructor_id` (`instructor_id`),
+  CONSTRAINT `tdc_sessions_ibfk_1` FOREIGN KEY (`instructor_id`) REFERENCES `instructors` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table driving_school.tdc_sessions: ~44 rows (approximately)
+INSERT INTO `tdc_sessions` (`id`, `session_date`, `session_day`, `start_time`, `end_time`, `max_enrollments`, `current_enrollments`, `instructor_id`, `status`, `created_at`) VALUES
+	(1, '2025-10-31', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(2, '2025-11-01', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(3, '2025-11-07', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(4, '2025-11-08', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(5, '2025-11-14', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(6, '2025-11-15', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(7, '2025-11-21', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(8, '2025-11-22', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(9, '2025-11-28', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(10, '2025-11-29', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(11, '2025-12-05', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(12, '2025-12-06', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(13, '2025-12-12', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(14, '2025-12-13', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(15, '2025-12-19', 'Friday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07'),
+	(16, '2025-12-20', 'Saturday', '08:00:00', '16:00:00', 10, 0, NULL, 'active', '2025-10-08 18:21:07');
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
 -- Data exporting was unselected.
 
 -- Dumping structure for table driving_school.users
