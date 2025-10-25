@@ -260,8 +260,13 @@ session_start();
     
     <section class="hero">
         <div class="hero-content">
-            <h1>LEARN IN A SAFE AND CONTROLLED ENVIRONMENT</h1>
-            <p>Success Driving's pioneering Training Centers are complete training grounds for student drivers away from the busy streets of the city.</p>
+            <h1>SUCCESS TECHNICAL & VOCATIONAL SCHOOL, INC.</h1>
+            <p>Professional Driving School in Gomez St., Lucena, Philippines</p>
+            <p style="margin-top: 15px; font-size: 16px;">
+                <i class="fas fa-map-marker-alt"></i> Gomez St., Lucena, Philippines, 4301<br>
+                <i class="fas fa-envelope"></i> successdrivingschool21@gmail.com<br>
+                <i class="fas fa-calendar-alt"></i> Established February 25, 2017
+            </p>
            
         </div>
         
