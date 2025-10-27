@@ -128,24 +128,58 @@ ob_start();
             <p style="color: #7f8c8d; font-size: 16px;">Learn through interactive video lessons</p>
         </div>
         
-        <div class="videos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px;">
-            <?php foreach ($videos as $video): ?>
-                <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 30px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 20px rgba(0,0,0,0.1)';">
-                    <div class="video-thumbnail" style="position: relative; padding-top: 56.25%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-play-circle play-icon" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; color: white; opacity: 0.9;"></i>
-                        <div class="video-duration" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
-                            <?php echo $video['duration_minutes']; ?> min
-                        </div>
-                    </div>
-                    <div class="video-content" style="padding: 20px;">
-                        <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;"><?php echo htmlspecialchars($video['title']); ?></h3>
-                        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;"><?php echo htmlspecialchars($video['description']); ?></p>
-                        <button class="btn-primary" onclick="playVideo(<?php echo $video['id']; ?>)" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                            <i class="fas fa-play"></i> Watch Video
-                        </button>
-                    </div>
+        <div class="videos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 25px;">
+            <!-- Video 1: Road Marking Lines -->
+            <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <div class="video-embed" style="position: relative; padding-top: 56.25%; background: #000;">
+                    <iframe src="https://drive.google.com/file/d/1wsqPO5rErOWopnA3l1-UCluLjlzkHLmA/preview" 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            allow="autoplay"></iframe>
                 </div>
-            <?php endforeach; ?>
+                <div class="video-content" style="padding: 20px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">Road Marking Lines</h3>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">Learn about different road marking lines and their meanings for safe driving.</p>
+                </div>
+            </div>
+            
+            <!-- Video 2: Road Safety -->
+            <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <div class="video-embed" style="position: relative; padding-top: 56.25%; background: #000;">
+                    <iframe src="https://drive.google.com/file/d/1cMrbPnRZDCL7lFMVYQOsmxVjw4aTkbsA/preview" 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            allow="autoplay"></iframe>
+                </div>
+                <div class="video-content" style="padding: 20px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">Road Safety</h3>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">Essential road safety tips and practices for responsible driving.</p>
+                </div>
+            </div>
+            
+            <!-- Video 3: Road Signs -->
+            <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <div class="video-embed" style="position: relative; padding-top: 56.25%; background: #000;">
+                    <iframe src="https://drive.google.com/file/d/1qL3lGNZ5xEvTiGenZYzVwgl8jYkDO12o/preview" 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            allow="autoplay"></iframe>
+                </div>
+                <div class="video-content" style="padding: 20px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">Road Signs</h3>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">Understanding traffic signs and their importance in road navigation.</p>
+                </div>
+            </div>
+            
+            <!-- Video 4: RS-Regulatory Signs -->
+            <div class="video-card" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <div class="video-embed" style="position: relative; padding-top: 56.25%; background: #000;">
+                    <iframe src="https://drive.google.com/file/d/1YXwLy_U1T8G4uHyyOQ7Zu4--aJhVZxIT/preview" 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            allow="autoplay"></iframe>
+                </div>
+                <div class="video-content" style="padding: 20px;">
+                    <h3 style="font-size: 18px; margin-bottom: 10px; color: #2c3e50;">RS-Regulatory Signs</h3>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">Comprehensive guide to regulatory signs and traffic rules compliance.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -337,22 +371,34 @@ $extra_styles = <<<EOT
 }
 
 .back-btn {
-    padding: 10px 20px;
-    background: #95a5a6;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.3s;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .back-btn:hover {
-    background: #7f8c8d;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.back-btn:active {
+    transform: translateY(0);
 }
 
 .back-btn i {
-    margin-right: 8px;
+    margin-right: 0;
+    font-size: 16px;
 }
 
 .elearning-tabs {
@@ -553,47 +599,37 @@ $extra_styles = <<<EOT
 /* Video Tutorials Styles */
 .videos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 25px;
 }
 
 .video-card {
-    background: #282c34;
-    border: 1px solid #3a3f48;
-    border-radius: 12px;
+    background: white;
+    border-radius: 15px;
     overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     transition: all 0.3s;
 }
 
 .video-card:hover {
-    border-color: #ffcc00;
-    transform: translateY(-3px);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 
-.video-thumbnail {
-    height: 200px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.video-embed {
     position: relative;
+    padding-top: 56.25%;
+    background: #000;
+    width: 100%;
 }
 
-.play-icon {
-    font-size: 48px;
-    color: rgba(255,255,255,0.9);
-    cursor: pointer;
-}
-
-.video-duration {
+.video-embed iframe {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .video-content {
@@ -601,12 +637,13 @@ $extra_styles = <<<EOT
 }
 
 .video-content h3 {
-    color: #ffffff;
+    color: #2c3e50;
     margin-bottom: 10px;
+    font-size: 18px;
 }
 
 .video-content p {
-    color: #8b8d93;
+    color: #7f8c8d;
     font-size: 14px;
     margin-bottom: 15px;
     line-height: 1.5;
@@ -741,12 +778,6 @@ function switchTab(tabName) {
     event.target.classList.add('active');
     event.target.style.color = '#2c3e50';
     event.target.style.borderBottom = '3px solid #667eea';
-}
-
-function playVideo(videoId) {
-    alert('Playing video ' + videoId + '. Video player will be implemented next.');
-    // You can redirect to a video player page:
-    // window.location.href = 'video-player.php?id=' + videoId;
 }
 
 // Initialize page
