@@ -93,6 +93,36 @@ if ($stmt = $conn->prepare($sql)) {
             flex-shrink: 0;
         }
         
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ffffffff 0%, #764ba2 100%);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            background: linear-gradient(135deg, #ffffffff 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .back-btn:active {
+            transform: translateY(0);
+        }
+        
+        .back-btn i {
+            font-size: 16px;
+        }
+        
         .game-title {
             font-size: 24px;
             font-weight: bold;
@@ -704,6 +734,12 @@ if ($stmt = $conn->prepare($sql)) {
     <!-- Vehicle Selection Screen -->
     <div id="vehicleSelection" class="vehicle-selection-screen">
         <div class="vehicle-selection-container">
+            <div style="position: absolute; top: 20px; left: 20px; z-index: 1000;">
+                <a href="e-learning.php" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to E-Learning
+                </a>
+            </div>
+            
             <div class="vehicle-header">
                 <h1>Choose Your Vehicle</h1>
                 <p>Select a vehicle type to begin your driving simulation</p>
@@ -802,6 +838,9 @@ if ($stmt = $conn->prepare($sql)) {
     <div class="simulation-container" style="display: none;">
         <!-- Header -->
         <div class="game-header">
+            <a href="e-learning.php" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to E-Learning
+            </a>
             <div class="game-title">🚗 Driving Simulation Training</div>
             <div class="game-stats">
                 <div class="stat-item">
