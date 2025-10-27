@@ -17,7 +17,7 @@ function sendPasswordResetEmail($to_email, $user_name, $reset_link) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'deduyoroy02@gmail.com';
-        $mail->Password   = 'ntue ydcf abel nqnm';  // App password
+        $mail->Password   = 'fdzo nrch rlee wazo';  // App password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
