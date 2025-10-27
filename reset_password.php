@@ -278,8 +278,9 @@ mysqli_close($conn);
 <body>
     <div class="container">
         <div class="logo">
-            <img src="images/logo.png" alt="Success Driving Logo">
+         <img src="assets/images/dss_logo.png" alt="Success Driving Logo">
         </div>
+        
         
         <?php if ($message_type == "success" && !$token_valid): ?>
             <div class="icon-wrapper">
@@ -287,7 +288,7 @@ mysqli_close($conn);
             </div>
         <?php else: ?>
             <div class="icon-wrapper">
-                <i class="fas fa-key"></i>
+              
             </div>
         <?php endif; ?>
         
