@@ -99,7 +99,40 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         .bottom-menu {
             margin-top: auto;
-            margin-bottom: 20px;
+            padding: 0 15px 20px 15px;
+        }
+        
+        .bottom-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f5576c 0%, #e84a5f 100%);
+            color: white !important;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.2);
+            border-left: none !important;
+        }
+        
+        .bottom-menu a:hover {
+            background: linear-gradient(135deg, #e84a5f 0%, #d63447 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        .bottom-menu a:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(245, 87, 108, 0.3);
+        }
+        
+        .bottom-menu a i {
+            font-size: 16px;
+            margin-right: 0;
         }
 
         /* Main Content */
@@ -312,6 +345,23 @@ $current_page = basename($_SERVER['PHP_SELF']);
             
             .stats-container {
                 grid-template-columns: 1fr;
+            }
+            
+            .bottom-menu {
+                padding: 0 10px 15px 10px;
+            }
+            
+            .bottom-menu a {
+                padding: 12px;
+                justify-content: center;
+            }
+            
+            .bottom-menu a span {
+                display: none;
+            }
+            
+            .bottom-menu a i {
+                font-size: 18px;
             }
         }
     </style>
