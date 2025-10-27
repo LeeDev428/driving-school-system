@@ -46,7 +46,7 @@ try {
     // Get user's assessment status
     $assessment_query = "SELECT 
         COUNT(*) as total_attempts,
-        MAX(score) as best_score,
+        MAX(score_percentage) as best_score,
         MAX(CASE WHEN passed = 1 THEN 1 ELSE 0 END) as has_passed
         FROM user_assessment_sessions 
         WHERE user_id = ? AND status = 'completed'";
@@ -59,7 +59,7 @@ try {
     // Get user's quiz status
     $quiz_query = "SELECT 
         COUNT(*) as total_attempts,
-        MAX(score) as best_score,
+        MAX(score_percentage) as best_score,
         MAX(CASE WHEN passed = 1 THEN 1 ELSE 0 END) as has_passed
         FROM user_quiz_sessions 
         WHERE user_id = ? AND status = 'completed'";
@@ -69,14 +69,32 @@ try {
     $stmt->execute();
     $quiz_stats = $stmt->get_result()->fetch_assoc();
     
-    // Calculate course progress (assessment + quiz completion)
+    // Get user's simulation status
+    $simulation_query = "SELECT 
+        COUNT(*) as total_attempts,
+        MAX(score_percentage) as best_score,
+        MAX(CASE WHEN score_percentage >= 60 THEN 1 ELSE 0 END) as has_passed
+        FROM simulation_results 
+        WHERE user_id = ? AND status = 'completed'";
+    
+    $stmt = $conn->prepare($simulation_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $simulation_stats = $stmt->get_result()->fetch_assoc();
+    
+    // Calculate course progress (assessment + quiz + simulation completion)
     $course_progress = 0;
+    $total_components = 3; // assessment, quiz, simulation
     if ($assessment_stats['has_passed']) {
-        $course_progress += 50; // Assessment is 50% of e-learning
+        $course_progress += (100 / $total_components);
     }
     if ($quiz_stats['has_passed']) {
-        $course_progress += 50; // Quiz is 50% of e-learning
+        $course_progress += (100 / $total_components);
     }
+    if ($simulation_stats['has_passed']) {
+        $course_progress += (100 / $total_components);
+    }
+    $course_progress = round($course_progress);
     
     $stats = array_merge($appointments_stats, [
         'assessment_attempts' => $assessment_stats['total_attempts'] ?? 0,
@@ -85,6 +103,9 @@ try {
         'quiz_attempts' => $quiz_stats['total_attempts'] ?? 0,
         'quiz_best_score' => $quiz_stats['best_score'] ?? 0,
         'quiz_passed' => $quiz_stats['has_passed'] ?? 0,
+        'simulation_attempts' => $simulation_stats['total_attempts'] ?? 0,
+        'simulation_best_score' => $simulation_stats['best_score'] ?? 0,
+        'simulation_passed' => $simulation_stats['has_passed'] ?? 0,
         'course_progress' => $course_progress
     ]);
     
@@ -101,6 +122,9 @@ try {
         'quiz_attempts' => 0,
         'quiz_best_score' => 0,
         'quiz_passed' => 0,
+        'simulation_attempts' => 0,
+        'simulation_best_score' => 0,
+        'simulation_passed' => 0,
         'course_progress' => 0
     ];
 }
@@ -131,16 +155,66 @@ ob_start();
         <div class="icon" style="background-color: rgba(54, 162, 235, 0.2); color: #36a2eb;">
             <i class="fas fa-clipboard-check"></i>
         </div>
-        <div class="value"><?php echo $stats['assessment_passed'] ? $stats['assessment_best_score'] . '%' : 'Not Passed'; ?></div>
-        <div class="label">Assessment Score</div>
+        <div class="value">
+            <?php 
+            if ($stats['assessment_attempts'] > 0) {
+                echo number_format($stats['assessment_best_score'], 0) . '%';
+                if ($stats['assessment_passed']) {
+                    echo ' <i class="fas fa-check-circle" style="color: #4bc0c0; font-size: 18px;"></i>';
+                }
+            } else {
+                echo '0';
+            }
+            ?>
+        </div>
+        <div class="label">Assessment Test</div>
+        <div style="font-size: 11px; color: #8b8d93; margin-top: 5px;">
+            <?php echo $stats['assessment_attempts']; ?> attempt<?php echo $stats['assessment_attempts'] != 1 ? 's' : ''; ?>
+        </div>
     </div>
     
     <div class="stat-card">
         <div class="icon" style="background-color: rgba(153, 102, 255, 0.2); color: #9966ff;">
             <i class="fas fa-book"></i>
         </div>
-        <div class="value"><?php echo $stats['quiz_passed'] ? $stats['quiz_best_score'] . '%' : 'Not Passed'; ?></div>
-        <div class="label">Quiz Score</div>
+        <div class="value">
+            <?php 
+            if ($stats['quiz_attempts'] > 0) {
+                echo number_format($stats['quiz_best_score'], 0) . '%';
+                if ($stats['quiz_passed']) {
+                    echo ' <i class="fas fa-check-circle" style="color: #4bc0c0; font-size: 18px;"></i>';
+                }
+            } else {
+                echo '0';
+            }
+            ?>
+        </div>
+        <div class="label">Final Quiz</div>
+        <div style="font-size: 11px; color: #8b8d93; margin-top: 5px;">
+            <?php echo $stats['quiz_attempts']; ?> attempt<?php echo $stats['quiz_attempts'] != 1 ? 's' : ''; ?>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="icon" style="background-color: rgba(255, 204, 0, 0.2); color: #ffcc00;">
+            <i class="fas fa-car"></i>
+        </div>
+        <div class="value">
+            <?php 
+            if ($stats['simulation_attempts'] > 0) {
+                echo number_format($stats['simulation_best_score'], 0) . '%';
+                if ($stats['simulation_passed']) {
+                    echo ' <i class="fas fa-check-circle" style="color: #4bc0c0; font-size: 18px;"></i>';
+                }
+            } else {
+                echo '0';
+            }
+            ?>
+        </div>
+        <div class="label">Simulation</div>
+        <div style="font-size: 11px; color: #8b8d93; margin-top: 5px;">
+            <?php echo $stats['simulation_attempts']; ?> attempt<?php echo $stats['simulation_attempts'] != 1 ? 's' : ''; ?>
+        </div>
     </div>
 </div>
 
@@ -246,6 +320,35 @@ ob_start();
             }
             ?>
         </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <a href="appointments.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
+                    <i class="fas fa-calendar-plus" style="font-size: 24px; margin-bottom: 8px; color: #ffcc00;"></i>
+                    <span style="font-size: 13px;">Book Appointment</span>
+                </a>
+                
+                <a href="simulation.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
+                    <i class="fas fa-car" style="font-size: 24px; margin-bottom: 8px; color: #FF5722;"></i>
+                    <span style="font-size: 13px;">Start Simulation</span>
+                </a>
+                
+                <a href="../view_quiz_results.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
+                    <i class="fas fa-chart-line" style="font-size: 24px; margin-bottom: 8px; color: #2196F3;"></i>
+                    <span style="font-size: 13px;">View Results</span>
+                </a>
+                
+                <a href="simulation_result.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
+                    <i class="fas fa-trophy" style="font-size: 24px; margin-bottom: 8px; color: #9C27B0;"></i>
+                    <span style="font-size: 13px;">Sim Results</span>
+                </a>
+            </div>
+        </div>
     </div>
     
     <!-- Right column -->
@@ -253,7 +356,12 @@ ob_start();
         <!-- E-Learning Progress Card -->
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-graduation-cap"></i> E-Learning Progress</h3>
+                <h3>
+                    <i class="fas fa-graduation-cap"></i> E-Learning Progress
+                    <span style="float: right; font-size: 24px; font-weight: 700; color: #ffcc00;">
+                        <?php echo number_format($stats['course_progress'], 0); ?>%
+                    </span>
+                </h3>
             </div>
             
             <!-- Assessment Status -->
@@ -332,38 +440,50 @@ ob_start();
             
             <hr style="border: none; border-top: 1px solid #3a3f48; margin: 15px 0;">
             
+            <!-- Simulation Status -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-size: 16px; font-weight: 500;">🚗 Driving Simulation</div>
+                        <div style="font-size: 13px; color: #8b8d93;">Interactive Practice • 60% to Pass</div>
+                    </div>
+                    <?php if ($stats['simulation_passed']): ?>
+                        <span class="badge badge-success"><i class="fas fa-check"></i> Passed</span>
+                    <?php elseif (!$stats['quiz_passed']): ?>
+                        <span class="badge" style="background-color: #8b8d93;"><i class="fas fa-lock"></i> Locked</span>
+                    <?php elseif ($stats['simulation_attempts'] > 0): ?>
+                        <span class="badge badge-warning">In Progress</span>
+                    <?php else: ?>
+                        <span class="badge badge-info">Available</span>
+                    <?php endif; ?>
+                </div>
+                
+                <?php if ($stats['simulation_attempts'] > 0): ?>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #8b8d93;">Best Score:</span>
+                        <span style="font-size: 12px; font-weight: 600; color: <?php echo $stats['simulation_passed'] ? '#4caf50' : '#f5576c'; ?>">
+                            <?php echo number_format($stats['simulation_best_score'], 1); ?>%
+                        </span>
+                    </div>
+                    <div style="font-size: 11px; color: #8b8d93; margin-bottom: 8px;">
+                        Attempts: <?php echo $stats['simulation_attempts']; ?>
+                    </div>
+                <?php elseif (!$stats['quiz_passed']): ?>
+                    <div style="font-size: 12px; color: #8b8d93; margin-bottom: 8px;">
+                        <i class="fas fa-info-circle"></i> Complete final quiz first to unlock
+                    </div>
+                <?php endif; ?>
+                
+                <div class="progress" style="height: 10px; background-color: #3a3f48; border-radius: 5px;">
+                    <div style="height: 100%; width: <?php echo $stats['simulation_passed'] ? '100' : ($stats['simulation_best_score'] ?? 0); ?>%; background-color: <?php echo $stats['simulation_passed'] ? '#4caf50' : '#ffcc00'; ?>; border-radius: 5px; transition: width 0.3s;"></div>
+                </div>
+            </div>
+            
+            <hr style="border: none; border-top: 1px solid #3a3f48; margin: 15px 0;">
+            
             <div style="text-align: center;">
                 <a href="e-learning.php" class="btn" style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; transition: transform 0.2s;">
                     <i class="fas fa-book-reader"></i> Go to E-Learning
-                </a>
-            </div>
-        </div>
-        
-        <!-- Quick Actions Card -->
-        <div class="card" style="margin-top: 20px;">
-            <div class="card-header">
-                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <a href="appointments.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
-                    <i class="fas fa-calendar-plus" style="font-size: 24px; margin-bottom: 8px; color: #ffcc00;"></i>
-                    <span style="font-size: 13px;">Book Appointment</span>
-                </a>
-                
-                <a href="simulation.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
-                    <i class="fas fa-car" style="font-size: 24px; margin-bottom: 8px; color: #FF5722;"></i>
-                    <span style="font-size: 13px;">Start Simulation</span>
-                </a>
-                
-                <a href="../view_quiz_results.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
-                    <i class="fas fa-chart-line" style="font-size: 24px; margin-bottom: 8px; color: #2196F3;"></i>
-                    <span style="font-size: 13px;">View Results</span>
-                </a>
-                
-                <a href="simulation_result.php" class="btn" style="display: flex; flex-direction: column; align-items: center; padding: 15px; background: #2c3038; color: white; text-decoration: none; border-radius: 8px; transition: background 0.3s;">
-                    <i class="fas fa-trophy" style="font-size: 24px; margin-bottom: 8px; color: #9C27B0;"></i>
-                    <span style="font-size: 13px;">Sim Results</span>
                 </a>
             </div>
         </div>
