@@ -1053,6 +1053,194 @@ document.getElementById('filterStatus').addEventListener('change', function() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('E-learning admin panel loaded');
 });
+
+// View user progress details
+function viewUserProgress(userId) {
+    // Create modal overlay
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: #282c34;
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        border: 1px solid #3a3f48;
+    `;
+    
+    modalContent.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h2 style="margin: 0; color: #fff;">
+                <i class="fas fa-user-graduate"></i> Loading Progress...
+            </h2>
+            <button onclick="this.closest('[style*=fixed]').remove()" style="background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div style="text-align: center; padding: 40px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #ffcc00;"></i>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Fetch user progress data
+    fetch('get_user_progress.php?user_id=' + userId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.user;
+                modalContent.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h2 style="margin: 0; color: #fff;">
+                            <i class="fas fa-user-graduate"></i> \${user.full_name}
+                        </h2>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div style="background: #1e2129; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <p style="margin: 5px 0; color: #8b8d93;"><strong style="color: #fff;">Email:</strong> \${user.email}</p>
+                        <p style="margin: 5px 0; color: #8b8d93;"><strong style="color: #fff;">Role:</strong> \${user.user_type}</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px;">
+                            <h3 style="margin: 0 0 15px 0; color: #fff;">
+                                <i class="fas fa-clipboard-check"></i> Assessment
+                            </h3>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Status:</strong> \${user.assessment_passed ? '<span style="color: #4caf50;">✓ Passed</span>' : (user.assessment_attempts > 0 ? '<span style="color: #ff9800;">In Progress</span>' : '<span style="color: #999;">Not Started</span>')}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Attempts:</strong> \${user.assessment_attempts}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Best Score:</strong> \${user.assessment_best_score ? user.assessment_best_score + '%' : 'N/A'}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Avg Score:</strong> \${user.assessment_avg_score ? user.assessment_avg_score + '%' : 'N/A'}
+                            </p>
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 10px;">
+                            <h3 style="margin: 0 0 15px 0; color: #fff;">
+                                <i class="fas fa-book-open"></i> Quiz
+                            </h3>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Status:</strong> \${user.quiz_passed ? '<span style="color: #4caf50;">✓ Passed</span>' : (user.quiz_attempts > 0 ? '<span style="color: #ff9800;">In Progress</span>' : '<span style="color: #999;">Not Started</span>')}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Attempts:</strong> \${user.quiz_attempts}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Best Score:</strong> \${user.quiz_best_score ? user.quiz_best_score + '%' : 'N/A'}
+                            </p>
+                            <p style="margin: 5px 0; color: rgba(255,255,255,0.9);">
+                                <strong>Avg Score:</strong> \${user.quiz_avg_score ? user.quiz_avg_score + '%' : 'N/A'}
+                            </p>
+                        </div>
+                    </div>
+                    
+                 
+                `;
+            } else {
+                modalContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f5576c; margin-bottom: 20px;"></i>
+                        <p style="color: #fff; font-size: 18px;">Failed to load user progress</p>
+                        <p style="color: #8b8d93;">\${data.message || 'Unknown error'}</p>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="margin-top: 20px; padding: 10px 20px; background: #ffcc00; color: #1a1d24; border: none; border-radius: 5px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            modalContent.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f5576c; margin-bottom: 20px;"></i>
+                    <p style="color: #fff; font-size: 18px;">Error loading data</p>
+                    <p style="color: #8b8d93;">\${error.message}</p>
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="margin-top: 20px; padding: 10px 20px; background: #ffcc00; color: #1a1d24; border: none; border-radius: 5px; cursor: pointer;">
+                        Close
+                    </button>
+                </div>
+            `;
+        });
+}
+
+// Reset user progress
+function resetUserProgress(userId) {
+    if (!confirm('Are you sure you want to reset this user\\'s progress? This will delete all assessment and quiz attempts.')) {
+        return;
+    }
+    
+    // Create loading overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    overlay.innerHTML = `
+        <div style="background: #282c34; padding: 30px; border-radius: 10px; text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #ffcc00; margin-bottom: 15px;"></i>
+            <p style="color: #fff;">Resetting progress...</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Send reset request
+    fetch('reset_user_progress.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        overlay.remove();
+        if (data.success) {
+            alert('User progress has been reset successfully!');
+            location.reload();
+        } else {
+            alert('Failed to reset progress: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        overlay.remove();
+        alert('Error: ' + error.message);
+    });
+}
 </script>
 EOT;
 
